@@ -1,0 +1,12 @@
+<div class="row" *ngFor="let poke of pokeList">
+  <div class="col-sm-6">
+    <div class="card">
+      <img class="card-img-top" src="{{poke.images.large}}" alt="card img" />
+      <div class="card-body">
+        <h5 class="card-title">{{poke.name}}</h5>
+        <p class="card-text">{{poke.types}}</p>
+        <a href="#" class="btn btn-primary">Load More Info</a>
+      </div>
+    </div>
+  </div>
+</div>
