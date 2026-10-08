@@ -83,6 +83,7 @@ export interface CardScript {
   modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number; registry: CardRegistry }): number;
   modifyPrizes?(q: {
     state: GameState;
+    holder: SlotRef;
     holderSide: SlotRef['player'];
     knockedOut: SlotRef;
     byAttackFromEx: boolean;

@@ -112,6 +112,14 @@ export class EffectCtx {
     return ref;
   }
 
+  discardStadium(): void {
+    const stadium = this.state.stadium;
+    if (!stadium) return;
+    this.state.players[stadium.owner].discard.push(stadium.uid);
+    this.state.stadium = null;
+    this.log(`${this.def(stadium.uid).name} is discarded`);
+  }
+
   /** A shuffled copy of `list`, using the game's RNG. */
   shuffled<T>(list: readonly T[]): T[] {
     const [out, rng] = shuffle(list, this.state.rng);

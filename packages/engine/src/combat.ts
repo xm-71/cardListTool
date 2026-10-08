@@ -150,6 +150,7 @@ export function checkKnockouts(ctx: EffectCtx): void {
         if (h.script.modifyPrizes) {
           prizes = h.script.modifyPrizes({
             state: s,
+            holder: h.ref,
             holderSide,
             knockedOut: ref,
             byAttackFromEx,

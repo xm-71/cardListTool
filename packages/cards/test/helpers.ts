@@ -92,3 +92,15 @@ export function inHand(s: GameState, player: PlayerId, defId: string): string {
   return s.players[player].hand.find((u) => s.cards[u]!.defId === defId) ?? giveCardRaw(s, player, defId);
 }
 import { giveCard as giveCardRaw } from '@ptcg/engine/testing';
+
+/** Answer every open prompt with its first option (then 'done' when allowed) until none remain. */
+export function resolvePrompts(s: GameState): GameState {
+  let st = s;
+  for (let guard = 0; st.prompt && guard < 50; guard++) {
+    const pr = st.prompt;
+    const optionId =
+      pr.selected.length >= pr.min && pr.options.length === 0 ? 'done' : (pr.options[0]?.id ?? 'done');
+    st = act(engine, st, { type: 'answer', optionId });
+  }
+  return st;
+}

@@ -1,4 +1,13 @@
-import type { CardDef, EffectCtx, EnergyType, PlayerId, PokemonDef, SlotRef } from '@ptcg/engine';
+import type {
+  CardDef,
+  CardRegistry,
+  EffectCtx,
+  EnergyType,
+  GameState,
+  PlayerId,
+  PokemonDef,
+  SlotRef,
+} from '@ptcg/engine';
 
 export function pokemonDef(ctx: EffectCtx, uid: string): PokemonDef | null {
   const d = ctx.def(uid);
@@ -46,4 +55,30 @@ export function otherCardsInHand(ctx: EffectCtx): string[] {
   const src = ctx.source;
   const self = src?.kind === 'trainer' ? src.uid : null;
   return ctx.state.players[ctx.me].hand.filter((u) => u !== self);
+}
+
+/** Top Pokémon definition at a slot, for passive hooks that only get state + registry. */
+export function defAt(state: GameState, registry: CardRegistry, ref: SlotRef): PokemonDef | null {
+  const p = state.players[ref.player];
+  const slot = ref.zone === 'active' ? p.active : p.bench[ref.index];
+  if (!slot) return null;
+  const d = registry.defs[state.cards[slot.stack[slot.stack.length - 1]!]!.defId];
+  return d?.category === 'Pokemon' ? d : null;
+}
+
+/** Refs of a player's Pokémon in play, Active first, from state alone. */
+export function refsOf(state: GameState, player: PlayerId): SlotRef[] {
+  const p = state.players[player];
+  return [
+    ...(p.active ? [{ player, zone: 'active' } as SlotRef] : []),
+    ...p.bench.map((_, index) => ({ player, zone: 'bench', index }) as SlotRef),
+  ];
+}
+
+export function sameRef(a: SlotRef, b: SlotRef): boolean {
+  return (
+    a.player === b.player &&
+    a.zone === b.zone &&
+    (a.zone === 'active' || a.index === (b as { index: number }).index)
+  );
 }

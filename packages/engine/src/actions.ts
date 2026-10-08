@@ -37,6 +37,8 @@ function baseHandler(origin: Origin): EffectFn {
       return (ctx) => playTrainer(ctx, origin.uid, origin.target);
     case 'useStadium':
       return useStadium;
+    case 'useAbility':
+      return (ctx) => useAbility(ctx, origin.slot, origin.ability);
     case 'endTurn':
       return endTurn;
     case 'concede':
@@ -64,6 +66,32 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
 
 function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {
   ctx.evolve(target, uid);
+}
+
+function useAbility(ctx: EffectCtx, ref: SlotRef, ability: string): void {
+  const slot = getSlot(ctx.state, ref)!;
+  const def = slotDef(ctx.env, ctx.state, slot);
+  slot.abilityUsedTurn[ability] = ctx.state.turn;
+  ctx.source = { kind: 'ability', slot: ref, ability };
+  log(ctx.state, 'ability', `${def.name} uses ${ability}`, { player: ctx.me });
+  ctx.env.registry.scripts[def.id]!.abilities![ability]!.use(ctx);
+}
+
+/** Activated Abilities: each can be used once per turn per Pokémon. */
+function abilityActions(env: Env, state: GameState, player: PlayerId): Action[] {
+  const out: Action[] = [];
+  for (const ref of slotRefs(state, player)) {
+    const slot = getSlot(state, ref)!;
+    const def = slotDef(env, state, slot);
+    const abilities = env.registry.scripts[def.id]?.abilities ?? {};
+    for (const [ability, script] of Object.entries(abilities)) {
+      if (slot.abilityUsedTurn[ability] === state.turn) continue;
+      const ctx = new EffectCtx(state, env, player, []);
+      ctx.source = { kind: 'ability', slot: ref, ability };
+      if (script.canUse(ctx)) out.push({ type: 'useAbility', slot: ref, ability });
+    }
+  }
+  return out;
 }
 
 function retreat(ctx: EffectCtx, benchIndex: number): void {
@@ -114,6 +142,7 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
     }
   }
   out.push(...trainerActions(env, state, player));
+  out.push(...abilityActions(env, state, player));
   const active = p.active;
   if (active && p.retreatTurn !== turn && p.bench.length > 0) {
     const blocked = active.conditions.rotation === 'asleep' || active.conditions.rotation === 'paralyzed';
