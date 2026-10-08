@@ -1,0 +1,98 @@
+{
+  "name": "Mega Gengar ex Mega Battle Deck",
+  "cards": [
+    {
+      "id": "me02-054",
+      "count": 4
+    },
+    {
+      "id": "me02-055",
+      "count": 2
+    },
+    {
+      "id": "me02-056",
+      "count": 2
+    },
+    {
+      "id": "me02-067",
+      "count": 2
+    },
+    {
+      "id": "me02-068",
+      "count": 2
+    },
+    {
+      "id": "me02-059",
+      "count": 2
+    },
+    {
+      "id": "me02-062",
+      "count": 2
+    },
+    {
+      "id": "me02-069",
+      "count": 1
+    },
+    {
+      "id": "me01-119",
+      "count": 4
+    },
+    {
+      "id": "sv01-166",
+      "count": 2
+    },
+    {
+      "id": "me01-114",
+      "count": 2
+    },
+    {
+      "id": "sv02-185",
+      "count": 1
+    },
+    {
+      "id": "sv01-181",
+      "count": 3
+    },
+    {
+      "id": "me01-167",
+      "count": 2
+    },
+    {
+      "id": "me01-131",
+      "count": 2
+    },
+    {
+      "id": "me01-125",
+      "count": 2
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "me01-127",
+      "count": 2
+    },
+    {
+      "id": "me01-121",
+      "count": 3
+    },
+    {
+      "id": "me02-092",
+      "count": 2
+    },
+    {
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "me01-166",
+      "count": 1
+    },
+    {
+      "id": "mee-007",
+      "count": 13
+    }
+  ],
+  "note": "UNCONFIRMED: last 10 Trainer slots (Risky Ruins x2, Mega Signal x3, Punk Helmet x2, Switch x2, Air Balloon x1) fill an incomplete published list to 60. Confirm against the official deck insert."
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@ptcg/cards",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@ptcg/engine": "workspace:*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "import-cards": "NODE_USE_ENV_PROXY=1 tsx scripts/import-cards.ts"
+  }
+}

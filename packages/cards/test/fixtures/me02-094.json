@@ -1,0 +1,33 @@
+{
+  "category": "Trainer",
+  "id": "me02-094",
+  "illustrator": "Studio Bora Inc.",
+  "image": "https://assets.tcgdex.net/en/me/me02/094",
+  "localId": "094",
+  "name": "Wondrous Patch",
+  "rarity": "Uncommon",
+  "set": {
+    "cardCount": {
+      "official": 94,
+      "total": 130
+    },
+    "id": "me02",
+    "logo": "https://assets.tcgdex.net/en/me/me02/logo",
+    "name": "Phantasmal Flames"
+  },
+  "variants": {
+    "firstEdition": false,
+    "holo": false,
+    "normal": true,
+    "reverse": true,
+    "wPromo": false
+  },
+  "effect": "Attach a Basic {P} Energy card from your discard pile to 1 of your Benched {P} Pokémon.",
+  "trainerType": "Item",
+  "regulationMark": "I",
+  "legal": {
+    "standard": true,
+    "expanded": true
+  },
+  "updated": "2026-08-16T13:05:43+01:00"
+}

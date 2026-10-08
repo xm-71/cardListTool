@@ -1,0 +1,741 @@
+{
+  "me01-062": {
+    "id": "me01-062",
+    "name": "Spoink",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/062",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Darkness",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Triple Spin",
+        "cost": ["Psychic"],
+        "damage": 10,
+        "damageSuffix": "×",
+        "text": "Flip 3 coins. This attack does 10 damage for each heads."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-063": {
+    "id": "me01-063",
+    "name": "Grumpig",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/063",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 120,
+    "types": ["Psychic"],
+    "evolvesFrom": "Spoink",
+    "weakness": "Darkness",
+    "resistance": "Fighting",
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Psychic Sphere",
+        "cost": ["Psychic", "Colorless", "Colorless"],
+        "damage": 60,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Energized Steps",
+        "text": "Once during your turn, when you play this Pokémon from your hand to evolve 1 of your Pokémon, you may use this Ability. Look at the top 4 cards of your deck and attach any number of Basic Energy cards you find there to your Pokémon in any way you like. Shuffle the other cards back into your deck."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-114": {
+    "id": "me01-114",
+    "name": "Boss's Orders",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/114",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot.",
+    "isAceSpec": false
+  },
+  "me01-119": {
+    "id": "me01-119",
+    "name": "Lillie's Determination",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/119",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Shuffle your hand into your deck. Then, draw 6 cards. If you have exactly 6 Prize cards remaining, draw 8 cards instead.",
+    "isAceSpec": false
+  },
+  "me01-121": {
+    "id": "me01-121",
+    "name": "Mega Signal",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/121",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Search your deck for a Mega Evolution Pokémon ex, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "isAceSpec": false
+  },
+  "me01-122": {
+    "id": "me01-122",
+    "name": "Mystery Garden",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/122",
+    "category": "Trainer",
+    "trainerType": "Stadium",
+    "text": "Once during each player's turn, that player may discard an Energy card from their hand in order to draw cards until they have as many cards in their hand as they have {P} Pokémon in play.",
+    "isAceSpec": false
+  },
+  "me01-125": {
+    "id": "me01-125",
+    "name": "Rare Candy",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/125",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Choose 1 of your Basic Pokémon in play. If you have a Stage 2 card in your hand that evolves from that Pokémon, put that card onto the Basic Pokémon to evolve it, skipping the Stage 1. You can't use this card during your first turn or on a Basic Pokémon that was put into play this turn.",
+    "isAceSpec": false
+  },
+  "me01-127": {
+    "id": "me01-127",
+    "name": "Risky Ruins",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/127",
+    "category": "Trainer",
+    "trainerType": "Stadium",
+    "text": "Whenever any player puts a Basic non-{D} Pokémon onto their Bench during their turn, place 2 damage counters on that Pokémon.",
+    "isAceSpec": false
+  },
+  "me01-130": {
+    "id": "me01-130",
+    "name": "Switch",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/130",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Switch your Active Pokémon with 1 of your Benched Pokémon.",
+    "isAceSpec": false
+  },
+  "me01-131": {
+    "id": "me01-131",
+    "name": "Ultra Ball",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/131",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "You can use this card only if you discard 2 other cards from your hand.\n\nSearch your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
+    "isAceSpec": false
+  },
+  "me01-132": {
+    "id": "me01-132",
+    "name": "Wally's Compassion",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/132",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Heal all damage from 1 of your Mega Evolution Pokémon ex. If you healed any damage in this way, put all Energy attached to that Pokémon into your hand.",
+    "isAceSpec": false
+  },
+  "me01-166": {
+    "id": "me01-166",
+    "name": "Air Balloon",
+    "regulationMark": "I",
+    "rarity": "Ultra Rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/166",
+    "category": "Trainer",
+    "trainerType": "Tool",
+    "text": "The Retreat Cost of the Pokémon this card is attached to is {C}{C} less.",
+    "isAceSpec": false
+  },
+  "me01-167": {
+    "id": "me01-167",
+    "name": "Buddy-Buddy Poffin",
+    "regulationMark": "H",
+    "rarity": "Ultra Rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/167",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Search your deck for up to 2 Basic Pokémon with 70 HP or less and put them onto your Bench. Then, shuffle your deck.",
+    "isAceSpec": false
+  },
+  "me01-173": {
+    "id": "me01-173",
+    "name": "Night Stretcher",
+    "regulationMark": "H",
+    "rarity": "Ultra Rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/173",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Put a Pokémon or a Basic Energy card from your discard pile into your hand.",
+    "isAceSpec": false
+  },
+  "me02-039": {
+    "id": "me02-039",
+    "name": "Cresselia",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/039",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 120,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Darkness",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Swelling Light",
+        "cost": ["Psychic"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Search your deck for up to 2 Basic {P} Energy cards and attach them to this Pokémon. Then, shuffle your deck."
+      },
+      {
+        "name": "Aurora Beam",
+        "cost": ["Psychic", "Psychic", "Colorless"],
+        "damage": 90,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-040": {
+    "id": "me02-040",
+    "name": "Meloetta",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/040",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 90,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Darkness",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Soothing Melody",
+        "cost": ["Psychic"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Heal 120 damage from 1 of your Benched {P} Pokémon."
+      },
+      {
+        "name": "Magical Shot",
+        "cost": ["Psychic", "Colorless"],
+        "damage": 50,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-041": {
+    "id": "me02-041",
+    "name": "Mega Diancie ex",
+    "regulationMark": "I",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/me/me02/041",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 270,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Metal",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Garland Ray",
+        "cost": ["Psychic", "Psychic"],
+        "damage": 120,
+        "damageSuffix": "×",
+        "text": "Discard up to 2 Energy cards from this Pokémon, and this attack does 120 damage for each card you discarded in this way."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Diamond Coat",
+        "text": "This Pokémon takes 30 less damage from attacks (after applying Weakness and Resistance)."
+      }
+    ],
+    "isEx": true,
+    "isMega": true
+  },
+  "me02-042": {
+    "id": "me02-042",
+    "name": "Mimikyu",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02/042",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Metal",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Call for Family",
+        "cost": ["Colorless"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Search your deck for a Basic Pokémon and put it onto your Bench. Then, shuffle your deck."
+      },
+      {
+        "name": "Scratch",
+        "cost": ["Psychic"],
+        "damage": 20,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-043": {
+    "id": "me02-043",
+    "name": "Milcery",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02/043",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 50,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Metal",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Draining Kiss",
+        "cost": ["Psychic"],
+        "damage": 10,
+        "damageSuffix": "",
+        "text": "Heal 10 damage from this Pokémon."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-044": {
+    "id": "me02-044",
+    "name": "Alcremie",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/044",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 90,
+    "types": ["Psychic"],
+    "evolvesFrom": "Milcery",
+    "weakness": "Metal",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Sweet Circle",
+        "cost": ["Psychic"],
+        "damage": 20,
+        "damageSuffix": "×",
+        "text": "This attack does 20 damage for each of your Pokémon in play."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-045": {
+    "id": "me02-045",
+    "name": "Zacian",
+    "regulationMark": "I",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/me/me02/045",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 130,
+    "types": ["Psychic"],
+    "evolvesFrom": null,
+    "weakness": "Metal",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Limit Break",
+        "cost": ["Psychic", "Colorless"],
+        "damage": 50,
+        "damageSuffix": "+",
+        "text": "If your opponent has 3 or fewer Prize cards remaining, this attack does 90 more damage."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-054": {
+    "id": "me02-054",
+    "name": "Gastly",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02/054",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Petty Grudge",
+        "cost": ["Darkness"],
+        "damage": 10,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-055": {
+    "id": "me02-055",
+    "name": "Haunter",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/055",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 100,
+    "types": ["Darkness"],
+    "evolvesFrom": "Gastly",
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Spooky Shot",
+        "cost": ["Darkness"],
+        "damage": 40,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-056": {
+    "id": "me02-056",
+    "name": "Mega Gengar ex",
+    "regulationMark": "I",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/me/me02/056",
+    "category": "Pokemon",
+    "stage": "Stage2",
+    "hp": 350,
+    "types": ["Darkness"],
+    "evolvesFrom": "Haunter",
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Void Gale",
+        "cost": ["Darkness", "Darkness"],
+        "damage": 230,
+        "damageSuffix": "",
+        "text": "Move an Energy from this Pokémon to 1 of your Benched Pokémon."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Shadowy Concealment",
+        "text": "If 1 of your {D} Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon ex, that player takes 1 fewer Prize card. The effect of Shadowy Concealment doesn't stack."
+      }
+    ],
+    "isEx": true,
+    "isMega": true
+  },
+  "me02-059": {
+    "id": "me02-059",
+    "name": "Sableye",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02/059",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 80,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Cocky Claw",
+        "cost": ["Darkness"],
+        "damage": 20,
+        "damageSuffix": "+",
+        "text": "If you have any Stage 2 {D} Pokémon on your Bench, this attack does 70 more damage."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-062": {
+    "id": "me02-062",
+    "name": "Seviper",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/062",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 120,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Pitch-Black Fangs",
+        "cost": ["Darkness", "Darkness", "Darkness"],
+        "damage": 120,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Excited Power",
+        "text": "If you have any {D} Mega Evolution Pokémon ex in play, attacks used by this Pokémon do 120 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance)."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-067": {
+    "id": "me02-067",
+    "name": "Toxel",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02/067",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Call for Family",
+        "cost": ["Darkness"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+      },
+      {
+        "name": "Playful Kick",
+        "cost": ["Darkness", "Colorless"],
+        "damage": 20,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-068": {
+    "id": "me02-068",
+    "name": "Toxtricity",
+    "regulationMark": "I",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/me/me02/068",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 140,
+    "types": ["Darkness"],
+    "evolvesFrom": "Toxel",
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Gentle Slap",
+        "cost": ["Darkness", "Darkness", "Colorless"],
+        "damage": 100,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Sinister Surge",
+        "text": "Once during your turn, you may use this Ability. Search your deck for a Basic {D} Energy card and attach it to 1 of your Benched {D} Pokémon. Then, shuffle your deck. If you attached Energy to a Pokémon in this way, place 2 damage counters on that Pokémon."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-069": {
+    "id": "me02-069",
+    "name": "Eternatus",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/069",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 150,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Shatter",
+        "cost": ["Darkness", "Darkness"],
+        "damage": 50,
+        "damageSuffix": "",
+        "text": "Discard a Stadium in play."
+      },
+      {
+        "name": "Power Rush",
+        "cost": ["Darkness", "Darkness", "Darkness"],
+        "damage": 130,
+        "damageSuffix": "",
+        "text": "Flip a coin. If tails, during your next turn, this Pokémon can't use attacks."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02-092": {
+    "id": "me02-092",
+    "name": "Punk Helmet",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/092",
+    "category": "Trainer",
+    "trainerType": "Tool",
+    "text": "If the {D} Pokémon this card is attached to is in the Active Spot and is damaged by an attack from your opponent's Pokémon (even if this Pokémon is Knocked Out), place 4 damage counters on the Attacking Pokémon.",
+    "isAceSpec": false
+  },
+  "me02-094": {
+    "id": "me02-094",
+    "name": "Wondrous Patch",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me02/094",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Attach a Basic {P} Energy card from your discard pile to 1 of your Benched {P} Pokémon.",
+    "isAceSpec": false
+  },
+  "mee-005": {
+    "id": "mee-005",
+    "name": "Psychic Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Psychic"],
+    "text": ""
+  },
+  "mee-007": {
+    "id": "mee-007",
+    "name": "Darkness Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Darkness"],
+    "text": ""
+  },
+  "sv01-166": {
+    "id": "sv01-166",
+    "name": "Arven",
+    "regulationMark": "G",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv01/166",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Search your deck for an Item card and a Pokémon Tool card, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "isAceSpec": false
+  },
+  "sv01-181": {
+    "id": "sv01-181",
+    "name": "Nest Ball",
+    "regulationMark": "G",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv01/181",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Search your deck for a Basic Pokémon and put it onto your Bench. Then, shuffle your deck.",
+    "isAceSpec": false
+  },
+  "sv02-185": {
+    "id": "sv02-185",
+    "name": "Iono",
+    "regulationMark": "G",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv02/185",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Each player shuffles their hand and puts it on the bottom of their deck. If either player put any cards on the bottom of their deck in this way, each player draws a card for each of their remaining Prize cards.",
+    "isAceSpec": false
+  },
+  "sv09-155": {
+    "id": "sv09-155",
+    "name": "Professor's Research",
+    "regulationMark": "G",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv09/155",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Discard your hand and draw 7 cards.",
+    "isAceSpec": false
+  }
+}
