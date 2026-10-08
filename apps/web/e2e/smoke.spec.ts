@@ -45,3 +45,29 @@ test('play a turn against the Medium bot', async ({ page }) => {
     .toBe(true);
   await page.screenshot({ path: 'test-results/after-bot-turn.png', fullPage: true });
 });
+
+test('buy and open a pack, then find the cards in the binder', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Shop' }).click();
+  await expect(page.getByText('500 credits')).toBeVisible();
+  await page
+    .getByRole('group', { name: 'Mega Evolution' })
+    .getByRole('button', { name: 'Buy & open' })
+    .click();
+  const opening = page.getByRole('dialog', { name: 'Pack opening' });
+  await expect(opening.getByText('Card 1 of 10')).toBeVisible();
+  await expect(page.getByText('350 credits')).toBeVisible();
+  await opening.getByRole('button', { name: 'Reveal all' }).click();
+  await expect(opening.getByRole('img')).toHaveCount(10);
+  await page.screenshot({ path: 'test-results/pack.png', fullPage: true });
+  await opening.getByRole('button', { name: 'Done' }).click();
+  await page.getByRole('button', { name: 'Binder' }).click();
+  await page.getByRole('checkbox', { name: 'Owned only' }).check();
+  const owned = page.getByRole('list', { name: 'Cards' }).getByRole('listitem');
+  expect(await owned.count()).toBeGreaterThan(0);
+  expect(await owned.count()).toBeLessThanOrEqual(10);
+  // progress survives a reload (IndexedDB)
+  await page.reload();
+  await expect(page.getByText('350 credits')).toBeVisible();
+  await page.screenshot({ path: 'test-results/binder.png', fullPage: true });
+});
