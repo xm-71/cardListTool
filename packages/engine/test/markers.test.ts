@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import type { CardDef, CardScript } from '../src/cards.ts';
+import { EffectCtx } from '../src/effects.ts';
 import { createEngine } from '../src/engine.ts';
+import { standard2026 } from '../src/ruleset.ts';
 import { REPEATABLE_CAP } from '../src/index.ts';
 import type { GameState, PlayerId } from '../src/types.ts';
 import {
@@ -208,4 +210,14 @@ test('repeatable Abilities can be used up to the cap; normal ones once', () => {
   }
   expect(uses(s, 'Again')).toHaveLength(0);
   expect(REPEATABLE_CAP).toBe(10);
+});
+
+test('a switch (Switch or the opponent’s Boss’s Orders) ends markers and sets becameActiveTurn on the incoming Pokémon', () => {
+  const { s, opp } = setup('hitter', 'hitter');
+  benchFromHand(s, opp, giveCard(s, opp, 't-basic'));
+  s.players[opp].active!.markers.push({ kind: 'cantRetreat', amount: 0, untilTurn: s.turn + 1 });
+  const ctx = new EffectCtx(s, { registry: engine.registry, ruleset: standard2026 }, s.current, []);
+  ctx.switchActive(opp, s.players[opp].bench.length - 1);
+  expect(s.players[opp].bench.at(-1)!.markers).toEqual([]);
+  expect(s.players[opp].active!.becameActiveTurn).toBe(s.turn);
 });
