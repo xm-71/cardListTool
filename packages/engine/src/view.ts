@@ -28,6 +28,8 @@ export interface SlotView {
 }
 
 interface SideView {
+  /** Public: the turn on which one of this player's Pokémon was last Knocked Out. */
+  lastKnockedOutTurn: number | null;
   deckCount: number;
   discard: CardInstance[];
   prizeCount: number;
@@ -44,6 +46,8 @@ export interface PlayerView {
   stadium: { card: CardInstance; owner: PlayerId } | null;
   result: GameResult | null;
   log: GameEvent[];
+  /** Public "this turn" effects in play. */
+  lingering: GameState['lingering'];
   /** The prompt, only when this player is the one choosing. */
   prompt: Prompt | null;
   /** Set when the opponent is making a choice this player must wait for. */
@@ -54,6 +58,9 @@ export interface PlayerView {
     energyTurn: number | null;
     retreatTurn: number | null;
     stadiumUsedTurn: number | null;
+    stadiumPlayedTurn: number | null;
+    abilityNamesUsedTurn: Record<string, number>;
+    mulligans: number;
   };
   opponent: SideView & { handCount: number };
 }
@@ -77,6 +84,7 @@ export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerVi
   const side = (p: PlayerId, hideBoard: boolean): SideView => {
     const ps = state.players[p];
     return {
+      lastKnockedOutTurn: ps.lastKnockedOutTurn ?? null,
       deckCount: ps.deck.length,
       discard: ps.discard.map(card),
       prizeCount: ps.prizes.length,
@@ -96,6 +104,7 @@ export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerVi
     stadium: state.stadium ? { card: card(state.stadium.uid), owner: state.stadium.owner } : null,
     result: state.result ? { ...state.result } : null,
     log: structuredClone(state.log),
+    lingering: structuredClone(state.lingering ?? []),
     prompt,
     waitingOn: state.prompt && state.prompt.player !== player ? state.prompt.player : null,
     you: {
@@ -105,6 +114,9 @@ export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerVi
       energyTurn: me.energyTurn,
       retreatTurn: me.retreatTurn,
       stadiumUsedTurn: me.stadiumUsedTurn,
+      stadiumPlayedTurn: me.stadiumPlayedTurn ?? null,
+      abilityNamesUsedTurn: { ...(me.abilityNamesUsedTurn ?? {}) },
+      mulligans: me.mulligans,
     },
     opponent: { ...side(opp, state.phase === 'setup'), handCount: state.players[opp].hand.length },
   };
