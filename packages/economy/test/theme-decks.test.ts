@@ -2,6 +2,7 @@ import { expect, test } from 'vitest';
 import type { DeckList } from '@ptcg/engine';
 import {
   buildRegistry,
+  megaLopunnyDeck,
   megaKangaskhanDeck,
   megaManectricDeck,
   megaAbomasnowDeck,
@@ -22,6 +23,8 @@ test.each([
   ['Mega Manectric ex Theme Deck', megaManectricDeck],
   ,
   ['Mega Kangaskhan ex Theme Deck', megaKangaskhanDeck],
+  ,
+  ['Mega Lopunny ex Theme Deck', megaLopunnyDeck],
 ] as [string, DeckList][])('%s theme deck passes the Standard format checks', (_name, deck) => {
   expect(validateCustomDeck(deck, registry, ownAll)).toEqual([]);
 });

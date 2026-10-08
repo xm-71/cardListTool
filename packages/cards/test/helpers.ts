@@ -97,6 +97,11 @@ export const ID = {
   zigzagoon: 'me02-081',
   linoone: 'me02-082',
   meowth: 'me02-106',
+  buneary: 'me01-107',
+  megaLopunny: 'me02-084',
+  lopunny: 'me01-108',
+  jigglypuff: 'me02-076',
+  wigglytuff: 'me02-077',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */
