@@ -6,3 +6,4 @@ export { standard2026, type Ruleset } from './ruleset.ts';
 export { IllegalActionError } from './errors.ts';
 export { checkInvariants } from './invariants.ts';
 export { EffectCtx } from './effects.ts';
+export { canPayCost, getRetreatCost } from './energy.ts';

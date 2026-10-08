@@ -1,6 +1,6 @@
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
-import { coinFlip } from './rng.ts';
+import { coinFlip, shuffle } from './rng.ts';
 import { defOf, getSlot, newSlot, other, slotDef } from './state.ts';
 import type {
   EffectSource,
@@ -105,7 +105,27 @@ export class EffectCtx {
     bench.push(newSlot(uid, this.state.turn));
     const ref: SlotRef = { player, zone: 'bench', index: bench.length - 1 };
     this.log(`${this.def(uid).name} is put onto the Bench`);
+    const stadium = this.state.stadium;
+    if (stadium && player === this.state.current) {
+      this.env.registry.scripts[this.state.cards[stadium.uid]!.defId]?.stadium?.onBenchFromHand?.(this, ref);
+    }
     return ref;
+  }
+
+  /** A shuffled copy of `list`, using the game's RNG. */
+  shuffled<T>(list: readonly T[]): T[] {
+    const [out, rng] = shuffle(list, this.state.rng);
+    this.state.rng = rng;
+    return out;
+  }
+
+  /** Move attached Energy cards from a Pokémon to their owner's hand or discard pile. */
+  detachEnergy(ref: SlotRef, uids: string[], zone: 'hand' | 'discard'): void {
+    const slot = this.slot(ref);
+    for (const uid of uids) {
+      removeFrom(slot.energy, uid);
+      this.state.players[this.state.cards[uid]!.owner][zone].push(uid);
+    }
   }
 
   attachEnergy(uid: string, ref: SlotRef): void {
@@ -115,11 +135,7 @@ export class EffectCtx {
   }
 
   discardEnergy(ref: SlotRef, uids: string[]): void {
-    const slot = this.slot(ref);
-    for (const uid of uids) {
-      removeFrom(slot.energy, uid);
-      this.state.players[this.state.cards[uid]!.owner].discard.push(uid);
-    }
+    this.detachEnergy(ref, uids, 'discard');
   }
 
   /** Evolve the Pokémon at `ref` with an evolution card from its owner's hand. */
@@ -217,8 +233,8 @@ export type EffectFn = (ctx: EffectCtx) => void;
 
 /**
  * Run `fn` on a copy of `before`. If it completes, return the new state. If it needs
- * input, return `before` unchanged except for the prompt and a pending record from
- * which the effect is replayed (from `before`) once the answer arrives.
+ * input, return the partially resolved state (so players see what happened so far)
+ * with the prompt and a pending record; the answer replays the effect from `before`.
  */
 export function runEffect(
   env: Env,
@@ -240,7 +256,7 @@ export function runEffect(
     const snapshot = structuredClone(before);
     snapshot.prompt = null;
     snapshot.pending = null;
-    const paused = structuredClone(snapshot);
+    const paused = ctx.state;
     paused.prompt = e.prompt;
     paused.pending = { snapshot, origin, player, answers: [...answers] };
     return paused;

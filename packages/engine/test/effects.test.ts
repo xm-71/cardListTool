@@ -77,8 +77,8 @@ describe('prompts and replay', () => {
       ctx.log(`${heads ? 'heads' : 'tails'} ${picked}`);
     };
     let s = start(flipThenChoose);
-    const flipLog = s.log.length; // nothing logged yet: the effect is paused
-    expect(flipLog).toBe(started(engine).log.length);
+    // the paused state already shows the flip, so the player sees it before choosing
+    expect(s.log.at(-1)!.type).toBe('coinFlip');
     const first = s.prompt!.options[0]!.id;
     s = answer(s, flipThenChoose, first);
     const again = answer(start(flipThenChoose), flipThenChoose, first);

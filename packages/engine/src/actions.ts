@@ -5,7 +5,7 @@ import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { setupEffect } from './setup.ts';
 import { playTrainer, trainerActions, useStadium } from './trainers.ts';
-import { defOf, getSlot, isFirstTurnOf, log, newSlot, slotDef, slotRefs } from './state.ts';
+import { defOf, getSlot, isFirstTurnOf, log, slotDef, slotRefs } from './state.ts';
 import { endTurn, setResult } from './turn.ts';
 import type { Action, GameEvent, GameState, Origin, PlayerId, SlotRef } from './types.ts';
 import { removeFrom } from './zones.ts';
@@ -47,12 +47,8 @@ function baseHandler(origin: Origin): EffectFn {
 }
 
 function playBasic(ctx: EffectCtx, uid: string): void {
-  const p = ctx.state.players[ctx.me];
-  removeFrom(p.hand, uid);
-  p.bench.push(newSlot(uid, ctx.state.turn));
-  log(ctx.state, 'playBasic', `Player ${ctx.me + 1} puts ${ctx.def(uid).name} on the Bench`, {
-    player: ctx.me,
-  });
+  log(ctx.state, 'playBasic', `Player ${ctx.me + 1} plays ${ctx.def(uid).name}`, { player: ctx.me });
+  ctx.putOnBench(ctx.me, uid);
 }
 
 function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {

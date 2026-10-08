@@ -153,6 +153,8 @@ export const has = (actions: Action[], type: Action['type']) => actions.some((a)
 /** Replace a player's Active Pokémon with a card of `defId` taken from their deck (test setup only). */
 export function swapActiveTo(state: GameState, player: PlayerId, defId: string): string {
   const p = state.players[player];
+  const current = p.active!.stack[0]!;
+  if (state.cards[current]!.defId === defId) return current;
   const zone = (['deck', 'hand', 'prizes'] as const).find((z) =>
     p[z].some((u) => state.cards[u]!.defId === defId),
   );

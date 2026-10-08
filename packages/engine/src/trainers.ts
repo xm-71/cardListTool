@@ -83,8 +83,9 @@ export function playTrainer(ctx: EffectCtx, uid: string, target?: SlotRef): void
     case 'Item':
       break;
   }
-  ctx.env.registry.scripts[def.id]?.trainer?.play(ctx);
+  // The card sits in the discard pile while it resolves, so a paused effect is still a valid state.
   p.discard.push(uid);
+  ctx.env.registry.scripts[def.id]?.trainer?.play(ctx);
 }
 
 export function useStadium(ctx: EffectCtx): void {
