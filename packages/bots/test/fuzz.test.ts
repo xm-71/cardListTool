@@ -1,6 +1,17 @@
 import { expect, test } from 'vitest';
 import { createEngine, type DeckList } from '@ptcg/engine';
-import { buildRegistry, megaDiancieDeck, megaGengarDeck, megaLucarioDeck } from '@ptcg/cards';
+import {
+  buildRegistry,
+  megaAbomasnowDeck,
+  megaCharizardXDeck,
+  megaDiancieDeck,
+  megaGengarDeck,
+  megaKangaskhanDeck,
+  megaLopunnyDeck,
+  megaLucarioDeck,
+  megaManectricDeck,
+  megaVenusaurDeck,
+} from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
 import { runMatch } from '../src/runMatch.ts';
 
@@ -11,12 +22,19 @@ const DECKS: [string, DeckList][] = [
   ['gengar', megaGengarDeck],
   ['diancie', megaDiancieDeck],
   ['lucario', megaLucarioDeck],
+  ['charizard', megaCharizardXDeck],
+  ['venusaur', megaVenusaurDeck],
+  ['abomasnow', megaAbomasnowDeck],
+  ['manectric', megaManectricDeck],
+  ['kangaskhan', megaKangaskhanDeck],
+  ['lopunny', megaLopunnyDeck],
 ];
-const PAIRINGS = DECKS.flatMap((a) => DECKS.map((b) => [a, b] as const));
+/** Every unordered pairing, mirrors included: 45 for 9 decks. */
+const PAIRINGS = DECKS.flatMap((a, i) => DECKS.slice(i).map((b) => [a, b] as const));
 const GAMES = Number(process.env.FUZZ_GAMES ?? 540);
 
 test(`${GAMES} seeded Easy-bot games across all deck pairings finish with no invariant violations`, () => {
-  const wins: Record<string, number> = { gengar: 0, diancie: 0, lucario: 0, draw: 0 };
+  const wins: Record<string, number> = { ...Object.fromEntries(DECKS.map(([n]) => [n, 0])), draw: 0 };
   for (let seed = 1; seed <= GAMES; seed++) {
     const [[n0, d0], [n1, d1]] = PAIRINGS[seed % PAIRINGS.length]!;
     const r = runMatch({ engine, decks: [d0, d1], seed, bots: [bot, bot] });

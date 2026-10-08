@@ -44,6 +44,17 @@ describe('easy bot', () => {
     expect(action.type).toBe('answer');
   });
 
+  test('uses an "as often as you like" Ability at most once a turn', () => {
+    const s = turn2();
+    const me = s.current;
+    const ref = { player: me, zone: 'active' } as const;
+    const use: Action = { type: 'useAbility', slot: ref, ability: 'Solar Transfer' };
+    const legal: Action[] = [use, { type: 'endTurn' }];
+    expect(bot(engine.viewFor(s, me), legal, 1).action).toEqual(use);
+    s.players[me].active!.abilityUses = { 'Solar Transfer': { turn: s.turn, count: 1 } };
+    expect(bot(engine.viewFor(s, me), legal, 1).action).toEqual({ type: 'endTurn' });
+  });
+
   test('never concedes', () => {
     const s = turn2();
     const legal: Action[] = [{ type: 'concede' }, { type: 'endTurn' }];

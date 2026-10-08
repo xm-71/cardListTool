@@ -111,7 +111,11 @@ export function createEasyBot(registry: CardRegistry): Bot {
     const basics = of('playBasic');
     if (basics.length) return done(pick(basics));
     // 6. Abilities and Stadium effects
-    const abilities = [...of('useAbility'), ...of('useStadium')];
+    // A repeatable ("as often as you like") Ability is used once a turn: spamming it just shuffles cards around.
+    const fresh = of('useAbility').filter(
+      (a) => (slotAt(view, a.slot)?.abilityUses?.[a.ability]?.turn ?? -1) !== view.turn,
+    );
+    const abilities = [...fresh, ...of('useStadium')];
     if (abilities.length) return done(pick(abilities));
     // 7. Attack: one that Knocks Out, else the most base damage
     const attacks = of('attack');
