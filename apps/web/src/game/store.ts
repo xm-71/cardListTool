@@ -5,6 +5,8 @@ import { deckById, engine, type DeckId } from './catalog.ts';
 
 export interface GameConfig {
   mode: 'bot' | 'hotseat';
+  /** Bot strength (bot mode only). */
+  difficulty?: 'easy' | 'medium';
   /** Seat 0's deck. In bot mode seat 0 is the human. */
   humanDeck: DeckId;
   /** Seat 1's deck (the bot, or Player 2 in hotseat). */

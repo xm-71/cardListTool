@@ -48,12 +48,10 @@ describe('bot failures', () => {
         if (st.prompt?.player === 0) {
           const pr = st.prompt;
           rtlAct(() =>
-            useGame
-              .getState()
-              .dispatch(0, {
-                type: 'answer',
-                optionId: pr.selected.length >= pr.min ? 'done' : pr.options[0]!.id,
-              }),
+            useGame.getState().dispatch(0, {
+              type: 'answer',
+              optionId: pr.selected.length >= pr.min ? 'done' : pr.options[0]!.id,
+            }),
           );
         }
         if (actorOf(useGame.getState().state!) === 0 && useGame.getState().state!.phase === 'main') {

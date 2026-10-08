@@ -15,7 +15,8 @@ interface Props {
 /** A Pokémon in play: its card, HP left, attached Energy and Tool, and Special Conditions. */
 export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
   const def = topDef(slot);
-  const hpLeft = Math.max(0, def.hp - slot.damage);
+  const hp = slot.hp ?? def.hp; // effective max HP (e.g. Gravity Mountain), when the view provides it
+  const hpLeft = Math.max(0, hp - slot.damage);
   const badges = [
     ...(slot.conditions.rotation !== 'none' ? [ROTATION_LABEL[slot.conditions.rotation]] : []),
     ...(slot.conditions.poisoned ? ['Poisoned'] : []),
@@ -30,7 +31,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
             slot.damage > 0 ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-900'
           }`}
         >
-          {hpLeft}/{def.hp}
+          {hpLeft}/{hp}
         </span>
         {badges.length > 0 && (
           <div className="absolute bottom-1 left-1 flex flex-col gap-0.5">
