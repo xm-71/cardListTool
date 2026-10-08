@@ -6,11 +6,12 @@ interface Props {
   actions: Action[];
   view: PlayerView;
   onPick(action: Action): void;
+  onDetails(): void;
   onClose(): void;
 }
 
 /** Popup listing what can be done with the clicked card or Pokémon. */
-export function ActionMenu({ title, actions, view, onPick, onClose }: Props) {
+export function ActionMenu({ title, actions, view, onPick, onDetails, onClose }: Props) {
   return (
     <div
       className="fixed inset-0 z-30 flex items-end justify-center bg-black/30 p-4 sm:items-center"
@@ -37,7 +38,14 @@ export function ActionMenu({ title, actions, view, onPick, onClose }: Props) {
           ))}
           <button
             type="button"
-            className="mt-1 rounded-lg px-3 py-2 text-left text-white/60 hover:bg-white/5"
+            className="mt-1 rounded-lg px-3 py-2 text-left text-white/70 hover:bg-white/5"
+            onClick={onDetails}
+          >
+            Card details
+          </button>
+          <button
+            type="button"
+            className="rounded-lg px-3 py-2 text-left text-white/60 hover:bg-white/5"
             onClick={onClose}
           >
             Cancel

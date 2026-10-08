@@ -10,7 +10,13 @@ export function describeAction(a: Action, view: PlayerView): string {
   };
   const slotName = (ref: SlotRef) => {
     const slot = slotAt(view, ref);
-    return slot ? topDef(slot).name : 'a Pokémon';
+    if (!slot) return 'a Pokémon';
+    const name = topDef(slot).name;
+    // Say which one when the player has several Pokémon with this name.
+    const side = ref.player === view.me ? view.you : view.opponent;
+    const same = [side.active, ...side.bench].filter((s) => s && topDef(s).name === name).length;
+    if (same < 2) return name;
+    return `${name} (${ref.zone === 'active' ? 'Active' : `Bench ${ref.index + 1}`})`;
   };
   switch (a.type) {
     case 'playBasic':
@@ -21,10 +27,8 @@ export function describeAction(a: Action, view: PlayerView): string {
       return `Attach ${name(a.uid)} to ${slotName(a.target)}`;
     case 'evolve':
       return `Evolve ${slotName(a.target)} into ${name(a.uid)}`;
-    case 'retreat': {
-      const slot = view.you.bench[a.benchIndex];
-      return `Retreat to ${slot ? topDef(slot).name : 'a Benched Pokémon'}`;
-    }
+    case 'retreat':
+      return `Retreat to ${slotName({ player: view.me, zone: 'bench', index: a.benchIndex })}`;
     case 'attack': {
       const active = view.you.active;
       const atk = active ? topDef(active).attacks[a.attackIndex] : undefined;

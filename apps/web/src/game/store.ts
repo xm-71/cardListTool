@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { IllegalActionError, type Action, type GameState, type PlayerId } from '@ptcg/engine';
+import { usePreview } from '../ui/preview.ts';
 import { deckById, engine, type DeckId } from './catalog.ts';
 
 export interface GameConfig {
@@ -39,6 +40,7 @@ export const useGame = create<GameStore>()((set, get) => ({
       decks: [deckById(cfg.humanDeck).list, deckById(cfg.botDeck).list],
       seed: cfg.seed,
     });
+    usePreview.getState().show(null);
     set({ state, config: cfg, human: 0, actions: [], error: null });
   },
   dispatch(player, action) {
@@ -54,6 +56,7 @@ export const useGame = create<GameStore>()((set, get) => ({
     }
   },
   reset() {
+    usePreview.getState().show(null);
     set({ state: null, config: null, human: 0, actions: [], error: null });
   },
 }));

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import type { Action, PlayerId, SlotRef } from '@ptcg/engine';
+import type { Action, CardInstance, PlayerId, SlotRef } from '@ptcg/engine';
 import { actionsForCard, actionsForSlot, describeAction, globalActions } from '../game/actions.ts';
 import { engine } from '../game/catalog.ts';
 import { actorOf, useGame } from '../game/store.ts';
-import { defOf, slotAt, topDef } from '../game/view.ts';
+import { defOf, slotAt, topCard, topDef } from '../game/view.ts';
 import { ActionMenu } from '../ui/ActionMenu.tsx';
+import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardPreview } from '../ui/CardPreview.tsx';
 import { CardView } from '../ui/CardView.tsx';
 import { GameLog } from '../ui/GameLog.tsx';
@@ -21,7 +22,9 @@ export function GameScreen({ viewer: viewerProp }: Props) {
   const state = useGame((s) => s.state);
   const human = useGame((s) => s.human);
   const dispatch = useGame((s) => s.dispatch);
-  const [menu, setMenu] = useState<{ title: string; actions: Action[] } | null>(null);
+  const reset = useGame((s) => s.reset);
+  const [details, setDetails] = useState<CardInstance | null>(null);
+  const [menu, setMenu] = useState<{ title: string; actions: Action[]; card: CardInstance } | null>(null);
   const viewer = viewerProp ?? human;
 
   const view = useMemo(() => (state ? engine.viewFor(state, viewer) : null), [state, viewer]);
@@ -35,15 +38,20 @@ export function GameScreen({ viewer: viewerProp }: Props) {
     setMenu(null);
     dispatch(viewer, a);
   };
+  // Clicking a card opens what you can do with it, or just its details when there is nothing to do.
   const openSlot = (ref: SlotRef) => {
-    const actions = actionsForSlot(legal, ref, viewer);
     const slot = slotAt(view, ref);
-    if (actions.length && slot) setMenu({ title: topDef(slot).name, actions });
+    if (!slot) return;
+    const actions = view.prompt ? [] : actionsForSlot(legal, ref, viewer);
+    if (actions.length) setMenu({ title: topDef(slot).name, actions, card: topCard(slot) });
+    else setDetails(topCard(slot));
   };
   const openCard = (uid: string) => {
-    const actions = actionsForCard(legal, uid);
     const card = view.you.hand.find((c) => c.uid === uid);
-    if (actions.length && card) setMenu({ title: defOf(card).name, actions });
+    if (!card) return;
+    const actions = view.prompt ? [] : actionsForCard(legal, uid);
+    if (actions.length) setMenu({ title: defOf(card).name, actions, card });
+    else setDetails(card);
   };
   const slotHasActions = (ref: SlotRef) => !view.prompt && actionsForSlot(legal, ref, viewer).length > 0;
   const myTurn = !view.prompt && legal.length > 0;
@@ -94,7 +102,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
         />
       </main>
       <aside className="flex min-h-0 flex-col gap-3 lg:max-h-screen lg:sticky lg:top-0">
-        <div className="hidden justify-center lg:flex">
+        <div role="complementary" aria-label="Card zoom" className="hidden justify-center lg:flex">
           <CardPreview />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -115,6 +123,13 @@ export function GameScreen({ viewer: viewerProp }: Props) {
             ))}
         </div>
         <GameLog log={view.log} me={viewer} />
+        <button
+          type="button"
+          onClick={() => (view.result || confirm('Leave this game?')) && reset()}
+          className="rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/10"
+        >
+          Quit to home
+        </button>
       </aside>
       {view.prompt && (
         <PromptPanel
@@ -130,9 +145,14 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           actions={menu.actions}
           view={view}
           onPick={act}
+          onDetails={() => {
+            setDetails(menu.card);
+            setMenu(null);
+          }}
           onClose={() => setMenu(null)}
         />
       )}
+      {details && <CardDetails card={details} onClose={() => setDetails(null)} />}
     </div>
   );
 }

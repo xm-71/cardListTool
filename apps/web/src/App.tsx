@@ -14,6 +14,11 @@ interface Props {
   botDelayMs?: number;
 }
 
+/** Seed for "Play again": a 32-bit LCG step (full period, so rematches don't repeat). */
+export function nextSeed(seed: number): number {
+  return (Math.imul(seed, 1103515245) + 12345) >>> 0;
+}
+
 export function App({ botClient, botDelayMs = 700 }: Props) {
   const client = useMemo(() => botClient ?? createWorkerBotClient(), [botClient]);
   return (
@@ -54,7 +59,7 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
           result={state.result}
           mode={config.mode}
           human={human}
-          onAgain={() => start({ ...config, seed: (config.seed * 1103515245 + 12345) >>> 0 })}
+          onAgain={() => start({ ...config, seed: nextSeed(config.seed) })}
           onHome={reset}
         />
       )}

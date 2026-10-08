@@ -17,16 +17,24 @@ export function createWorkerBotClient(): BotClient {
   if (typeof Worker === 'undefined') return createSyncBotClient();
   const worker = new Worker(new URL('./bot.worker.ts', import.meta.url), { type: 'module' });
   let nextId = 0;
-  const waiting = new Map<number, (r: { action: Action; rng: number }) => void>();
+  type Pending = { resolve(r: { action: Action; rng: number }): void; reject(e: Error): void };
+  const waiting = new Map<number, Pending>();
   worker.onmessage = (e: MessageEvent<{ id: number; action: Action; rng: number }>) => {
-    waiting.get(e.data.id)?.({ action: e.data.action, rng: e.data.rng });
+    waiting.get(e.data.id)?.resolve({ action: e.data.action, rng: e.data.rng });
     waiting.delete(e.data.id);
   };
+  // A crashed worker fails every outstanding request instead of leaving the game hanging.
+  const failAll = (message: string) => {
+    for (const p of waiting.values()) p.reject(new Error(message));
+    waiting.clear();
+  };
+  worker.onerror = (e) => failAll(e.message || 'bot worker crashed');
+  worker.onmessageerror = () => failAll('bot worker sent an unreadable message');
   return {
     choose(view, legal, rng) {
       const id = nextId++;
-      return new Promise((resolve) => {
-        waiting.set(id, resolve);
+      return new Promise((resolve, reject) => {
+        waiting.set(id, { resolve, reject });
         worker.postMessage({ id, view, legal, rng });
       });
     },

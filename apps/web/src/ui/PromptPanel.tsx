@@ -1,6 +1,11 @@
+import { useEffect, useRef } from 'react';
 import type { Action, PlayerView, Prompt } from '@ptcg/engine';
-import { slotAt, topCard } from '../game/view.ts';
+import { slotAt } from '../game/view.ts';
 import { CardView } from './CardView.tsx';
+import { SlotView } from './SlotView.tsx';
+
+/** Clicks this soon after a prompt appears are treated as leftovers of a double click. */
+const SETTLE_MS = 300;
 
 interface Props {
   prompt: Prompt;
@@ -12,6 +17,14 @@ interface Props {
 /** Bottom sheet for a choice the engine is waiting on (setup picks, searches, targets, yes/no). */
 export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
   const canFinish = legal.some((a) => a.type === 'answer' && a.optionId === 'done');
+  const shownAt = useRef(Date.now());
+  const key = `${prompt.message}|${prompt.selected.join(',')}|${prompt.options.map((o) => o.id).join(',')}`;
+  useEffect(() => {
+    shownAt.current = Date.now();
+  }, [key]);
+  const settled = (fn: () => void) => () => {
+    if (Date.now() - shownAt.current >= SETTLE_MS) fn();
+  };
   return (
     <div
       role="dialog"
@@ -28,7 +41,7 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
         </div>
         <div className="flex flex-wrap gap-2">
           {prompt.options.map((o) => {
-            const answer = () => onAnswer(o.id);
+            const answer = settled(() => onAnswer(o.id));
             if (o.uid && o.defId) {
               return (
                 <CardView
@@ -40,7 +53,7 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
               );
             }
             const slot = o.slot ? slotAt(view, o.slot) : null;
-            if (slot) return <CardView key={o.id} card={topCard(slot)} size="md" onClick={answer} />;
+            if (slot) return <SlotView key={o.id} slot={slot} size="md" onClick={answer} />;
             return <OptionButton key={o.id} label={o.label} onClick={answer} />;
           })}
         </div>
@@ -48,7 +61,7 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
           <button
             type="button"
             className="self-end rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-300"
-            onClick={() => onAnswer('done')}
+            onClick={settled(() => onAnswer('done'))}
           >
             Done
           </button>
