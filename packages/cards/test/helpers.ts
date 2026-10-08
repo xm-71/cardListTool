@@ -90,6 +90,13 @@ export const ID = {
   boltund: 'me02-031',
   magnemite: 'me01-045',
   magneton: 'me01-046',
+  megaKangaskhan: 'me01-104',
+  miltank: 'me01-106',
+  stufful: 'me01-111',
+  bewear: 'me01-112',
+  zigzagoon: 'me02-081',
+  linoone: 'me02-082',
+  meowth: 'me02-106',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */

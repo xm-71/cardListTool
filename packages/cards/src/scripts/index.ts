@@ -68,9 +68,21 @@ import * as me01_048 from './me01/048.ts';
 import * as me02_030 from './me02/030.ts';
 import * as me02_031 from './me02/031.ts';
 import * as me01_046 from './me01/046.ts';
+import * as me01_104 from './me01/104.ts';
+import * as me01_106 from './me01/106.ts';
+import * as me01_112 from './me01/112.ts';
+import * as me02_081 from './me02/081.ts';
+import * as me02_082 from './me02/082.ts';
+import * as me02_106 from './me02/106.ts';
 
 /** Every scripted card, keyed by card name so reprints share one script. */
 export const scriptModules: { name: string; script: CardScript }[] = [
+  me02_106,
+  me02_082,
+  me02_081,
+  me01_112,
+  me01_106,
+  me01_104,
   me01_046,
   me02_031,
   me02_030,

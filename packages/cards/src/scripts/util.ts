@@ -114,3 +114,18 @@ export function callForFamily(ctx: EffectCtx, n: number): void {
   for (const uid of picks) ctx.putOnBench(ctx.me, uid);
   ctx.shuffleDeck(ctx.me);
 }
+
+/** Whether the player has any Mega Evolution Pokémon ex in play (optionally of one type). */
+export function hasMegaEx(ctx: EffectCtx, player: PlayerId, type?: EnergyType): boolean {
+  return inPlayRefs(ctx, player).some((ref) => {
+    const d = topDef(ctx, ref);
+    return d.isMega && d.isEx && (!type || d.types.includes(type));
+  });
+}
+
+/** Flip `n` coins; returns the number of heads. */
+export function countHeads(ctx: EffectCtx, n: number): number {
+  let heads = 0;
+  for (let i = 0; i < n; i++) if (ctx.flipCoin()) heads++;
+  return heads;
+}
