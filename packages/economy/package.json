@@ -1,0 +1,14 @@
+{
+  "name": "@ptcg/economy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@ptcg/engine": "workspace:*",
+    "@ptcg/cards": "workspace:*"
+  },
+  "scripts": {
+    "test": "vitest run"
+  }
+}

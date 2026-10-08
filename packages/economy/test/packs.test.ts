@@ -1,0 +1,99 @@
+import { describe, expect, test } from 'vitest';
+import type { GameResult } from '@ptcg/engine';
+import { setCards } from '@ptcg/cards';
+import { CREDITS, PACKS, SLOT10_RATES, creditsFor, openPack } from '../src/index.ts';
+
+const me01 = setCards('me01');
+const rarityOf = new Map(me01.map((c) => [c.id, c.rarity]));
+
+describe('openPack', () => {
+  test('a pack has 10 cards from its set', () => {
+    const { cards } = openPack('me01', me01, 1);
+    expect(cards).toHaveLength(10);
+    for (const id of cards) expect(rarityOf.has(id), id).toBe(true);
+  });
+
+  test('slots 1–4 are Common and slots 5–7 are Uncommon', () => {
+    let rng = 7;
+    for (let i = 0; i < 200; i++) {
+      const pack = openPack('me01', me01, rng);
+      rng = pack.rng;
+      expect(pack.cards.slice(0, 4).map((id) => rarityOf.get(id))).toEqual([
+        'Common',
+        'Common',
+        'Common',
+        'Common',
+      ]);
+      expect(pack.cards.slice(4, 7).map((id) => rarityOf.get(id))).toEqual([
+        'Uncommon',
+        'Uncommon',
+        'Uncommon',
+      ]);
+      expect(['Common', 'Uncommon', 'Rare']).toContain(rarityOf.get(pack.cards[7]!));
+    }
+  });
+
+  test('slot 10 and slot 9 rarity frequencies match the configured rates', () => {
+    const n = 20000;
+    const slot10 = new Map<string, number>();
+    let ir9 = 0;
+    let rng = 12345;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('me01', me01, rng);
+      rng = pack.rng;
+      const r = rarityOf.get(pack.cards[9]!)!;
+      slot10.set(r, (slot10.get(r) ?? 0) + 1);
+      if (rarityOf.get(pack.cards[8]!) === 'Illustration rare') ir9++;
+    }
+    for (const [rarity, rate] of Object.entries(SLOT10_RATES)) {
+      expect(Math.abs((slot10.get(rarity) ?? 0) / n - rate), rarity).toBeLessThanOrEqual(0.015);
+    }
+    expect(Math.abs(ir9 / n - 0.12)).toBeLessThanOrEqual(0.01);
+  });
+
+  test('a rarity tier missing from the set falls back to Rare', () => {
+    const noHyper = me01.filter((c) => c.rarity !== 'Mega Hyper Rare');
+    let rng = 99;
+    for (let i = 0; i < 2000; i++) {
+      const pack = openPack('me01', noHyper, rng);
+      rng = pack.rng;
+      expect(rarityOf.get(pack.cards[9]!)).not.toBe('Mega Hyper Rare');
+    }
+  });
+
+  test('the same rng gives the same pack', () => {
+    expect(openPack('me02', setCards('me02'), 42)).toEqual(openPack('me02', setCards('me02'), 42));
+    expect(openPack('me02', setCards('me02'), 42).cards).not.toEqual(
+      openPack('me02', setCards('me02'), 43).cards,
+    );
+  });
+});
+
+test('both sets are on sale at the configured price', () => {
+  expect(PACKS.map((p) => [p.setId, p.price])).toEqual([
+    ['me01', 150],
+    ['me02', 150],
+  ]);
+  expect(CREDITS.start).toBe(500);
+});
+
+describe('creditsFor', () => {
+  const r = (winner: GameResult['winner'], reason: GameResult['reason'] = 'prizes'): GameResult => ({
+    winner,
+    reason,
+  });
+  test.each([
+    ['win vs Easy', r(0), 'easy', 100],
+    ['win vs Medium', r(0), 'medium', 200],
+    ['loss vs Easy', r(1), 'easy', 30],
+    ['loss vs Medium', r(1), 'medium', 50],
+    ['draw counts as a loss', r('draw', 'noPokemon'), 'medium', 50],
+    ['human concede', r(1, 'concede'), 'medium', 0],
+    ['bot concede counts as a win', r(0, 'concede'), 'easy', 100],
+  ] as const)('%s', (_name, result, difficulty, expected) => {
+    expect(creditsFor(result, 0, difficulty)).toBe(expected);
+  });
+  test('uses the human seat', () => {
+    expect(creditsFor(r(1), 1, 'easy')).toBe(100);
+  });
+});
