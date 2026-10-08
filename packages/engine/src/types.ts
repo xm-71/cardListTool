@@ -31,7 +31,8 @@ export interface DeckList {
   note?: string;
 }
 
-export type SlotRef = { player: PlayerId; zone: 'active' } | { player: PlayerId; zone: 'bench'; index: number };
+export type SlotRef =
+  { player: PlayerId; zone: 'active' } | { player: PlayerId; zone: 'bench'; index: number };
 
 export interface CardInstance {
   uid: string;
@@ -98,9 +99,14 @@ export type EffectSource =
   | { kind: 'stadium' }
   | { kind: 'system'; name: 'setup' | 'promote' | 'retreatCost' };
 
+/** What started a (possibly paused) effect: a player action, or game setup. */
+export type Origin = Action | { type: 'setup' };
+
+/** A paused effect: replaying `origin` from `snapshot` with `answers` resumes it. */
 export interface PendingEffect {
   snapshot: GameState;
-  source: EffectSource;
+  origin: Origin;
+  player: PlayerId;
   answers: string[];
 }
 

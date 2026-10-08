@@ -1,3 +1,8 @@
 export const ENGINE_VERSION = '0.1.0';
 export * from './cards.ts';
 export * from './types.ts';
+export { createEngine, type Engine } from './engine.ts';
+export { standard2026, type Ruleset } from './ruleset.ts';
+export { IllegalActionError } from './errors.ts';
+export { checkInvariants } from './invariants.ts';
+export { EffectCtx } from './effects.ts';
