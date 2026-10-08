@@ -2,8 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
 
-test('the home screen shows the title and a Play button', () => {
+test('the game opens on the title screen', () => {
   render(<App />);
-  expect(screen.getByRole('heading', { name: /Pokémon TCG/ })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /Play/ })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /Pokémon Trading Card Game/ })).toBeInTheDocument();
 });

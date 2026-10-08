@@ -12,7 +12,7 @@ const opts = { timeout: 8000 };
 beforeEach(() => useGame.getState().reset());
 
 function renderApp() {
-  return render(<App botClient={bot} botDelayMs={0} />);
+  return render(<App startAt="duel" botClient={bot} botDelayMs={0} />);
 }
 
 /** Human (seat 0) answers its own setup prompts through the store until the game leaves setup. */

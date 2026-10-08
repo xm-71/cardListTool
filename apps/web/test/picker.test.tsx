@@ -12,7 +12,7 @@ beforeEach(() => useGame.getState().reset());
 
 describe('Home deck picker', () => {
   test('offers all three decks for each side and allows a mirror match', () => {
-    render(<App botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
+    render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     const yours = screen.getByRole('group', { name: 'Your deck' });
     const theirs = screen.getByRole('group', { name: "Opponent's deck" });
     for (const g of [yours, theirs]) expect(within(g).getAllByRole('button')).toHaveLength(3);
@@ -38,7 +38,7 @@ describe('Home deck picker', () => {
         return sync.choose(view, legal, rng, setup);
       },
     };
-    render(<App botClient={spy} botDelayMs={0} />);
+    render(<App startAt="duel" botClient={spy} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText('Medium bot'));
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     await waitFor(

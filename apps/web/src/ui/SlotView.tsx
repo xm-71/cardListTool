@@ -2,6 +2,7 @@ import type { SlotView as SlotViewData } from '@ptcg/engine';
 import { defOf, topCard, topDef } from '../game/view.ts';
 import { CardView, type CardSize } from './CardView.tsx';
 import { EnergyDot } from './energy.tsx';
+import { HpBar } from './retro/index.ts';
 
 const ROTATION_LABEL = { asleep: 'Asleep', confused: 'Confused', paralyzed: 'Paralyzed' } as const;
 
@@ -26,17 +27,19 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
     <div className="relative flex flex-col items-center gap-1">
       <div className="relative">
         <CardView card={topCard(slot)} size={size} onClick={onClick} highlighted={highlighted} />
-        <span
-          className={`absolute -top-2 -right-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold shadow ${
-            slot.damage > 0 ? 'bg-red-600 text-white' : 'bg-white/90 text-slate-900'
-          }`}
-        >
-          {hpLeft}/{hp}
-        </span>
+        <div className="absolute -top-3 -right-3 w-16 border-2 border-ink bg-paper px-1 py-0.5 font-pixel text-[7px] leading-tight">
+          <span className={slot.damage > 0 ? 'text-red' : ''}>
+            {hpLeft}/{hp}
+          </span>
+          <HpBar hp={hpLeft} max={hp} />
+        </div>
         {badges.length > 0 && (
           <div className="absolute bottom-1 left-1 flex flex-col gap-0.5">
             {badges.map((b) => (
-              <span key={b} className="rounded bg-fuchsia-700 px-1 text-[9px] font-semibold text-white">
+              <span
+                key={b}
+                className="border-2 border-ink bg-purple px-1 font-pixel text-[6px] uppercase text-paper"
+              >
                 {b}
               </span>
             ))}
@@ -51,7 +54,9 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
           ) : null;
         })}
       </div>
-      {slot.tool && <span className="rounded bg-sky-800 px-1 text-[9px]">{defOf(slot.tool).name}</span>}
+      {slot.tool && (
+        <span className="border-2 border-ink bg-blue px-1 text-base text-paper">{defOf(slot.tool).name}</span>
+      )}
     </div>
   );
 }

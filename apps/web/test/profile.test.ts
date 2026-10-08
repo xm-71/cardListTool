@@ -31,6 +31,9 @@ test('a new profile starts with 500 credits and nothing else', () => {
     collection: {},
     decks: [],
     awardedGames: [],
+    playerName: null,
+    starterDeck: null,
+    introDone: false,
   });
 });
 
@@ -151,5 +154,72 @@ describe('review fixes', () => {
     await useProfile.getState().init(store, true);
     await expect(useProfile.getState().buyPack('me01')).rejects.toThrow('quota exceeded');
     expect(useProfile.getState().profile).toEqual(newProfile());
+  });
+});
+
+describe('intro fields', () => {
+  test('(RF1) an M4 profile saved without the intro fields loads intact and needs the intro', async () => {
+    const dbName = `m4-${Math.random()}`;
+    const raw = indexedDB.open(dbName, 1);
+    raw.onupgradeneeded = () => raw.result.createObjectStore('profile');
+    const db = await new Promise<IDBDatabase>((r) => (raw.onsuccess = () => r(raw.result)));
+    const m4 = {
+      version: 1,
+      credits: 420,
+      collection: { x: 2 },
+      decks: [{ id: 'd', name: 'D', cards: [] }],
+      awardedGames: [1],
+    };
+    await new Promise<void>((r) => {
+      const tx = db.transaction('profile', 'readwrite');
+      tx.objectStore('profile').put(m4, 'me');
+      tx.oncomplete = () => r();
+    });
+    db.close();
+    const loaded = await (await openIndexedDbStore(dbName)).load();
+    expect(loaded).toEqual({ ...m4, playerName: null, starterDeck: null, introDone: false });
+  });
+
+  test('the memory store fills missing fields too', async () => {
+    const legacy = {
+      version: 1,
+      credits: 9,
+      collection: {},
+      decks: [],
+      awardedGames: [],
+    } as unknown as Profile;
+    expect(await createMemoryStore(legacy).load()).toMatchObject({ introDone: false, playerName: null });
+  });
+
+  test('finishIntro saves a trimmed name and the starter deck', async () => {
+    const store = createMemoryStore();
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().finishIntro('  Alex  ', 'mega-lucario');
+    expect(await store.load()).toMatchObject({
+      playerName: 'Alex',
+      starterDeck: 'mega-lucario',
+      introDone: true,
+      credits: 500,
+    });
+    expect(useProfile.getState().profile.playerName).toBe('Alex');
+  });
+
+  test('an empty name becomes PLAYER and long names are cut to 10', async () => {
+    await useProfile.getState().init(createMemoryStore(), true);
+    await useProfile.getState().finishIntro('', 'mega-gengar');
+    expect(useProfile.getState().profile.playerName).toBe('PLAYER');
+    await useProfile.getState().setName('ABCDEFGHIJKL');
+    expect(useProfile.getState().profile.playerName).toBe('ABCDEFGHIJ');
+  });
+
+  test('replayIntro clears introDone and keeps everything else', async () => {
+    await useProfile.getState().init(createMemoryStore({ ...newProfile(), credits: 777 }), true);
+    await useProfile.getState().finishIntro('Sam', 'mega-diancie');
+    await useProfile.getState().replayIntro();
+    expect(useProfile.getState().profile).toMatchObject({
+      introDone: false,
+      credits: 777,
+      playerName: 'Sam',
+    });
   });
 });

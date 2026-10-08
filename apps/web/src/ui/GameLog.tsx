@@ -8,19 +8,19 @@ export function GameLog({ log, me }: { log: GameEvent[]; me: PlayerId }) {
   return (
     <section
       aria-label="Game log"
-      className="flex min-h-0 flex-1 flex-col overflow-auto rounded-xl bg-black/30 p-2 text-xs"
+      className="retro-box flex min-h-0 flex-1 flex-col overflow-auto p-3 text-lg leading-tight"
     >
       {recent.map((e, i) => (
         <div
           key={log.length - recent.length + i}
           className={
             e.type === 'turnStart'
-              ? 'mt-2 font-semibold text-amber-300'
+              ? 'mt-2 font-pixel text-[8px] uppercase'
               : e.player === undefined
-                ? 'text-white/70'
+                ? 'opacity-70'
                 : e.player === me
-                  ? 'text-sky-200'
-                  : 'text-rose-200'
+                  ? 'text-blue'
+                  : 'text-red'
           }
         >
           {e.text}

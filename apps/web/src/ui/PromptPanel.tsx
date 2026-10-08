@@ -29,12 +29,12 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
     <div
       role="dialog"
       aria-label={prompt.message}
-      className="fixed inset-x-0 bottom-0 z-20 max-h-[60vh] overflow-auto border-t border-amber-400/40 bg-slate-950/95 p-4 shadow-2xl backdrop-blur"
+      className="retro-box fixed inset-x-0 bottom-0 z-20 max-h-[60vh] overflow-auto p-4"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold text-amber-300">{prompt.message}</h2>
-          <span className="text-sm text-white/60">
+          <h2 className="text-2xl">{prompt.message}</h2>
+          <span className="font-pixel text-[9px]">
             Selected {prompt.selected.length} of {prompt.max}
             {prompt.min > 0 ? ` (at least ${prompt.min})` : ''}
           </span>
@@ -60,7 +60,7 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
         {canFinish && (
           <button
             type="button"
-            className="self-end rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-300"
+            className="self-end retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
             onClick={settled(() => onAnswer('done'))}
           >
             Done
@@ -75,7 +75,7 @@ function OptionButton({ label, onClick }: { label: string; onClick(): void }) {
   return (
     <button
       type="button"
-      className="rounded-lg bg-white/10 px-4 py-2 hover:bg-amber-400 hover:text-slate-900"
+      className="border-4 border-ink bg-paper px-3 py-2 text-xl hover:bg-yellow"
       onClick={onClick}
     >
       {label}

@@ -26,7 +26,7 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
         return slot ? (
           <Slot key={index} slot={slot} size="sm" highlighted={isActive(ref)} onClick={() => onSlot(ref)} />
         ) : (
-          <div key={index} className="aspect-[63/88] w-16 rounded-lg border border-dashed border-white/15" />
+          <div key={index} className="aspect-[63/88] w-16 border-2 border-dashed border-ink/30" />
         );
       })}
     </div>
@@ -43,12 +43,12 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
             onClick={() => onSlot(activeRef)}
           />
         ) : (
-          <div className="aspect-[63/88] w-24 rounded-lg border border-dashed border-white/20" />
+          <div className="aspect-[63/88] w-24 border-4 border-dashed border-ink/30" />
         )}
       </div>
       <div className="flex flex-col items-center gap-2">
         <Pile label="Deck" count={side.deckCount} />
-        <div className="flex flex-col items-center text-xs text-white/60">
+        <div className="flex flex-col items-center text-lg">
           {side.discard.length > 0 ? (
             <CardView card={side.discard[side.discard.length - 1]!} size="xs" />
           ) : null}
@@ -58,9 +58,9 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
     </div>
   );
   return (
-    <section aria-label={label} className="flex flex-col gap-2 rounded-xl bg-felt/60 p-3">
-      <div className="flex items-center justify-between text-sm text-white/70">
-        <span className="font-semibold">{label}</span>
+    <section aria-label={label} className="flex flex-col gap-2 border-4 border-ink/60 bg-mat/40 p-3">
+      <div className="flex items-center justify-between font-pixel text-[9px] uppercase">
+        <span className="border-2 border-ink bg-paper px-2 py-1">{label}</span>
         {handCount !== undefined && <span>{handCount} cards in hand</span>}
       </div>
       {mirrored ? (
@@ -86,9 +86,13 @@ function Slot(props: { slot: SlotViewData; size: 'sm' | 'md'; highlighted: boole
 
 function Pile({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex aspect-[63/88] w-14 flex-col items-center justify-center rounded-lg bg-gradient-to-br from-blue-800 to-blue-950 text-xs shadow ring-1 ring-white/20">
-      <span className="text-lg font-bold">{count}</span>
-      <span className="text-white/70">{label}</span>
+    <div className="card-back retro-shadow relative flex aspect-[63/88] w-14 flex-col items-center justify-end border-4 border-ink pb-1 text-paper">
+      <span className="relative z-10 font-pixel text-[10px] [text-shadow:2px_2px_var(--color-ink)]">
+        {count}
+      </span>
+      <span className="relative z-10 font-pixel text-[6px] uppercase [text-shadow:1px_1px_var(--color-ink)]">
+        {label}
+      </span>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { newProfile, type Profile, type ProfileStore } from './types.ts';
+import { newProfile, normalizeProfile, type Profile, type ProfileStore } from './types.ts';
 
 const STORE = 'profile';
 const KEY = 'me';
@@ -20,7 +20,7 @@ export async function openIndexedDbStore(dbName = 'ptcg'): Promise<ProfileStore>
   return {
     async load() {
       const stored = (await request(tx('readonly').get(KEY))) as Profile | undefined;
-      return stored?.version === 1 ? stored : newProfile();
+      return stored?.version === 1 ? normalizeProfile(stored) : newProfile();
     },
     async save(p) {
       const t = db.transaction(STORE, 'readwrite');

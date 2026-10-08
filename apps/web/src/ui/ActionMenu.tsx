@@ -14,23 +14,23 @@ interface Props {
 export function ActionMenu({ title, actions, view, onPick, onDetails, onClose }: Props) {
   return (
     <div
-      className="fixed inset-0 z-30 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
       onClick={onClose}
     >
       <div
         role="menu"
         aria-label={title}
-        className="w-full max-w-sm rounded-xl bg-slate-900 p-3 shadow-2xl ring-1 ring-white/10"
+        className="retro-box w-full max-w-sm p-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-2 text-sm font-semibold text-white/70">{title}</div>
+        <div className="mb-3 font-pixel text-[10px] uppercase">{title}</div>
         <div className="flex flex-col gap-1">
           {actions.map((a, i) => (
             <button
               key={i}
               role="menuitem"
               type="button"
-              className="rounded-lg bg-white/10 px-3 py-2 text-left hover:bg-amber-400 hover:text-slate-900"
+              className="group relative py-2 pl-7 text-left text-2xl leading-none hover:bg-yellow/40 before:absolute before:left-1 before:font-pixel before:text-xs before:opacity-0 before:content-['▶'] hover:before:opacity-100 focus-visible:before:opacity-100"
               onClick={() => onPick(a)}
             >
               {describeAction(a, view)}
@@ -38,14 +38,14 @@ export function ActionMenu({ title, actions, view, onPick, onDetails, onClose }:
           ))}
           <button
             type="button"
-            className="mt-1 rounded-lg px-3 py-2 text-left text-white/70 hover:bg-white/5"
+            className="mt-1 py-2 pl-7 text-left text-2xl leading-none opacity-80 hover:bg-yellow/40"
             onClick={onDetails}
           >
             Card details
           </button>
           <button
             type="button"
-            className="rounded-lg px-3 py-2 text-left text-white/60 hover:bg-white/5"
+            className="py-2 pl-7 text-left text-2xl leading-none opacity-60 hover:bg-yellow/40"
             onClick={onClose}
           >
             Cancel

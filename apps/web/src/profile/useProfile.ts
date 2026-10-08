@@ -21,6 +21,13 @@ export async function connectProfileStore(
   }
 }
 
+export const MAX_NAME = 10;
+
+/** Trimmed, at most 10 characters, and "PLAYER" when empty. */
+function cleanName(name: string): string {
+  return name.trim().slice(0, MAX_NAME) || 'PLAYER';
+}
+
 function randomSeed(): number {
   return crypto.getRandomValues(new Uint32Array(1))[0]!;
 }
@@ -37,6 +44,10 @@ interface ProfileState {
   buyPack(setId: string): Promise<string[]>;
   saveDeck(deck: CustomDeck): Promise<void>;
   deleteDeck(id: string): Promise<void>;
+  /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
+  finishIntro(name: string, deck: string | null): Promise<void>;
+  setName(name: string): Promise<void>;
+  replayIntro(): Promise<void>;
   reset(): void;
 }
 
@@ -111,6 +122,23 @@ export const useProfile = create<ProfileState>()((set, get) => {
     },
     async deleteDeck(id) {
       await change((p) => ({ next: { ...p, decks: p.decks.filter((d) => d.id !== id) }, result: undefined }));
+    },
+    async finishIntro(name, deck) {
+      await change((p) => ({
+        next: {
+          ...p,
+          playerName: name.trim() ? cleanName(name) : (p.playerName ?? 'PLAYER'),
+          starterDeck: deck ?? p.starterDeck ?? 'mega-gengar',
+          introDone: true,
+        },
+        result: undefined,
+      }));
+    },
+    async setName(name) {
+      await change((p) => ({ next: { ...p, playerName: cleanName(name) }, result: undefined }));
+    },
+    async replayIntro() {
+      await change((p) => ({ next: { ...p, introDone: false }, result: undefined }));
     },
     reset() {
       loaded = deferred();
