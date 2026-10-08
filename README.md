@@ -28,3 +28,15 @@ pnpm test        # all tests
 pnpm typecheck
 pnpm lint
 ```
+
+## Deployment
+
+The web app (`apps/web`) is deployed on Vercel (project `ptcg-web`, root directory `apps/web`).
+Every pushed branch gets a preview deployment; merging to the production branch (`master`) updates production.
+
+## Playing locally
+
+```bash
+pnpm --filter @ptcg/web dev        # http://localhost:5173
+pnpm --filter @ptcg/web e2e        # Playwright smoke test (set PW_CHROMIUM to a local Chromium if needed)
+```
