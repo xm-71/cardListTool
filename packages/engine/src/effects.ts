@@ -204,7 +204,12 @@ export class EffectCtx {
   }
 
   chooseCards(o: { player: PlayerId; from: string[]; min: number; max: number; message: string }): string[] {
-    const options: PromptOption[] = o.from.map((uid) => ({ id: uid, label: this.def(uid).name, uid }));
+    const options: PromptOption[] = o.from.map((uid) => ({
+      id: uid,
+      label: this.def(uid).name,
+      uid,
+      defId: this.state.cards[uid]!.defId,
+    }));
     return this.choose('cards', o.player, options, o.min, o.max, o.message);
   }
 

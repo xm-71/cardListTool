@@ -32,6 +32,8 @@ describe('prompts and replay', () => {
     const me = s0.current;
     let s = start(discardTwo, s0);
     expect(s.prompt?.player).toBe(me);
+    // card options carry their definition id so the chooser's UI can render them
+    expect(s.prompt!.options.map((o) => o.defId)).toEqual(s0.players[me].hand.map((u) => s0.cards[u]!.defId));
     let legal = engine.getLegalActions(s, me);
     expect(legal).toHaveLength(s0.players[me].hand.length);
     expect(legal).not.toContainEqual({ type: 'answer', optionId: 'done' });

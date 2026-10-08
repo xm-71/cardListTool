@@ -37,7 +37,7 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
   const className = `${SIZES[size]} aspect-[63/88] shrink-0 rounded-[6%] ${ring} ${onClick ? 'cursor-pointer' : ''}`;
   const hover = noPreview ? {} : { onMouseEnter: () => show(card) };
   return onClick ? (
-    <button type="button" className={className} onClick={onClick} {...hover}>
+    <button type="button" className={className} onClick={onClick} data-uid={card.uid} {...hover}>
       {body}
     </button>
   ) : (

@@ -78,6 +78,8 @@ export interface PromptOption {
   id: string;
   label: string;
   uid?: string;
+  /** For card options: the card's definition id (the chooser may see it, e.g. when searching their deck). */
+  defId?: string;
   slot?: SlotRef;
 }
 

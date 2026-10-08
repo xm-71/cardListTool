@@ -1,0 +1,138 @@
+import { useMemo, useState } from 'react';
+import type { Action, PlayerId, SlotRef } from '@ptcg/engine';
+import { actionsForCard, actionsForSlot, describeAction, globalActions } from '../game/actions.ts';
+import { engine } from '../game/catalog.ts';
+import { actorOf, useGame } from '../game/store.ts';
+import { defOf, slotAt, topDef } from '../game/view.ts';
+import { ActionMenu } from '../ui/ActionMenu.tsx';
+import { CardPreview } from '../ui/CardPreview.tsx';
+import { CardView } from '../ui/CardView.tsx';
+import { GameLog } from '../ui/GameLog.tsx';
+import { Hand } from '../ui/Hand.tsx';
+import { PromptPanel } from '../ui/PromptPanel.tsx';
+import { Side } from '../ui/Side.tsx';
+
+interface Props {
+  /** Seat whose view is shown. Defaults to the human seat (bot mode). */
+  viewer?: PlayerId;
+}
+
+export function GameScreen({ viewer: viewerProp }: Props) {
+  const state = useGame((s) => s.state);
+  const human = useGame((s) => s.human);
+  const dispatch = useGame((s) => s.dispatch);
+  const [menu, setMenu] = useState<{ title: string; actions: Action[] } | null>(null);
+  const viewer = viewerProp ?? human;
+
+  const view = useMemo(() => (state ? engine.viewFor(state, viewer) : null), [state, viewer]);
+  const legal = useMemo(
+    () => (state && actorOf(state) === viewer ? engine.getLegalActions(state, viewer) : []),
+    [state, viewer],
+  );
+  if (!state || !view) return null;
+  const opp: PlayerId = viewer === 0 ? 1 : 0;
+  const act = (a: Action) => {
+    setMenu(null);
+    dispatch(viewer, a);
+  };
+  const openSlot = (ref: SlotRef) => {
+    const actions = actionsForSlot(legal, ref, viewer);
+    const slot = slotAt(view, ref);
+    if (actions.length && slot) setMenu({ title: topDef(slot).name, actions });
+  };
+  const openCard = (uid: string) => {
+    const actions = actionsForCard(legal, uid);
+    const card = view.you.hand.find((c) => c.uid === uid);
+    if (actions.length && card) setMenu({ title: defOf(card).name, actions });
+  };
+  const slotHasActions = (ref: SlotRef) => !view.prompt && actionsForSlot(legal, ref, viewer).length > 0;
+  const myTurn = !view.prompt && legal.length > 0;
+  const status = view.result
+    ? 'Game over'
+    : view.waitingOn !== null
+      ? 'Waiting for opponent…'
+      : view.prompt
+        ? 'Make your choice'
+        : myTurn
+          ? 'Your turn'
+          : "Opponent's turn";
+
+  return (
+    <div className="grid min-h-full grid-cols-1 gap-3 p-3 lg:grid-cols-[1fr_18rem]">
+      <main className="flex min-w-0 flex-col gap-3">
+        <Side
+          label="Opponent"
+          player={opp}
+          side={view.opponent}
+          mirrored
+          handCount={view.opponent.handCount}
+          isActive={slotHasActions}
+          onSlot={openSlot}
+          benchSize={engine.ruleset.benchSize}
+        />
+        <div className="flex items-center justify-center gap-3 text-sm text-white/70">
+          <span>Turn {view.turn}</span>
+          <span className="rounded-full bg-black/30 px-3 py-1 font-semibold text-amber-200">{status}</span>
+          {view.stadium && (
+            <span className="flex items-center gap-2">
+              Stadium: <CardView card={view.stadium.card} size="xs" />
+            </span>
+          )}
+        </div>
+        <Side
+          label="You"
+          player={viewer}
+          side={view.you}
+          isActive={slotHasActions}
+          onSlot={openSlot}
+          benchSize={engine.ruleset.benchSize}
+        />
+        <Hand
+          cards={view.you.hand}
+          playable={(uid) => !view.prompt && actionsForCard(legal, uid).length > 0}
+          onCard={openCard}
+        />
+      </main>
+      <aside className="flex min-h-0 flex-col gap-3 lg:max-h-screen lg:sticky lg:top-0">
+        <div className="hidden justify-center lg:flex">
+          <CardPreview />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {!view.prompt &&
+            globalActions(legal).map((a, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => (a.type === 'concede' ? confirm('Concede this game?') && act(a) : act(a))}
+                className={
+                  a.type === 'endTurn'
+                    ? 'flex-1 rounded-lg bg-amber-400 px-4 py-2 font-semibold text-slate-900 hover:bg-amber-300'
+                    : 'rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20'
+                }
+              >
+                {describeAction(a, view)}
+              </button>
+            ))}
+        </div>
+        <GameLog log={view.log} me={viewer} />
+      </aside>
+      {view.prompt && (
+        <PromptPanel
+          prompt={view.prompt}
+          view={view}
+          legal={legal}
+          onAnswer={(id) => act({ type: 'answer', optionId: id })}
+        />
+      )}
+      {menu && (
+        <ActionMenu
+          title={menu.title}
+          actions={menu.actions}
+          view={view}
+          onPick={act}
+          onClose={() => setMenu(null)}
+        />
+      )}
+    </div>
+  );
+}
