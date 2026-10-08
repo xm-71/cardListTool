@@ -5,6 +5,7 @@ import { createWorkerBotClient, type BotClient } from './game/botClient.ts';
 import { actorOf, useGame } from './game/store.ts';
 import { useBotDriver } from './game/useBotDriver.ts';
 import { GameScreen } from './screens/GameScreen.tsx';
+import { Binder } from './screens/Binder.tsx';
 import { Home } from './screens/Home.tsx';
 import { Shop } from './screens/Shop.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
@@ -79,6 +80,7 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
 const SCREENS = [
   ['home', 'Home'],
   ['shop', 'Shop'],
+  ['binder', 'Binder'],
 ] as const;
 type MenuScreen = (typeof SCREENS)[number][0];
 
@@ -111,6 +113,7 @@ function Menu() {
       <div className="flex-1 p-4">
         {screen === 'home' && <Home />}
         {screen === 'shop' && <Shop />}
+        {screen === 'binder' && <Binder />}
       </div>
     </div>
   );
