@@ -1,0 +1,28 @@
+{
+  "category": "Energy",
+  "id": "mee-007",
+  "localId": "007",
+  "name": "Darkness Energy",
+  "rarity": "Common",
+  "set": {
+    "cardCount": {
+      "official": 8,
+      "total": 8
+    },
+    "id": "mee",
+    "name": "Mega Evolution Energy"
+  },
+  "variants": {
+    "firstEdition": false,
+    "holo": false,
+    "normal": true,
+    "reverse": true,
+    "wPromo": false
+  },
+  "energyType": "Normal",
+  "legal": {
+    "standard": true,
+    "expanded": true
+  },
+  "updated": "2026-09-16T20:25:32Z"
+}

@@ -1,0 +1,58 @@
+{
+  "category": "Pokemon",
+  "id": "me02-056",
+  "illustrator": "5ban Graphics",
+  "image": "https://assets.tcgdex.net/en/me/me02/056",
+  "localId": "056",
+  "name": "Mega Gengar ex",
+  "rarity": "Double rare",
+  "set": {
+    "cardCount": {
+      "official": 94,
+      "total": 130
+    },
+    "id": "me02",
+    "logo": "https://assets.tcgdex.net/en/me/me02/logo",
+    "name": "Phantasmal Flames"
+  },
+  "variants": {
+    "firstEdition": false,
+    "holo": true,
+    "normal": false,
+    "reverse": false,
+    "wPromo": false
+  },
+  "dexId": [94],
+  "hp": 350,
+  "types": ["Darkness"],
+  "evolveFrom": "Haunter",
+  "stage": "Stage2",
+  "abilities": [
+    {
+      "type": "Ability",
+      "name": "Shadowy Concealment",
+      "effect": "If 1 of your {D} Pokémon is Knocked Out by damage from an attack from your opponent's Pokémon ex, that player takes 1 fewer Prize card. The effect of Shadowy Concealment doesn't stack."
+    }
+  ],
+  "attacks": [
+    {
+      "cost": ["Darkness", "Darkness"],
+      "name": "Void Gale",
+      "effect": "Move an Energy from this Pokémon to 1 of your Benched Pokémon.",
+      "damage": 230
+    }
+  ],
+  "weaknesses": [
+    {
+      "type": "Fighting",
+      "value": "×2"
+    }
+  ],
+  "retreat": 2,
+  "regulationMark": "I",
+  "legal": {
+    "standard": true,
+    "expanded": true
+  },
+  "updated": "2026-06-14T19:02:26+01:00"
+}
