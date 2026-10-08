@@ -19,6 +19,14 @@ export interface RecordedAction {
   action: Action;
 }
 
+/** What failed, for bug reports. */
+export interface Failure {
+  source: 'engine' | 'bot' | 'render';
+  player?: PlayerId;
+  action?: Action;
+  stack?: string;
+}
+
 interface GameStore {
   state: GameState | null;
   config: GameConfig | null;
@@ -26,6 +34,7 @@ interface GameStore {
   human: PlayerId;
   actions: RecordedAction[];
   error: string | null;
+  failure: Failure | null;
   start(cfg: GameConfig): void;
   dispatch(player: PlayerId, action: Action): void;
   reset(): void;
@@ -37,13 +46,14 @@ export const useGame = create<GameStore>()((set, get) => ({
   human: 0,
   actions: [],
   error: null,
+  failure: null,
   start(cfg) {
     const state = engine.createGame({
       decks: [cfg.humanDeck, cfg.botDeck],
       seed: cfg.seed,
     });
     usePreview.getState().show(null);
-    set({ state, config: cfg, human: 0, actions: [], error: null });
+    set({ state, config: cfg, human: 0, actions: [], error: null, failure: null });
   },
   dispatch(player, action) {
     const { state, actions } = get();
@@ -54,12 +64,15 @@ export const useGame = create<GameStore>()((set, get) => ({
     } catch (e) {
       // Stale clicks (double clicks, clicks during a bot move) are simply ignored.
       if (e instanceof IllegalActionError) return;
-      set({ error: e instanceof Error ? `${e.name}: ${e.message}` : String(e) });
+      set({
+        error: e instanceof Error ? `${e.name}: ${e.message}` : String(e),
+        failure: { source: 'engine', player, action, stack: e instanceof Error ? e.stack : undefined },
+      });
     }
   },
   reset() {
     usePreview.getState().show(null);
-    set({ state: null, config: null, human: 0, actions: [], error: null });
+    set({ state: null, config: null, human: 0, actions: [], error: null, failure: null });
   },
 }));
 

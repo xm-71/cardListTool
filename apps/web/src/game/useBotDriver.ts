@@ -47,7 +47,10 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
         useGame.getState().dispatch(botSeat, action);
       } catch (e) {
         if (mine !== seq.current) return;
-        useGame.setState({ error: `Bot error: ${e instanceof Error ? e.message : String(e)}` });
+        useGame.setState({
+          error: `Bot error: ${e instanceof Error ? e.message : String(e)}`,
+          failure: { source: 'bot', player: botSeat, stack: e instanceof Error ? e.stack : undefined },
+        });
       }
     }, delayMs);
     return () => clearTimeout(timer);
