@@ -1,10 +1,22 @@
+import { useState } from 'react';
+import { SETS } from '@ptcg/cards';
+import { PACKS } from '@ptcg/economy';
+
 /** Wrapper colours per set. */
 const COLOURS: Record<string, [string, string]> = {
   me01: ['var(--color-red)', '#902828'],
   me02: ['var(--color-purple)', '#4a3080'],
+  base1: ['#e8a030', '#a85818'],
+  base2: ['var(--color-green)', '#2e6830'],
+  base3: ['#a08868', '#5a4630'],
+  base4: ['#d06850', '#7a3020'],
+  base5: ['#383848', '#14141c'],
+  gym1: ['#c84070', '#6e1e3c'],
+  gym2: ['#3878b0', '#1c3c60'],
+  neo1: ['#58a8b8', '#245a66'],
 };
 
-/** A CSS-drawn booster pack; `torn` hides the top strip (pack opening). */
+/** A CSS-drawn booster pack with its set logo; `torn` hides the top strip (pack opening). */
 export function PackArt({
   setId,
   name,
@@ -17,23 +29,39 @@ export function PackArt({
   torn?: boolean;
 }) {
   const [from, to] = COLOURS[setId] ?? ['var(--color-blue)', '#24488c'];
+  const logo = SETS.find((s) => s.id === setId)?.logo;
+  const [logoFailed, setLogoFailed] = useState(false);
   return (
     <div
       data-testid="pack-art"
-      aria-hidden
       className={`retro-shadow relative h-48 w-32 border-4 border-ink ${className}`}
       style={{ background: `linear-gradient(170deg, ${from}, ${to})` }}
     >
       {!torn && (
         <div
+          aria-hidden
           data-part="strip"
           className="absolute inset-x-0 top-0 h-6 border-b-4 border-dashed border-paper"
         />
       )}
-      <div className="absolute inset-x-2 top-16 text-center font-pixel text-[9px] leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)]">
-        {name.toUpperCase()}
+      <div className="absolute inset-x-2 top-12 flex h-20 items-center justify-center">
+        {logo && !logoFailed ? (
+          <img
+            src={`${logo}.webp`}
+            alt={`${name} logo`}
+            draggable={false}
+            onError={() => setLogoFailed(true)}
+            className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink)]"
+          />
+        ) : (
+          <span className="text-center font-pixel text-[9px] leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)]">
+            {name.toUpperCase()}
+          </span>
+        )}
       </div>
-      <div className="absolute inset-x-0 bottom-3 text-center font-pixel text-[7px] text-paper">10 CARDS</div>
+      <div aria-hidden className="absolute inset-x-0 bottom-3 text-center font-pixel text-[7px] text-paper">
+        {PACKS.find((p) => p.setId === setId)?.era === 'classic' ? 11 : 10} CARDS
+      </div>
     </div>
   );
 }

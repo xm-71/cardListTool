@@ -70,7 +70,7 @@ describe('openPack', () => {
 });
 
 test('both sets are on sale at the configured price', () => {
-  expect(PACKS.map((p) => [p.setId, p.price])).toEqual([
+  expect(PACKS.filter((p) => p.era === 'mega').map((p) => [p.setId, p.price])).toEqual([
     ['me01', 150],
     ['me02', 150],
   ]);
@@ -95,5 +95,41 @@ describe('creditsFor', () => {
   });
   test('uses the human seat', () => {
     expect(creditsFor(r(1), 1, 'easy')).toBe(100);
+  });
+});
+
+describe('classic packs', () => {
+  const classicIds = ['base1', 'base2', 'base3', 'base4', 'base5', 'gym1', 'gym2', 'neo1'];
+
+  test('every classic set is on sale', () => {
+    expect(PACKS.filter((p) => p.era === 'classic').map((p) => p.setId)).toEqual(classicIds);
+    for (const p of PACKS) expect(p.price).toBe(150);
+  });
+
+  test.each(classicIds)('%s packs have 7 commons, 3 uncommons and a rare', (setId) => {
+    const cards = setCards(setId);
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    let rng = 3;
+    for (let i = 0; i < 100; i++) {
+      const pack = openPack(setId, cards, rng);
+      rng = pack.rng;
+      expect(pack.cards).toHaveLength(11);
+      expect(pack.cards.slice(0, 7).map((id) => rarity.get(id))).toEqual(Array(7).fill('Common'));
+      expect(pack.cards.slice(7, 10).map((id) => rarity.get(id))).toEqual(Array(3).fill('Uncommon'));
+      expect(['Rare', 'Holo Rare']).toContain(rarity.get(pack.cards[10]!));
+    }
+  });
+
+  test('Gym Heroes rare slots include Holo Rares', () => {
+    const cards = setCards('gym1');
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    let rng = 9;
+    const seen = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      const pack = openPack('gym1', cards, rng);
+      rng = pack.rng;
+      seen.add(rarity.get(pack.cards[10]!)!);
+    }
+    expect(seen).toEqual(new Set(['Rare', 'Holo Rare']));
   });
 });

@@ -51,3 +51,9 @@ export function deckSources(
     }),
   ];
 }
+
+/** Card eras, in the order the Shop and Binder show them. */
+export const ERAS = [
+  { id: 'mega', label: 'Mega Evolution era' },
+  { id: 'classic', label: 'Classic' },
+] as const;

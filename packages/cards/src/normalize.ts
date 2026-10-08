@@ -31,9 +31,10 @@ interface RawCard {
 export function parseDamage(raw: number | string | undefined): Pick<AttackDef, 'damage' | 'damageSuffix'> {
   if (raw === undefined || raw === '') return { damage: 0, damageSuffix: '' };
   if (typeof raw === 'number') return { damage: raw, damageSuffix: '' };
+  if (raw.trim() === '?') return { damage: 0, damageSuffix: '?' };
   const m = /^(\d+)\s*([+×x-]?)$/.exec(raw.trim());
   if (!m) throw new Error(`Unparseable damage: ${raw}`);
-  const suffix = m[2] === 'x' ? '×' : (m[2] as '' | '+' | '×' | '-');
+  const suffix = m[2] === 'x' ? '×' : (m[2] as '' | '+' | '×' | '-' | '?');
   return { damage: Number(m[1]), damageSuffix: suffix };
 }
 
@@ -80,7 +81,8 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
       };
     }
     case 'Trainer': {
-      const t = raw.trainerType;
+      // Classic (WotC-era) Trainers have no sub-type: they behave like Items.
+      const t = raw.trainerType ?? 'Item';
       if (t !== 'Item' && t !== 'Supporter' && t !== 'Stadium' && t !== 'Tool') {
         throw new Error(`Unsupported trainer type ${t} on ${raw.id}`);
       }

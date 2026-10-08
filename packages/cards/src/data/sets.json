@@ -8,5 +8,45 @@
     "id": "me02",
     "name": "Phantasmal Flames",
     "logo": "https://assets.tcgdex.net/en/me/me02/logo"
+  },
+  {
+    "id": "base1",
+    "name": "Base Set",
+    "logo": "https://assets.tcgdex.net/en/base/base1/logo"
+  },
+  {
+    "id": "base2",
+    "name": "Jungle",
+    "logo": "https://assets.tcgdex.net/en/base/base2/logo"
+  },
+  {
+    "id": "base3",
+    "name": "Fossil",
+    "logo": "https://assets.tcgdex.net/en/base/base3/logo"
+  },
+  {
+    "id": "base4",
+    "name": "Base Set 2",
+    "logo": "https://assets.tcgdex.net/en/base/base4/logo"
+  },
+  {
+    "id": "base5",
+    "name": "Team Rocket",
+    "logo": "https://assets.tcgdex.net/en/base/base5/logo"
+  },
+  {
+    "id": "gym1",
+    "name": "Gym Heroes",
+    "logo": "https://assets.tcgdex.net/en/gym/gym1/logo"
+  },
+  {
+    "id": "gym2",
+    "name": "Gym Challenge",
+    "logo": "https://assets.tcgdex.net/en/gym/gym2/logo"
+  },
+  {
+    "id": "neo1",
+    "name": "Neo Genesis",
+    "logo": "https://assets.tcgdex.net/en/neo/neo1/logo"
   }
 ]

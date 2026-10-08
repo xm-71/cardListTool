@@ -5,7 +5,7 @@ export interface AttackDef {
   name: string;
   cost: EnergyType[];
   damage: number;
-  damageSuffix: '' | '+' | '×' | '-';
+  damageSuffix: '' | '+' | '×' | '-' | '?';
   text: string;
 }
 

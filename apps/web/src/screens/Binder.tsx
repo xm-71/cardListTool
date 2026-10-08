@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import type { CardInstance } from '@ptcg/engine';
-import { isPlayable, SETS, setCards } from '@ptcg/cards';
+import { SETS, setCards } from '@ptcg/cards';
+import { isDeckUsable } from '@ptcg/economy';
 import { registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardView } from '../ui/CardView.tsx';
+import { ERAS } from '../game/catalog.ts';
 
 export const cardNumber = (id: string): string => id.slice(id.lastIndexOf('-') + 1);
 
@@ -20,12 +22,14 @@ export function Binder() {
 function BinderBody() {
   const collection = useProfile((s) => s.profile.collection);
   const [setId, setSetId] = useState(SETS[0]!.id);
+  const era = SETS.find((s) => s.id === setId)?.era;
   const [ownedOnly, setOwnedOnly] = useState(false);
   const [playableOnly, setPlayableOnly] = useState(false);
   const [details, setDetails] = useState<CardInstance | null>(null);
   const cards = useMemo(
-    () => setCards(setId).map((def) => ({ def, playable: isPlayable(def, registry) })),
-    [setId],
+    // Classic cards (even their Basic Energy) are collect-only until a Classic ruleset exists.
+    () => setCards(setId).map((def) => ({ def, playable: era !== 'classic' && isDeckUsable(def, registry) })),
+    [setId, era],
   );
   const shown = cards.filter(
     ({ def, playable }) => (!ownedOnly || (collection[def.id] ?? 0) > 0) && (!playableOnly || playable),
@@ -34,18 +38,25 @@ function BinderBody() {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="retro-box flex flex-wrap items-center gap-3 p-4">
-        {SETS.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            aria-pressed={s.id === setId}
-            onClick={() => setSetId(s.id)}
-            className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
-          >
-            {s.name}
-          </button>
+      <div role="group" aria-label="Sets" className="retro-box flex flex-col gap-3 p-4">
+        {ERAS.map((era) => (
+          <div key={era.id} className="flex flex-wrap items-center gap-2">
+            <span className="w-full font-pixel text-[8px] uppercase opacity-70 sm:w-36">{era.label}</span>
+            {SETS.filter((s) => s.era === era.id).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                aria-pressed={s.id === setId}
+                onClick={() => setSetId(s.id)}
+                className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
         ))}
+      </div>
+      <div className="retro-box flex flex-wrap items-center gap-3 p-4">
         <span className="text-xl">
           {ownedCount} / {cards.length} collected
         </span>
@@ -61,6 +72,7 @@ function BinderBody() {
       <ul aria-label="Cards" className="grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-3">
         {shown.map(({ def, playable }) => {
           const count = collection[def.id] ?? 0;
+          const classic = era === 'classic';
           const card = { uid: `binder-${def.id}`, defId: def.id, owner: 0 as const };
           return (
             <li
@@ -76,6 +88,9 @@ function BinderBody() {
                   <span className="font-semibold">×{count}</span>
                 ) : (
                   <span className="sr-only">Not owned</span>
+                )}
+                {classic && (
+                  <span className="border-2 border-ink bg-paper px-1 font-pixel text-[7px]">Classic</span>
                 )}
                 {playable && (
                   <span className="border-2 border-ink bg-green px-1 font-pixel text-[7px] text-paper">

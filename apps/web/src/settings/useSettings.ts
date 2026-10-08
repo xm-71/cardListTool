@@ -3,10 +3,12 @@ import { create } from 'zustand';
 /** Per-browser conveniences (not part of the profile). */
 export interface Settings {
   sound: boolean;
+  /** Returning players open straight on the main menu. */
+  skipTitle: boolean;
 }
 
 const KEY = 'ptcg.settings';
-const DEFAULTS: Settings = { sound: true };
+const DEFAULTS: Settings = { sound: true, skipTitle: false };
 
 function read(): Settings {
   try {
@@ -25,10 +27,17 @@ function write(s: Settings): void {
   }
 }
 
-export const useSettings = create<Settings & { setSound(on: boolean): void }>()((set) => ({
-  ...read(),
-  setSound(sound) {
-    set({ sound });
-    write({ sound });
-  },
-}));
+type Store = Settings & { setSound(on: boolean): void; setSkipTitle(on: boolean): void };
+
+export const useSettings = create<Store>()((set, get) => {
+  const update = (patch: Partial<Settings>) => {
+    set(patch);
+    const { sound, skipTitle } = get();
+    write({ sound, skipTitle });
+  };
+  return {
+    ...read(),
+    setSound: (sound) => update({ sound }),
+    setSkipTitle: (skipTitle) => update({ skipTitle }),
+  };
+});

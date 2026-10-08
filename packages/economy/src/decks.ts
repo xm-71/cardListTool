@@ -8,6 +8,16 @@ export const OLDEST_LEGAL_MARK = 'H';
 
 const isBasicEnergy = (def: CardDef): boolean => def.category === 'Energy' && def.energyKind === 'Basic';
 
+/** Legal in 2026–27 Standard: Basic Energy, or regulation mark H or later. */
+export function isStandardLegal(def: CardDef): boolean {
+  return isBasicEnergy(def) || (def.regulationMark !== null && def.regulationMark >= OLDEST_LEGAL_MARK);
+}
+
+/** Can go in a custom deck today: Standard-legal and runnable by the engine. */
+export function isDeckUsable(def: CardDef, registry: CardRegistry): boolean {
+  return isStandardLegal(def) && isPlayable(def, registry);
+}
+
 /** Readable problems with a custom deck; `[]` means it is valid. */
 export function validateCustomDeck(
   deck: DeckList,
@@ -31,7 +41,7 @@ export function validateCustomDeck(
     if (isBasicEnergy(def)) continue;
     byName.set(def.name, (byName.get(def.name) ?? 0) + count);
     if (def.category === 'Trainer' && def.isAceSpec) aceSpecs += count;
-    if (def.regulationMark === null || def.regulationMark < OLDEST_LEGAL_MARK) {
+    if (!isStandardLegal(def)) {
       problems.push(`${def.name} (${def.regulationMark ?? 'no mark'}) is not legal in Standard`);
     }
     if (!isPlayable(def, registry)) problems.push(`${def.name} isn't playable yet`);

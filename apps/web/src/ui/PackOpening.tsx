@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { PACKS } from '@ptcg/economy';
 import { sfx } from '../audio/sfx.ts';
 import { registry } from '../game/catalog.ts';
 import { CardView } from './CardView.tsx';
@@ -90,7 +91,7 @@ export function PackOpening({ setId, cards, onDone }: { setId: string; cards: st
           <div className="flex h-80 items-center justify-center">
             <PackArt
               setId={setId}
-              name={setId === 'me02' ? 'Phantasmal Flames' : 'Mega Evolution'}
+              name={PACKS.find((p) => p.setId === setId)?.name ?? setId}
               torn={phase === 'tear'}
               className={phase === 'shake' ? 'animate-pack-shake' : 'animate-pack-tear'}
             />

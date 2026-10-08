@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { CardRegistry, DeckList } from '@ptcg/engine';
 import { buildRegistry, isPlayable, setCards } from '@ptcg/cards';
-import { validateCustomDeck } from '../src/index.ts';
+import { isDeckUsable, validateCustomDeck } from '../src/index.ts';
 
 const base = buildRegistry();
 // A same-name reprint of Ultra Ball, to check that the 4-per-name rule counts reprints together.
@@ -12,6 +12,8 @@ const registry: CardRegistry = {
 
 const GASTLY = 'me02-054';
 const PSYCHIC = 'mee-005';
+const unplayableDef = () =>
+  setCards('me01').find((c) => c.category === 'Trainer' && !isPlayable(c, registry))!;
 const owned: Record<string, number> = {
   [GASTLY]: 4,
   'me01-131': 4,
@@ -84,5 +86,25 @@ describe('validateCustomDeck', () => {
     expect(validateCustomDeck(deck([{ id: 'nope-1', count: 1 }]), registry, owned)).toContain(
       'Unknown card nope-1',
     );
+  });
+});
+
+describe('isDeckUsable', () => {
+  test('a playable Standard card is usable', () => {
+    expect(isDeckUsable(registry.defs[GASTLY]!, registry)).toBe(true);
+  });
+  test('Basic Energy is usable', () => {
+    expect(isDeckUsable(registry.defs[PSYCHIC]!, registry)).toBe(true);
+  });
+  test('a classic card is not usable, even one with no card text', () => {
+    const vanilla = setCards('base1').find(
+      (c) => c.category === 'Pokemon' && c.abilities.length === 0 && c.attacks.every((a) => a.text === ''),
+    )!;
+    expect(vanilla).toBeDefined();
+    expect(isPlayable(vanilla, registry)).toBe(true);
+    expect(isDeckUsable(vanilla, registry)).toBe(false);
+  });
+  test('an unscripted Standard card is not usable', () => {
+    expect(isDeckUsable(unplayableDef(), registry)).toBe(false);
   });
 });

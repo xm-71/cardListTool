@@ -50,7 +50,12 @@ describe('PackOpening', () => {
     render(<PackOpening setId="me01" cards={[...commons, byRarity('Rare')]} onDone={() => {}} />);
     const dialog = screen.getByRole('dialog', { name: 'Pack opening' });
     expect(within(dialog).getByTestId('pack-art')).toBeInTheDocument();
-    expect(within(dialog).queryAllByRole('img')).toHaveLength(0);
+    // only the set logo on the wrapper, no card faces yet
+    expect(
+      within(dialog)
+        .queryAllByRole('img')
+        .map((i) => i.getAttribute('alt')),
+    ).toEqual(['Mega Evolution logo']);
     expect(played).toContain('shake');
     passIntro();
     expect(played).toContain('tear');

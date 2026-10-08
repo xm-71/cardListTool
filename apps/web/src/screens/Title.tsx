@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { sfx, unlockAudio } from '../audio/sfx.ts';
 import { useNav } from '../nav/useNav.ts';
 import { useProfile } from '../profile/useProfile.ts';
+import { useSettings } from '../settings/useSettings.ts';
 import { PokeBall } from '../ui/PokeBall.tsx';
 
 const START_KEYS = /^(Enter| |[a-z0-9])$/i;
@@ -9,6 +10,12 @@ const START_KEYS = /^(Enter| |[a-z0-9])$/i;
 export function Title() {
   const ready = useProfile((s) => s.ready);
   const introDone = useProfile((s) => s.profile.introDone);
+  const skipTitle = useSettings((s) => s.skipTitle);
+
+  // Returning players can opt to skip this screen (never the intro).
+  useEffect(() => {
+    if (ready && introDone && skipTitle) useNav.getState().go('menu');
+  }, [ready, introDone, skipTitle]);
 
   useEffect(() => {
     if (!ready) return;
