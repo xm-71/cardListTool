@@ -1,6 +1,14 @@
 import { expect, test } from 'vitest';
 import type { CardDef, DeckList, PokemonDef, TrainerDef } from '@ptcg/engine';
-import { buildRegistry, isPlayable, megaDiancieDeck, megaGengarDeck, megaLucarioDeck, setCards, SETS } from '../src/index.ts';
+import {
+  buildRegistry,
+  isPlayable,
+  megaDiancieDeck,
+  megaGengarDeck,
+  megaLucarioDeck,
+  setCards,
+  SETS,
+} from '../src/index.ts';
 
 const registry = buildRegistry();
 const def = (id: string): CardDef => {
@@ -19,7 +27,11 @@ test('a scripted Pokémon ex is playable', () => {
 
 test('a Pokémon with an unscripted Ability is not playable', () => {
   const base = def('me02-054') as PokemonDef;
-  const withAbility: PokemonDef = { ...base, id: 'test-ability', abilities: [{ name: 'Mystery', text: 'Does a thing.' }] };
+  const withAbility: PokemonDef = {
+    ...base,
+    id: 'test-ability',
+    abilities: [{ name: 'Mystery', text: 'Does a thing.' }],
+  };
   expect(isPlayable(withAbility, registry)).toBe(false);
 });
 
@@ -62,9 +74,12 @@ test('setCards returns the whole set', () => {
   expect(SETS.map((s) => s.id).slice(0, 2)).toEqual(['me01', 'me02']);
 });
 
-test.each([megaGengarDeck, megaDiancieDeck, megaLucarioDeck] as DeckList[])('every card in $name is playable', (deck) => {
-  for (const c of deck.cards) expect(isPlayable(def(c.id), registry), c.id).toBe(true);
-});
+test.each([megaGengarDeck, megaDiancieDeck, megaLucarioDeck] as DeckList[])(
+  'every card in $name is playable',
+  (deck) => {
+    for (const c of deck.cards) expect(isPlayable(def(c.id), registry), c.id).toBe(true);
+  },
+);
 
 test('every shop set has an era, classic sets included', () => {
   expect(SETS.map((s) => [s.id, s.era])).toEqual([

@@ -82,6 +82,9 @@ export function determinize(
     abilityUsedTurn: { ...s.abilityUsedTurn },
     cantAttackOnTurn: s.cantAttackOnTurn,
     attackLocks: { ...s.attackLocks },
+    markers: s.markers.map((m) => ({ ...m })),
+    becameActiveTurn: s.becameActiveTurn,
+    ...(s.abilityUses ? { abilityUses: structuredClone(s.abilityUses) } : {}),
   });
   const player = (p: PlayerId): PlayerState => {
     const side = p === me ? view.you : view.opponent;
@@ -100,6 +103,7 @@ export function determinize(
       stadiumPlayedTurn: mine?.stadiumPlayedTurn ?? null,
       mulligans: mine?.mulligans ?? 0,
       lastKnockedOutTurn: side.lastKnockedOutTurn,
+      stadiumLockedTurn: side.stadiumLockedTurn,
       abilityNamesUsedTurn: { ...(mine?.abilityNamesUsedTurn ?? {}) },
     };
   };

@@ -17,6 +17,8 @@ const slot = (over: Partial<SlotViewData> = {}): SlotViewData => ({
   abilityUsedTurn: {},
   cantAttackOnTurn: null,
   attackLocks: {},
+  markers: [],
+  becameActiveTurn: null,
   ...over,
 });
 

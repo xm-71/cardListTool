@@ -116,6 +116,8 @@ describe('medium bot promotion', () => {
       abilityUsedTurn: {},
       cantAttackOnTurn: null,
       attackLocks: {},
+      markers: [],
+      becameActiveTurn: null,
     });
     // bench 0: Riolu with 2 Energy but only 10 HP left; bench 1: healthy Mega Lucario ex with 1 Energy
     p0.bench = [

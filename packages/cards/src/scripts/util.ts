@@ -82,3 +82,24 @@ export function sameRef(a: SlotRef, b: SlotRef): boolean {
     (a.zone === 'active' || a.index === (b as { index: number }).index)
   );
 }
+
+/** The Pokémon slot at `ref`, from state alone. */
+export function slotAt(state: GameState, ref: SlotRef) {
+  const p = state.players[ref.player];
+  return ref.zone === 'active' ? p.active : (p.bench[ref.index] ?? null);
+}
+
+/** Energy cards attached to the Pokémon at `ref` that provide `type`. */
+export function energyOfType(ctx: EffectCtx, ref: SlotRef, type: EnergyType): string[] {
+  return ctx.slot(ref).energy.filter((u) => {
+    const d = ctx.def(u);
+    return d.category === 'Energy' && d.provides.includes(type);
+  });
+}
+
+/** The Pokémon using the Ability currently resolving or being checked. */
+export function abilityHolder(ctx: EffectCtx): SlotRef {
+  const src = ctx.source;
+  if (src?.kind !== 'ability') throw new Error('Not an Ability');
+  return src.slot;
+}

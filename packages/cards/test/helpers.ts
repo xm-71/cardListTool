@@ -59,6 +59,22 @@ export const ID = {
   gravityMountain: 'sv08-177',
   premiumPowerPro: 'me01-124',
   secretBox: 'sv06-163',
+  fire: 'mee-002',
+  charmander: 'me02-011',
+  charmeleon: 'me02-012',
+  megaCharizardX: 'me02-013',
+  oricorio: 'me02-018',
+  moltres: 'me02-014',
+  volcanion: 'me01-025',
+  chiYu: 'me01-031',
+  grass: 'mee-001',
+  bulbasaur: 'me01-001',
+  ivysaur: 'me01-002',
+  megaVenusaur: 'me01-003',
+  exeggcute: 'me01-004',
+  exeggutor: 'me01-005',
+  shuckle: 'me01-011',
+  celebi: 'me01-012',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */

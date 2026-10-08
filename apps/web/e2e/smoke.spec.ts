@@ -191,3 +191,51 @@ test('with a crowded mid-game board, the hand stays on screen at 1280×720 and 1
     expect(hand!.height, 'hand not squashed').toBeGreaterThan(60);
   }
 });
+
+test('in a short window with a Stadium in play and a crowded board, the hand stays fully on screen', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await page.goto('/?e2e');
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('menuitem', { name: 'Duel' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await playThroughSetup(page);
+  await page.evaluate(() => {
+    type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const game = (window as unknown as { __game: Any }).__game;
+    const s = structuredClone(game.getState().state) as Any;
+    let n = 0;
+    for (const p of s.players) {
+      const take = (k: number) => p.deck.splice(0, k);
+      const copy = () => {
+        const uid = `e2e-${n++}`;
+        s.cards[uid] = { ...s.cards[p.active.stack[0]], uid };
+        return uid;
+      };
+      p.active.energy = take(4);
+      p.bench = Array.from({ length: 5 }, () => ({
+        ...structuredClone(p.active),
+        stack: [copy()],
+        energy: take(3),
+        damage: 0,
+      }));
+      p.discard = take(4);
+    }
+    s.stadium = { uid: s.players[0].deck.shift(), owner: 0 };
+    game.setState({ state: s });
+  });
+  for (const [width, height] of [
+    [1280, 600],
+    [1366, 657],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(400);
+    const hand = await page.getByRole('region', { name: 'Your hand' }).boundingBox();
+    expect(hand, 'hand visible').not.toBeNull();
+    expect(hand!.y + hand!.height, `hand bottom at ${width}x${height}`).toBeLessThanOrEqual(height);
+    expect(hand!.height, 'hand not squashed').toBeGreaterThan(60);
+  }
+});

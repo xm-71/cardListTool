@@ -5,7 +5,16 @@ import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { setupEffect } from './setup.ts';
 import { playTrainer, trainerActions, useStadium } from './trainers.ts';
-import { defOf, getSlot, isFirstTurnOf, log, slotDef, slotRefs } from './state.ts';
+import {
+  activeMarkers,
+  clearActiveEffects,
+  defOf,
+  getSlot,
+  isFirstTurnOf,
+  log,
+  slotDef,
+  slotRefs,
+} from './state.ts';
 import { endTurn, setResult } from './turn.ts';
 import type { Action, GameEvent, GameState, Origin, PlayerId, SlotRef } from './types.ts';
 import { removeFrom } from './zones.ts';
@@ -87,12 +96,20 @@ function useAbility(ctx: EffectCtx, ref: SlotRef, ability: string): void {
   const slot = getSlot(ctx.state, ref)!;
   const def = slotDef(ctx.env, ctx.state, slot);
   slot.abilityUsedTurn[ability] = ctx.state.turn;
+  const uses = slot.abilityUses?.[ability];
+  slot.abilityUses = {
+    ...slot.abilityUses,
+    [ability]: { turn: ctx.state.turn, count: uses?.turn === ctx.state.turn ? uses.count + 1 : 1 },
+  };
   ctx.source = { kind: 'ability', slot: ref, ability };
   log(ctx.state, 'ability', `${def.name} uses ${ability}`, { player: ctx.me });
   ctx.env.registry.scripts[def.id]!.abilities![ability]!.use(ctx);
 }
 
-/** Activated Abilities: each can be used once per turn per Pokémon. */
+/** How many times a repeatable ("as often as you like") Ability may be used per turn per Pokémon. */
+export const REPEATABLE_CAP = 10;
+
+/** Activated Abilities: once per turn per Pokémon, or up to REPEATABLE_CAP times if repeatable. */
 function abilityActions(env: Env, state: GameState, player: PlayerId): Action[] {
   const out: Action[] = [];
   for (const ref of slotRefs(state, player)) {
@@ -100,7 +117,13 @@ function abilityActions(env: Env, state: GameState, player: PlayerId): Action[] 
     const def = slotDef(env, state, slot);
     const abilities = env.registry.scripts[def.id]?.abilities ?? {};
     for (const [ability, script] of Object.entries(abilities)) {
-      if (slot.abilityUsedTurn[ability] === state.turn) continue;
+      if (script.repeatable) {
+        if (
+          (slot.abilityUses?.[ability]?.turn === state.turn ? slot.abilityUses[ability]!.count : 0) >=
+          REPEATABLE_CAP
+        )
+          continue;
+      } else if (slot.abilityUsedTurn[ability] === state.turn) continue;
       const ctx = new EffectCtx(state, env, player, []);
       ctx.source = { kind: 'ability', slot: ref, ability };
       if (script.canUse(ctx)) out.push({ type: 'useAbility', slot: ref, ability });
@@ -126,11 +149,10 @@ function retreat(ctx: EffectCtx, benchIndex: number): void {
     p.discard.push(uid);
   }
   const incoming = p.bench[benchIndex]!;
-  active.conditions = { rotation: 'none', poisoned: false, burned: false };
-  active.cantAttackOnTurn = null;
-  active.attackLocks = {};
+  clearActiveEffects(active);
   p.bench[benchIndex] = active;
   p.active = incoming;
+  incoming.becameActiveTurn = s.turn;
   p.retreatTurn = s.turn;
   log(s, 'retreat', `Player ${ctx.me + 1} retreats to ${slotDef(ctx.env, s, incoming).name}`, {
     player: ctx.me,
@@ -162,7 +184,10 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
   out.push(...abilityActions(env, state, player));
   const active = p.active;
   if (active && p.retreatTurn !== turn && p.bench.length > 0) {
-    const blocked = active.conditions.rotation === 'asleep' || active.conditions.rotation === 'paralyzed';
+    const blocked =
+      active.conditions.rotation === 'asleep' ||
+      active.conditions.rotation === 'paralyzed' ||
+      activeMarkers(state, active).some((m) => m.kind === 'cantRetreat');
     const cost = getRetreatCost(state, { player, zone: 'active' }, env.registry);
     if (!blocked && active.energy.length >= cost) {
       p.bench.forEach((_, benchIndex) => out.push({ type: 'retreat', benchIndex }));

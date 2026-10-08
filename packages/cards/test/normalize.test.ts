@@ -91,3 +91,10 @@ test('a classic Trainer without a trainer type is an Item', () => {
   });
   expect(def).toMatchObject({ category: 'Trainer', trainerType: 'Item', regulationMark: null });
 });
+
+test('a Basic Energy without an image borrows the Crown Zenith picture of its type', () => {
+  const card = normalizeTcgdexCard({ ...darkness, image: undefined });
+  expect(card.image).toBe('https://assets.tcgdex.net/en/swsh/swsh12.5/158');
+  const withImage = normalizeTcgdexCard({ ...darkness, image: 'https://example.test/x' });
+  expect(withImage.image).toBe('https://example.test/x');
+});

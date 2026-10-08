@@ -37,7 +37,12 @@ export function trainerActions(env: Env, state: GameState, player: PlayerId): Ac
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Stadium':
-        if (stadiumName === def.name || p.stadiumPlayedTurn === state.turn) continue;
+        if (
+          stadiumName === def.name ||
+          p.stadiumPlayedTurn === state.turn ||
+          p.stadiumLockedTurn === state.turn
+        )
+          continue;
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Tool':

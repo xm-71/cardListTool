@@ -3,9 +3,9 @@ import type { EffectCtx } from './effects.ts';
 import { canPayCost } from './energy.ts';
 import type { Env } from './env.ts';
 import { sameSlot, scriptsInPlay } from './hooks.ts';
-import { getSlot, isFirstTurnOf, log, maxHp, other, slotDef, slotRefs } from './state.ts';
+import { activeMarkers, getSlot, isFirstTurnOf, log, maxHp, other, slotDef, slotRefs } from './state.ts';
 import { endTurn, setResult } from './turn.ts';
-import type { GameState, PlayerId, SlotRef } from './types.ts';
+import type { GameState, MarkerKind, PlayerId, PokemonSlot, SlotRef } from './types.ts';
 
 /** Per-attack bookkeeping kept on the ctx while an attack resolves (never stored in state). */
 export interface AttackInfo {
@@ -51,11 +51,17 @@ export function canUseAttack(
  * Active goes through modifiers and Weakness/Resistance; damage to Benched Pokémon does not.
  * Returns the damage actually dealt.
  */
+function sumMarkers(state: GameState, slot: PokemonSlot, kind: MarkerKind): number {
+  return activeMarkers(state, slot)
+    .filter((m) => m.kind === kind)
+    .reduce((n, m) => n + m.amount, 0);
+}
+
 export function dealAttackDamage(
   ctx: EffectCtx,
   target: SlotRef,
   base: number,
-  opts: { ignoreWeaknessResistance?: boolean } = {},
+  opts: { ignoreWeaknessResistance?: boolean; ignoreDefenderEffects?: boolean } = {},
 ): number {
   const s = ctx.state;
   const info = currentAttack(ctx);
@@ -91,13 +97,17 @@ export function dealAttackDamage(
         });
       }
     }
-    const attackerDef = slotDef(ctx.env, s, getSlot(s, info.attacker)!);
+    const attackerSlot = getSlot(s, info.attacker)!;
+    const reduceOutgoing = sumMarkers(s, attackerSlot, 'reduceOutgoing');
+    if (reduceOutgoing) amount = Math.max(0, amount - reduceOutgoing);
+    const attackerDef = slotDef(ctx.env, s, attackerSlot);
     const defenderDef = slotDef(ctx.env, s, targetSlot);
     if (!opts.ignoreWeaknessResistance) {
       if (amount > 0 && defenderDef.weakness && attackerDef.types.includes(defenderDef.weakness)) amount *= 2;
       if (defenderDef.resistance && attackerDef.types.includes(defenderDef.resistance)) amount -= 30;
     }
     for (const h of scriptsInPlay(ctx.env, s, target.player)) {
+      if (opts.ignoreDefenderEffects && sameSlot(h.ref, target)) continue;
       if (h.script.modifyIncomingDamage) {
         amount = h.script.modifyIncomingDamage({
           state: s,
@@ -108,6 +118,14 @@ export function dealAttackDamage(
           registry,
         });
       }
+    }
+    if (!opts.ignoreDefenderEffects) {
+      amount -= sumMarkers(s, targetSlot, 'reduceIncoming');
+      if (
+        attackerDef.stage === 'Basic' &&
+        activeMarkers(s, targetSlot).some((m) => m.kind === 'preventFromBasic')
+      )
+        amount = 0;
     }
   }
   amount = Math.max(0, amount);
@@ -133,9 +151,10 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
     const scripted = script?.damage ? script.damage(ctx) : atk.damage;
     const base = typeof scripted === 'number' ? scripted : scripted.amount;
     const ignoreWeaknessResistance = typeof scripted === 'number' ? false : scripted.ignoreWR;
+    const ignoreDefenderEffects = typeof scripted === 'number' ? false : !!scripted.ignoreDefenderEffects;
     const defenderRef: SlotRef = { player: ctx.opp, zone: 'active' };
     if (base > 0 && getSlot(s, defenderRef))
-      dealAttackDamage(ctx, defenderRef, base, { ignoreWeaknessResistance });
+      dealAttackDamage(ctx, defenderRef, base, { ignoreWeaknessResistance, ignoreDefenderEffects });
     script?.effect?.(ctx);
     afterDamaged(ctx);
   }
@@ -237,6 +256,7 @@ export function checkKnockouts(ctx: EffectCtx): void {
     });
     const index = (pick as { index: number }).index;
     p.active = p.bench.splice(index, 1)[0]!;
+    p.active.becameActiveTurn = s.turn;
     log(s, 'promote', `Player ${player + 1} promotes ${slotDef(env, s, p.active).name}`, { player });
   }
 }

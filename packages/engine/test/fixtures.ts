@@ -131,6 +131,8 @@ export function benchFromHand(state: GameState, player: PlayerId, uid: string, e
     abilityUsedTurn: {},
     cantAttackOnTurn: null,
     attackLocks: {},
+    markers: [],
+    becameActiveTurn: null,
   });
 }
 

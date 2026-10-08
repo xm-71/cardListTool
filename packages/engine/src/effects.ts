@@ -1,10 +1,12 @@
+import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { coinFlip, shuffle } from './rng.ts';
-import { defOf, getSlot, newSlot, other, slotDef } from './state.ts';
+import { clearActiveEffects, defOf, getSlot, newSlot, other, slotDef } from './state.ts';
 import type {
   EffectSource,
   GameState,
+  MarkerKind,
   Origin,
   PlayerId,
   PokemonSlot,
@@ -61,6 +63,17 @@ export class EffectCtx {
   /** "During your next turn, this Pokémon can't use <attack>." */
   lockAttack(ref: SlotRef, attackName: string): void {
     this.slot(ref).attackLocks[attackName] = this.state.turn + 2;
+  }
+
+  /** A timed effect on the Pokémon at `ref` that lasts through the opponent's next turn. */
+  addMarker(ref: SlotRef, kind: MarkerKind, amount = 0): void {
+    const slot = this.slot(ref);
+    slot.markers = [...slot.markers, { kind, amount, untilTurn: this.state.turn + 1 }];
+  }
+
+  /** `player` can't play Stadium cards from their hand during their next turn. */
+  lockStadium(player: PlayerId): void {
+    this.state.players[player].stadiumLockedTurn = this.state.turn + 1;
   }
 
   /** Damage to the acting player's own Active Pokémon (no Weakness/Resistance). */
@@ -196,11 +209,19 @@ export class EffectCtx {
     slot.conditions = { rotation: 'none', poisoned: false, burned: false };
     slot.cantAttackOnTurn = null;
     slot.attackLocks = {};
+    slot.markers = [];
     this.state.log.push({
       type: 'evolve',
       player: ref.player,
       text: `${from} evolves into ${this.def(uid).name}`,
     });
+  }
+
+  /** Give the Pokémon at `ref` a Special Condition. */
+  applyCondition(ref: SlotRef, c: Condition): void {
+    const slot = this.slot(ref);
+    applyCondition(slot, c);
+    this.log(`${slotDef(this.env, this.state, slot).name} is now ${c[0]!.toUpperCase()}${c.slice(1)}`);
   }
 
   heal(ref: SlotRef, hp: number): void {
@@ -217,11 +238,10 @@ export class EffectCtx {
     const p = this.state.players[player];
     const incoming = p.bench[benchIndex];
     if (!incoming || !p.active) throw new Error('Nothing to switch');
-    p.active.conditions = { rotation: 'none', poisoned: false, burned: false };
-    p.active.cantAttackOnTurn = null; // effects on the Active end when it moves to the Bench
-    p.active.attackLocks = {};
+    clearActiveEffects(p.active); // effects on the Active end when it moves to the Bench
     p.bench[benchIndex] = p.active;
     p.active = incoming;
+    incoming.becameActiveTurn = this.state.turn;
   }
 
   chooseSlot(o: {

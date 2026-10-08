@@ -11,3 +11,5 @@ export { viewFor, type PlayerView, type SlotView } from './view.ts';
 export { nextRandom, shuffle, coinFlip } from './rng.ts';
 export { dealAttackDamage } from './combat.ts';
 export { maxHp } from './state.ts';
+export { REPEATABLE_CAP } from './actions.ts';
+export type { Condition } from './conditions.ts';
