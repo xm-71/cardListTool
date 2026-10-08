@@ -116,3 +116,26 @@ test('(RF5) no horizontal scrolling at phone width', async ({ page }) => {
   await page.goto('/');
   expect(await fits()).toBe(true);
 });
+
+for (const [width, height] of [
+  [1280, 720],
+  [1440, 900],
+] as const) {
+  test(`the battlefield fits a ${width}×${height} window without scrolling`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await toMenu(page);
+    await page.getByRole('menuitem', { name: 'Duel' }).click();
+    await page.getByRole('button', { name: 'Play', exact: true }).click();
+    await playThroughSetup(page);
+    await page.waitForTimeout(800);
+    await page.screenshot({ path: `test-results/board-${width}x${height}.png` });
+    const overflow = await page.evaluate(() => ({
+      scroll: document.documentElement.scrollHeight,
+      view: window.innerHeight,
+      scrollX: document.documentElement.scrollWidth,
+      viewX: window.innerWidth,
+    }));
+    expect(overflow.scroll, 'page height').toBeLessThanOrEqual(overflow.view);
+    expect(overflow.scrollX, 'page width').toBeLessThanOrEqual(overflow.viewX);
+  });
+}

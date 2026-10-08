@@ -67,8 +67,8 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           : "Opponent's turn";
 
   return (
-    <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:grid-cols-[1fr_18rem]">
-      <main className="flex min-w-0 flex-col gap-3">
+    <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:h-dvh lg:min-h-0 lg:grid-cols-[1fr_18rem] lg:gap-2 lg:overflow-hidden lg:p-2">
+      <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:justify-between lg:gap-2">
         <Side
           label="Opponent"
           player={opp}
@@ -102,7 +102,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           onCard={openCard}
         />
       </main>
-      <aside className="flex min-h-0 flex-col gap-3 lg:max-h-screen lg:sticky lg:top-0">
+      <aside className="flex min-h-0 flex-col gap-3 lg:gap-2">
         <div role="complementary" aria-label="Card zoom" className="hidden justify-center lg:flex">
           <CardPreview />
         </div>

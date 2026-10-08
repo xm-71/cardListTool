@@ -4,7 +4,17 @@ import { defOf } from '../game/view.ts';
 import { EnergyDot } from './energy.tsx';
 import { usePreview } from './preview.ts';
 
-const SIZES = { xs: 'w-12', sm: 'w-16', md: 'w-24', lg: 'w-64' } as const;
+const SIZES = {
+  xs: 'w-12',
+  sm: 'w-16',
+  md: 'w-24',
+  lg: 'w-64',
+  // Board sizes: on desktop widths they also shrink with the window height so the board fits without scrolling.
+  bench: 'w-16 lg:w-[min(4rem,6.5vh)]',
+  active: 'w-24 lg:w-[min(6rem,8.5vh)]',
+  hand: 'w-16 lg:w-[min(5rem,8vh)]',
+  zoom: 'w-64 lg:w-[min(16rem,32vh)]',
+} as const;
 export type CardSize = keyof typeof SIZES;
 
 interface Props {
@@ -20,10 +30,10 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
   const def = defOf(card);
   const [failed, setFailed] = useState(false);
   const show = usePreview((s) => s.show);
-  const quality = size === 'lg' ? 'high' : 'low';
+  const quality = size === 'lg' || size === 'zoom' ? 'high' : 'low';
   const ring = highlighted ? 'ring-4 ring-red' : onClick ? 'hover:ring-4 hover:ring-yellow' : '';
   const body = failed ? (
-    <TextCard def={def} compact={size !== 'lg'} />
+    <TextCard def={def} compact={size !== 'lg' && size !== 'zoom'} />
   ) : (
     <img
       src={`${def.image}/${quality}.webp`}
