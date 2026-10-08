@@ -5,5 +5,6 @@ export { default as megaDiancieDeck } from './decks/mega-diancie.json';
 export { default as megaLucarioDeck } from './decks/mega-lucario.json';
 export { default as megaCharizardXDeck } from './decks/mega-charizard-x.json';
 export { default as megaVenusaurDeck } from './decks/mega-venusaur.json';
+export { default as megaAbomasnowDeck } from './decks/mega-abomasnow.json';
 export { isPlayable } from './playable.ts';
 export { SETS, setCards, type Era } from './sets.ts';

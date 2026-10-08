@@ -103,3 +103,14 @@ export function abilityHolder(ctx: EffectCtx): SlotRef {
   if (src?.kind !== 'ability') throw new Error('Not an Ability');
   return src.slot;
 }
+
+/** Call for Family: search the deck for up to `n` Basic Pokémon, put them onto the Bench, then shuffle. */
+export function callForFamily(ctx: EffectCtx, n: number): void {
+  const picks = searchDeck(ctx, {
+    filter: isBasicPokemonCard,
+    max: Math.min(n, benchSpace(ctx, ctx.me)),
+    message: `Choose up to ${n} Basic Pokémon to put on your Bench`,
+  });
+  for (const uid of picks) ctx.putOnBench(ctx.me, uid);
+  ctx.shuffleDeck(ctx.me);
+}

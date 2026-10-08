@@ -75,6 +75,13 @@ export const ID = {
   exeggutor: 'me01-005',
   shuckle: 'me01-011',
   celebi: 'me01-012',
+  water: 'mee-003',
+  snover: 'me01-035',
+  megaAbomasnow: 'me01-036',
+  suicune: 'me02-026',
+  kyogre: 'me01-034',
+  mantine: 'me01-032',
+  eiscue: 'me01-044',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */
