@@ -31,14 +31,14 @@ Nintendo / Creatures / GAME FREAK / The Pokémon Company; the site stays private
 
 Each milestone ends with something playable.
 
-| # | Milestone | Outcome |
-|---|-----------|---------|
-| M1 | Rules engine + 2 starter decks | Headless engine; bot-vs-bot games run to completion in tests |
-| M2 | Game board UI + Easy bot | Play vs Easy bot or hotseat in the browser; first Vercel deploy |
-| M3 | All starter decks + deck picker + Medium bot | Pick decks, real games vs a decent bot |
-| M4 | Packs & credits | Earn credits vs bots, buy/open packs, binder, deck builder (playable owned cards) |
-| M5 | Online rooms | Create a room, share a link, play a friend |
-| M6 | Meta decks | 3–4 researched current-meta decks, approved by the owner |
+| #   | Milestone                                    | Outcome                                                                           |
+| --- | -------------------------------------------- | --------------------------------------------------------------------------------- |
+| M1  | Rules engine + 2 starter decks               | Headless engine; bot-vs-bot games run to completion in tests                      |
+| M2  | Game board UI + Easy bot                     | Play vs Easy bot or hotseat in the browser; first Vercel deploy                   |
+| M3  | All starter decks + deck picker + Medium bot | Pick decks, real games vs a decent bot                                            |
+| M4  | Packs & credits                              | Earn credits vs bots, buy/open packs, binder, deck builder (playable owned cards) |
+| M5  | Online rooms                                 | Create a room, share a link, play a friend                                        |
+| M6  | Meta decks                                   | 3–4 researched current-meta decks, approved by the owner                          |
 
 Before M1 work starts, the old Angular starter files are deleted in their own commit.
 
@@ -121,7 +121,7 @@ apps/
 - Bots receive only a `PlayerView` plus the legal actions, never the full state.
 - **Easy:** heuristic priorities, with a little randomness so games vary: evolve, attach
   energy toward the active attacker, play draw/search Trainers, attack for the most damage.
-- **Medium:** for each legal action, simulate it on a *determinized* state (hidden cards
+- **Medium:** for each legal action, simulate it on a _determinized_ state (hidden cards
   sampled randomly from what is unknown) and score the result: prize lead, knockouts,
   damage dealt/taken, energy on board, hand size, bench development. Pick the best,
   averaged over several samples.

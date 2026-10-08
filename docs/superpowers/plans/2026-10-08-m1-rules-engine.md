@@ -4,7 +4,7 @@
 
 **Goal:** A headless TypeScript Pokémon TCG rules engine (2026–27 Standard rules) that plays complete, seeded, replayable games with the Mega Gengar ex and Mega Diancie ex Mega Battle Decks, driven by an Easy bot in tests.
 
-**Architecture:** A pnpm monorepo. `packages/engine` is a pure rules engine. It is bound to a card registry through `createEngine(registry)` and exposes `createGame / getLegalActions / applyAction / viewFor` over plain JSON state. Card effects are scripts that call an effect context. A choice inside an effect pauses the game with a `pendingPrompt`, and resuming *replays* the effect from a pre-effect snapshot with the recorded answers, so state never holds closures. `packages/cards` holds normalized TCGdex data, decklists and effect scripts. `packages/bots` holds the Easy bot and a match runner.
+**Architecture:** A pnpm monorepo. `packages/engine` is a pure rules engine. It is bound to a card registry through `createEngine(registry)` and exposes `createGame / getLegalActions / applyAction / viewFor` over plain JSON state. Card effects are scripts that call an effect context. A choice inside an effect pauses the game with a `pendingPrompt`, and resuming _replays_ the effect from a pre-effect snapshot with the recorded answers, so state never holds closures. `packages/cards` holds normalized TCGdex data, decklists and effect scripts. `packages/bots` holds the Easy bot and a match runner.
 
 **Tech Stack:** Node 22, pnpm 10, TypeScript 5 (strict), Vitest, ESLint (typescript-eslint) + Prettier, GitHub Actions.
 
@@ -27,11 +27,11 @@
 
 ## Review Focus
 
-1. **Effects with nothing to find or target.** Searching an empty or target-less deck, Boss's Orders with an empty opponent Bench, Switch with an empty Bench, Rare Candy without a matching Stage 2, Wondrous Patch with no Energy in the discard pile. Expected: cards that need a target are not offered as legal actions. "Search" cards are still playable and simply find nothing. *(Owned by Tasks 8, 9.)*
-2. **Overdrawing inside an effect.** Lillie's Determination with 3 cards left in the deck. Expected: draw as many as possible and do not lose. A player only loses for being unable to draw at the *start of turn*. *(Owned by Task 5.)*
-3. **Full Bench.** Nest Ball, Buddy-Buddy Poffin, Call for Family or "play Basic" when 5 Pokémon are already Benched. Expected: Nest Ball is not legal, play Basic is not legal, and Poffin / Call for Family only offer as many picks as there are free slots. *(Owned by Tasks 4, 8, 10.)*
-4. **Double Knockout.** Punk Helmet Knocks Out the attacker while the attack Knocks Out the defender. Expected: both players take Prizes. Promotions happen with the non-current player choosing first, and a simultaneous win is a draw. *(Owned by Task 9.)*
-5. **Stale or illegal actions.** The UI or network later sends an action that isn't in `getLegalActions`. Expected: `applyAction` throws `IllegalActionError` and the input state object is not mutated. *(Owned by Task 4.)*
+1. **Effects with nothing to find or target.** Searching an empty or target-less deck, Boss's Orders with an empty opponent Bench, Switch with an empty Bench, Rare Candy without a matching Stage 2, Wondrous Patch with no Energy in the discard pile. Expected: cards that need a target are not offered as legal actions. "Search" cards are still playable and simply find nothing. _(Owned by Tasks 8, 9.)_
+2. **Overdrawing inside an effect.** Lillie's Determination with 3 cards left in the deck. Expected: draw as many as possible and do not lose. A player only loses for being unable to draw at the _start of turn_. _(Owned by Task 5.)_
+3. **Full Bench.** Nest Ball, Buddy-Buddy Poffin, Call for Family or "play Basic" when 5 Pokémon are already Benched. Expected: Nest Ball is not legal, play Basic is not legal, and Poffin / Call for Family only offer as many picks as there are free slots. _(Owned by Tasks 4, 8, 10.)_
+4. **Double Knockout.** Punk Helmet Knocks Out the attacker while the attack Knocks Out the defender. Expected: both players take Prizes. Promotions happen with the non-current player choosing first, and a simultaneous win is a draw. _(Owned by Task 9.)_
+5. **Stale or illegal actions.** The UI or network later sends an action that isn't in `getLegalActions`. Expected: `applyAction` throws `IllegalActionError` and the input state object is not mutated. _(Owned by Task 4.)_
 
 ---
 
@@ -78,89 +78,194 @@ packages/bots/
 ```ts
 // packages/engine/src/types.ts
 export type PlayerId = 0 | 1;
-export type EnergyType = 'Grass'|'Fire'|'Water'|'Lightning'|'Psychic'|'Fighting'|'Darkness'|'Metal'|'Dragon'|'Colorless';
-export type SlotRef = { player: PlayerId; zone: 'active' } | { player: PlayerId; zone: 'bench'; index: number };
-export interface CardInstance { uid: string; defId: string; owner: PlayerId }       // uid like "p0-c17"
+export type EnergyType =
+  | 'Grass'
+  | 'Fire'
+  | 'Water'
+  | 'Lightning'
+  | 'Psychic'
+  | 'Fighting'
+  | 'Darkness'
+  | 'Metal'
+  | 'Dragon'
+  | 'Colorless';
+export type SlotRef =
+  { player: PlayerId; zone: 'active' } | { player: PlayerId; zone: 'bench'; index: number };
+export interface CardInstance {
+  uid: string;
+  defId: string;
+  owner: PlayerId;
+} // uid like "p0-c17"
 export interface PokemonSlot {
-  stack: string[];            // uids, last = the Pokémon in play (evolutions on top)
-  energy: string[]; tool: string | null; damage: number;   // damage in HP (counters × 10)
-  conditions: { rotation: 'none'|'asleep'|'confused'|'paralyzed'; poisoned: boolean; burned: boolean };
-  enteredTurn: number; evolvedTurn: number | null;
-  abilityUsedTurn: Record<string, number>;   // ability name → turn used
-  cantAttackOnTurn: number | null;           // e.g. Eternatus Power Rush tails
+  stack: string[]; // uids, last = the Pokémon in play (evolutions on top)
+  energy: string[];
+  tool: string | null;
+  damage: number; // damage in HP (counters × 10)
+  conditions: { rotation: 'none' | 'asleep' | 'confused' | 'paralyzed'; poisoned: boolean; burned: boolean };
+  enteredTurn: number;
+  evolvedTurn: number | null;
+  abilityUsedTurn: Record<string, number>; // ability name → turn used
+  cantAttackOnTurn: number | null; // e.g. Eternatus Power Rush tails
 }
 export interface PlayerState {
-  deck: string[]; hand: string[]; discard: string[]; prizes: string[];
-  active: PokemonSlot | null; bench: PokemonSlot[];
-  supporterTurn: number | null; energyTurn: number | null; retreatTurn: number | null; stadiumUsedTurn: number | null;
+  deck: string[];
+  hand: string[];
+  discard: string[];
+  prizes: string[];
+  active: PokemonSlot | null;
+  bench: PokemonSlot[];
+  supporterTurn: number | null;
+  energyTurn: number | null;
+  retreatTurn: number | null;
+  stadiumUsedTurn: number | null;
   mulligans: number;
 }
-export interface PromptOption { id: string; label: string; uid?: string; slot?: SlotRef }
-export interface Prompt {
-  player: PlayerId; kind: 'cards'|'slot'|'option'; message: string;
-  options: PromptOption[]; min: number; max: number; selected: string[];  // one-at-a-time selection
+export interface PromptOption {
+  id: string;
+  label: string;
+  uid?: string;
+  slot?: SlotRef;
 }
-export interface PendingEffect { snapshot: GameState; source: EffectSource; answers: string[] }
+export interface Prompt {
+  player: PlayerId;
+  kind: 'cards' | 'slot' | 'option';
+  message: string;
+  options: PromptOption[];
+  min: number;
+  max: number;
+  selected: string[]; // one-at-a-time selection
+}
+export interface PendingEffect {
+  snapshot: GameState;
+  source: EffectSource;
+  answers: string[];
+}
 export type EffectSource =
   | { kind: 'attack'; slot: SlotRef; attackIndex: number }
   | { kind: 'ability'; slot: SlotRef; ability: string }
   | { kind: 'trainer'; uid: string; target?: SlotRef }
-  | { kind: 'stadium' } | { kind: 'system'; name: 'setup'|'promote'|'retreatCost' };
+  | { kind: 'stadium' }
+  | { kind: 'system'; name: 'setup' | 'promote' | 'retreatCost' };
 export interface GameState {
   cards: Record<string, CardInstance>;
   players: [PlayerState, PlayerState];
-  turn: number; current: PlayerId; first: PlayerId;
-  phase: 'setup'|'main'|'gameOver';
+  turn: number;
+  current: PlayerId;
+  first: PlayerId;
+  phase: 'setup' | 'main' | 'gameOver';
   stadium: { uid: string; owner: PlayerId } | null;
-  prompt: Prompt | null; pending: PendingEffect | null;
-  rng: number;                                 // uint32 PRNG state
-  result: { winner: PlayerId | 'draw'; reason: 'prizes'|'noPokemon'|'deckOut'|'concede' } | null;
+  prompt: Prompt | null;
+  pending: PendingEffect | null;
+  rng: number; // uint32 PRNG state
+  result: { winner: PlayerId | 'draw'; reason: 'prizes' | 'noPokemon' | 'deckOut' | 'concede' } | null;
   log: GameEvent[];
 }
 export type Action =
   | { type: 'playBasic'; uid: string }
   | { type: 'evolve'; uid: string; target: SlotRef }
   | { type: 'attachEnergy'; uid: string; target: SlotRef }
-  | { type: 'playTrainer'; uid: string; target?: SlotRef }     // target used by Tools
+  | { type: 'playTrainer'; uid: string; target?: SlotRef } // target used by Tools
   | { type: 'useAbility'; slot: SlotRef; ability: string }
   | { type: 'useStadium' }
   | { type: 'retreat'; benchIndex: number }
   | { type: 'attack'; attackIndex: number }
   | { type: 'endTurn' }
-  | { type: 'answer'; optionId: string }                      // 'done' ends a multi-select once min is met
+  | { type: 'answer'; optionId: string } // 'done' ends a multi-select once min is met
   | { type: 'concede' };
 export type GameEvent = { type: string; player?: PlayerId; text: string; [k: string]: unknown };
 ```
 
 ```ts
 // packages/engine/src/cards.ts
-export interface AttackDef { name: string; cost: EnergyType[]; damage: number; damageSuffix: ''|'+'|'×'; text: string }
-export interface AbilityDef { name: string; text: string }
-export type CardDef =
-  | { id: string; name: string; category: 'Pokemon'; stage: 'Basic'|'Stage1'|'Stage2'; hp: number;
-      types: EnergyType[]; evolvesFrom: string | null; weakness: EnergyType | null; resistance: EnergyType | null;
-      retreat: number; attacks: AttackDef[]; abilities: AbilityDef[]; isEx: boolean; isMega: boolean;
-      regulationMark: string | null; rarity: string; image: string }
-  | { id: string; name: string; category: 'Trainer'; trainerType: 'Item'|'Supporter'|'Stadium'|'Tool';
-      text: string; isAceSpec: boolean; regulationMark: string | null; rarity: string; image: string }
-  | { id: string; name: string; category: 'Energy'; energyKind: 'Basic'|'Special'; provides: EnergyType[];
-      text: string; regulationMark: string | null; rarity: string; image: string };
-export interface CardScript {
-  attacks?: Record<number, { canUse?(ctx: EffectCtx): boolean; damage?(ctx: EffectCtx): number; effect?(ctx: EffectCtx): void }>;
-  abilities?: Record<string, { canUse(ctx: EffectCtx): boolean; use(ctx: EffectCtx): void }>;   // activated
-  trainer?: { canPlay(ctx: EffectCtx): boolean; play(ctx: EffectCtx): void };
-  stadium?: { canUse(ctx: EffectCtx): boolean; use(ctx: EffectCtx): void;
-              onBenchFromHand?(ctx: EffectCtx, slot: SlotRef): void };
-  // passive hooks (evaluated by the engine, must not prompt)
-  modifyOutgoingDamage?(q: DamageQuery): number;   // before W/R, active target only
-  modifyIncomingDamage?(q: DamageQuery): number;   // after W/R
-  modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number }): number;
-  modifyPrizes?(q: { state: GameState; knockedOut: SlotRef; byAttackFromEx: boolean; prizes: number }): number;
-  afterDamagedInActive?(ctx: EffectCtx, holder: SlotRef, attacker: SlotRef): void;   // Tools like Punk Helmet
-  onEvolveFromHand?: { optional: true; use(ctx: EffectCtx, slot: SlotRef): void };   // Grumpig
+export interface AttackDef {
+  name: string;
+  cost: EnergyType[];
+  damage: number;
+  damageSuffix: '' | '+' | '×';
+  text: string;
 }
-export interface DamageQuery { state: GameState; attacker: SlotRef; defender: SlotRef; amount: number; registry: CardRegistry }
-export interface CardRegistry { defs: Record<string, CardDef>; scripts: Record<string, CardScript> }
+export interface AbilityDef {
+  name: string;
+  text: string;
+}
+export type CardDef =
+  | {
+      id: string;
+      name: string;
+      category: 'Pokemon';
+      stage: 'Basic' | 'Stage1' | 'Stage2';
+      hp: number;
+      types: EnergyType[];
+      evolvesFrom: string | null;
+      weakness: EnergyType | null;
+      resistance: EnergyType | null;
+      retreat: number;
+      attacks: AttackDef[];
+      abilities: AbilityDef[];
+      isEx: boolean;
+      isMega: boolean;
+      regulationMark: string | null;
+      rarity: string;
+      image: string;
+    }
+  | {
+      id: string;
+      name: string;
+      category: 'Trainer';
+      trainerType: 'Item' | 'Supporter' | 'Stadium' | 'Tool';
+      text: string;
+      isAceSpec: boolean;
+      regulationMark: string | null;
+      rarity: string;
+      image: string;
+    }
+  | {
+      id: string;
+      name: string;
+      category: 'Energy';
+      energyKind: 'Basic' | 'Special';
+      provides: EnergyType[];
+      text: string;
+      regulationMark: string | null;
+      rarity: string;
+      image: string;
+    };
+export interface CardScript {
+  attacks?: Record<
+    number,
+    { canUse?(ctx: EffectCtx): boolean; damage?(ctx: EffectCtx): number; effect?(ctx: EffectCtx): void }
+  >;
+  abilities?: Record<string, { canUse(ctx: EffectCtx): boolean; use(ctx: EffectCtx): void }>; // activated
+  trainer?: { canPlay(ctx: EffectCtx): boolean; play(ctx: EffectCtx): void };
+  stadium?: {
+    canUse(ctx: EffectCtx): boolean;
+    use(ctx: EffectCtx): void;
+    onBenchFromHand?(ctx: EffectCtx, slot: SlotRef): void;
+  };
+  // passive hooks (evaluated by the engine, must not prompt)
+  modifyOutgoingDamage?(q: DamageQuery): number; // before W/R, active target only
+  modifyIncomingDamage?(q: DamageQuery): number; // after W/R
+  modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number }): number;
+  modifyPrizes?(q: {
+    state: GameState;
+    knockedOut: SlotRef;
+    byAttackFromEx: boolean;
+    prizes: number;
+  }): number;
+  afterDamagedInActive?(ctx: EffectCtx, holder: SlotRef, attacker: SlotRef): void; // Tools like Punk Helmet
+  onEvolveFromHand?: { optional: true; use(ctx: EffectCtx, slot: SlotRef): void }; // Grumpig
+}
+export interface DamageQuery {
+  state: GameState;
+  attacker: SlotRef;
+  defender: SlotRef;
+  amount: number;
+  registry: CardRegistry;
+}
+export interface CardRegistry {
+  defs: Record<string, CardDef>;
+  scripts: Record<string, CardScript>;
+}
 ```
 
 `EffectCtx` (Task 5) is the only way scripts touch state:
@@ -177,10 +282,12 @@ export interface CardRegistry { defs: Record<string, CardDef>; scripts: Record<s
 ### Task 1: Clear the old repo and scaffold the monorepo
 
 **Files:**
+
 - Delete: `angular.json`, `package.json`, `tsconfig.json`, `src/` (whole tree)
 - Create: `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `vitest.config.ts`, `eslint.config.js`, `.prettierrc`, `.gitignore`, `.github/workflows/ci.yml`, `README.md` (rewrite), `packages/{engine,cards,bots}/package.json` + `tsconfig.json`, `packages/engine/src/index.ts`, `packages/engine/test/smoke.test.ts`
 
 **Interfaces:**
+
 - Produces: root scripts `pnpm test` (vitest run, all packages), `pnpm typecheck` (`tsc -b`), `pnpm lint`. Workspace package names `@ptcg/engine`, `@ptcg/cards`, `@ptcg/bots` (cards and bots depend on `@ptcg/engine` via `workspace:*`). Packages export TypeScript source directly (`"exports": "./src/index.ts"`), so no build step is needed for tests.
 
 - [ ] **Step 1:** `git rm -r angular.json package.json tsconfig.json src` and commit `chore: remove old Angular starter`.
@@ -192,18 +299,20 @@ export interface CardRegistry { defs: Record<string, CardDef>; scripts: Record<s
 ### Task 2: Card data — normalizer, decklists, import script
 
 **Files:**
+
 - Create: `packages/engine/src/cards.ts` (types above), `packages/cards/src/normalize.ts`, `packages/cards/scripts/import-cards.ts`, `packages/cards/src/decks/mega-gengar.json`, `packages/cards/src/decks/mega-diancie.json`, `packages/cards/src/data/cards.json` (generated), `packages/cards/test/normalize.test.ts`, `packages/cards/test/fixtures/{me02-056,me02-094,mee-007}.json`
 
 **Interfaces:**
+
 - Consumes: `CardDef` from `@ptcg/engine`.
 - Produces: `normalizeTcgdexCard(raw: unknown): CardDef`. `DeckList = { name: string; cards: { id: string; count: number }[] }` (exported from engine `types.ts`). `import cards from './data/cards.json'` gives a `Record<string, CardDef>` keyed by TCGdex id. `pnpm --filter @ptcg/cards import-cards` regenerates the data.
 
 Decklists (TCGdex ids):
 
-*Mega Gengar ex* — Pokémon: me02-054 Gastly ×4, me02-055 Haunter ×2, me02-056 Mega Gengar ex ×2, me02-067 Toxel ×2, me02-068 Toxtricity ×2, me02-059 Sableye ×2, me02-062 Seviper ×2, me02-069 Eternatus ×1. Trainers: me01-119 Lillie's Determination ×4, sv01-166 Arven ×2, me01-114 Boss's Orders ×2, sv02-185 Iono ×1, sv01-181 Nest Ball ×3, me01-167 Buddy-Buddy Poffin ×2, me01-131 Ultra Ball ×2, me01-125 Rare Candy ×2, me01-173 Night Stretcher ×2, me01-127 Risky Ruins ×2, me01-121 Mega Signal ×3, me02-092 Punk Helmet ×2, me01-130 Switch ×2, me01-166 Air Balloon ×1. Energy: mee-007 Darkness Energy ×13.
+_Mega Gengar ex_ — Pokémon: me02-054 Gastly ×4, me02-055 Haunter ×2, me02-056 Mega Gengar ex ×2, me02-067 Toxel ×2, me02-068 Toxtricity ×2, me02-059 Sableye ×2, me02-062 Seviper ×2, me02-069 Eternatus ×1. Trainers: me01-119 Lillie's Determination ×4, sv01-166 Arven ×2, me01-114 Boss's Orders ×2, sv02-185 Iono ×1, sv01-181 Nest Ball ×3, me01-167 Buddy-Buddy Poffin ×2, me01-131 Ultra Ball ×2, me01-125 Rare Candy ×2, me01-173 Night Stretcher ×2, me01-127 Risky Ruins ×2, me01-121 Mega Signal ×3, me02-092 Punk Helmet ×2, me01-130 Switch ×2, me01-166 Air Balloon ×1. Energy: mee-007 Darkness Energy ×13.
 **Unconfirmed:** the last 10 Trainer slots (Risky Ruins ×2, Mega Signal ×3, Punk Helmet ×2, Switch ×2, Air Balloon ×1) fill the published-but-incomplete list up to 60. Flag them in a `"note"` field in the JSON for the owner to confirm.
 
-*Mega Diancie ex* — Pokémon: me02-041 Mega Diancie ex ×2, me02-040 Meloetta ×2, me01-063 Grumpig ×2, me01-062 Spoink ×2, me02-044 Alcremie ×2, me02-043 Milcery ×2, me02-042 Mimikyu ×2, me02-039 Cresselia ×1, me02-045 Zacian ×1. Trainers: me01-119 Lillie's Determination ×4, me02-094 Wondrous Patch ×4, sv01-181 Nest Ball ×3, sv01-166 Arven ×2, me01-114 Boss's Orders ×2, me01-167 Buddy-Buddy Poffin ×2, me01-173 Night Stretcher ×2, me01-130 Switch ×2, me01-131 Ultra Ball ×2, me01-166 Air Balloon ×2, me01-122 Mystery Garden ×2, sv02-185 Iono ×1, sv09-155 Professor's Research ×1, me01-132 Wally's Compassion ×1. Energy: mee-005 Psychic Energy ×14.
+_Mega Diancie ex_ — Pokémon: me02-041 Mega Diancie ex ×2, me02-040 Meloetta ×2, me01-063 Grumpig ×2, me01-062 Spoink ×2, me02-044 Alcremie ×2, me02-043 Milcery ×2, me02-042 Mimikyu ×2, me02-039 Cresselia ×1, me02-045 Zacian ×1. Trainers: me01-119 Lillie's Determination ×4, me02-094 Wondrous Patch ×4, sv01-181 Nest Ball ×3, sv01-166 Arven ×2, me01-114 Boss's Orders ×2, me01-167 Buddy-Buddy Poffin ×2, me01-173 Night Stretcher ×2, me01-130 Switch ×2, me01-131 Ultra Ball ×2, me01-166 Air Balloon ×2, me01-122 Mystery Garden ×2, sv02-185 Iono ×1, sv09-155 Professor's Research ×1, me01-132 Wally's Compassion ×1. Energy: mee-005 Psychic Energy ×14.
 
 (Some Trainers only exist in TCGdex as G-mark printings. Starter decks are fixed product lists, so legality is not checked for them.)
 
@@ -221,9 +330,11 @@ Decklists (TCGdex ids):
 ### Task 3: Engine core — RNG, createEngine, createGame, setup
 
 **Files:**
+
 - Create: `packages/engine/src/{types.ts,ruleset.ts,rng.ts,engine.ts,setup.ts,invariants.ts}`, `packages/engine/test/{rng,setup}.test.ts`, `packages/engine/test/fixtures.ts`
 
 **Interfaces:**
+
 - Produces:
   - `nextRandom(rng: number): [value: number /*0..1*/, rng: number]` (mulberry32), `shuffle<T>(arr: T[], rng: number): [T[], number]`, `coinFlip(rng): [heads: boolean, rng]`.
   - `Ruleset` interface in `src/ruleset.ts`: `{ id: string; deckSize: 60; handSize: 7; prizeCount: 6; benchSize: 5; firstPlayerCanAttackTurn1: false; firstPlayerCanPlaySupporterTurn1: false; prizeValue(def: CardDef): number }`. Export `standard2026` (prizeValue: Mega ex 3, ex 2, else 1). All engine modules read these values from the ruleset, not literals, so `classic` can be added later (spec §4.1).
@@ -246,9 +357,11 @@ Decklists (TCGdex ids):
 ### Task 4: Turn structure and basic actions
 
 **Files:**
+
 - Create: `packages/engine/src/{actions.ts,turn.ts,energy.ts}`, `packages/engine/test/{actions,turn}.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 3 types and `createEngine`.
 - Produces: `IllegalActionError extends Error` (exported). `canPayCost(cost: EnergyType[], energyUids: string[], state, registry): boolean`, where typed symbols are matched by an Energy providing that type and `Colorless` by any. `getRetreatCost(state, slot, registry): number` (applies `modifyRetreatCost`, minimum 0). `startTurn(state)` and `endTurn(state)` in `turn.ts`.
 - Rules: `playBasic` puts a Basic from hand onto the Bench (<5). `attachEnergy` once per turn. `evolve` needs a matching `evolvesFrom` name, the target's `enteredTurn < turn`, `evolvedTurn !== turn`, and not the player's own first turn; it clears special conditions. `retreat` once per turn, not while Asleep or Paralyzed; it opens a `system:'retreatCost'` prompt to pick which Energy to discard when there is a choice; it swaps the Active with the Bench, clearing conditions. `endTurn` runs the checkup (stub until Task 7) and the next player's `startTurn` draws 1. If their deck is empty they lose (`deckOut`). `concede` → the other player wins.
@@ -268,10 +381,12 @@ Decklists (TCGdex ids):
 ### Task 5: Effect context, prompts and replay
 
 **Files:**
+
 - Create: `packages/engine/src/effects.ts`, `packages/engine/test/effects.test.ts`
 - Modify: `packages/engine/src/actions.ts` (route `answer`, use `runEffect`), `packages/engine/src/setup.ts` (setup uses `runEffect` with `system:'setup'`)
 
 **Interfaces:**
+
 - Produces: `runEffect(state: GameState, source: EffectSource, fn: (ctx: EffectCtx) => void, answers?: string[]): GameState`, plus the `EffectCtx` methods listed under Core Types.
 - Mechanism (the one non-obvious algorithm):
   ```
@@ -306,9 +421,11 @@ Decklists (TCGdex ids):
 ### Task 6: Attacks, damage, Knockouts, Prizes, win conditions
 
 **Files:**
+
 - Create: `packages/engine/src/combat.ts`, `packages/engine/test/combat.test.ts`
 
 **Interfaces:**
+
 - Consumes: `runEffect`, `canPayCost`, `CardScript.attacks`, `modifyOutgoingDamage`, `modifyIncomingDamage`, `modifyPrizes`, `afterDamagedInActive`.
 - Produces: `dealAttackDamage(ctx, target: SlotRef, base: number)` (used by attack effects that hit the Bench too; Bench damage skips W/R), and `checkKnockouts(state): GameState` (runs after every action).
 - Attack legality: not the first player's turn 1, cost payable, not Asleep or Paralyzed, `cantAttackOnTurn !== turn`, and `script.attacks[i].canUse?.()` holds.
@@ -332,10 +449,12 @@ Decklists (TCGdex ids):
 ### Task 7: Special conditions and Pokémon Checkup
 
 **Files:**
+
 - Create: `packages/engine/src/conditions.ts`, `packages/engine/test/conditions.test.ts`
 - Modify: `packages/engine/src/turn.ts` (call `pokemonCheckup` in `endTurn`), `packages/engine/src/combat.ts` (Confusion)
 
 **Interfaces:**
+
 - Produces: `applyCondition(slot, c: 'asleep'|'confused'|'paralyzed'|'poisoned'|'burned')`, where the three rotation conditions replace each other, and `pokemonCheckup(state): GameState`.
 - Checkup order for both Actives: Poisoned +10 damage → Burned +20 damage, then flip (heads cures) → Asleep flip (heads wakes) → Paralyzed is cured if the Pokémon's owner just ended their turn → Knockouts. A Confused attacker flips: tails puts 3 damage counters on itself and the attack does nothing.
 - No M1 card inflicts conditions; tests use a fixture attack that does.
@@ -347,9 +466,11 @@ Decklists (TCGdex ids):
 ### Task 8: Trainer rules + Item scripts
 
 **Files:**
+
 - Create: `packages/engine/src/trainers.ts`, `packages/engine/test/trainers.test.ts`, `packages/cards/src/registry.ts`, `packages/cards/src/scripts/{sv01/181,me01/167,me01/131,me01/125,me01/173,me01/130,me01/121,me02/094}.ts` (Nest Ball, Buddy-Buddy Poffin, Ultra Ball, Rare Candy, Night Stretcher, Switch, Mega Signal, Wondrous Patch), `packages/cards/test/items.test.ts`
 
 **Interfaces:**
+
 - Produces: `buildRegistry(): CardRegistry` (cards.json + every script, keyed by def id). Scripts are keyed by **name** for reprints: the registry maps every def id whose name matches a scripted name.
 - Rules: a card can be played if `trainer.canPlay(ctx)` is true (default true). Supporter: once per turn, not on the first player's turn 1. Stadium: can't play one with the same name as the one in play; it replaces the existing Stadium (old one to its owner's discard). Tool: one per Pokémon, attached via `playTrainer.target`. A played Item or Supporter goes to the discard pile after resolving.
 - Script behaviours (from card text; the tests assert them):
@@ -380,9 +501,11 @@ Decklists (TCGdex ids):
 ### Task 9: Supporter, Stadium and Tool scripts
 
 **Files:**
+
 - Create: `packages/cards/src/scripts/{me01/119,sv01/166,me01/114,sv02/185,sv09/155,me01/132,me01/122,me01/127,me01/166,me02/092}.ts`, `packages/cards/test/supporters-stadiums-tools.test.ts`
 
 **Interfaces:**
+
 - Consumes: `EffectCtx`, the hooks `stadium.onBenchFromHand`, `modifyRetreatCost`, `afterDamagedInActive`.
 - Behaviours:
   - Lillie's Determination: shuffle the hand into the deck, then draw 6 (8 if exactly 6 prizes left).
@@ -411,18 +534,20 @@ Decklists (TCGdex ids):
 ### Task 10: Mega Gengar ex deck Pokémon scripts
 
 **Files:**
+
 - Create: `packages/cards/src/scripts/me02/{056,067,068,059,062,069}.ts`, `packages/cards/test/gengar-deck.test.ts`
   (Gastly 054 and Haunter 055 have no text; they work from data alone.)
 
 **Interfaces:**
+
 - Consumes: `CardScript` attacks, abilities, `modifyPrizes`, `modifyOutgoingDamage`.
 - Behaviours:
-  - Mega Gengar ex: *Shadowy Concealment* `modifyPrizes` — if the Knocked Out Pokémon is Darkness, owned by the ability holder's side, and was Knocked Out by an attack from an opponent's ex → −1 (no stacking: apply once if any Mega Gengar ex is in play on that side). *Void Gale* 230, then move 1 Energy from self to a chosen Benched Pokémon (skip if no Bench).
-  - Toxel: *Call for Family* up to `min(2, free slots)` Basics → Bench; shuffle. *Playful Kick* 20 (data only).
-  - Toxtricity: *Sinister Surge* (once per turn) — search for a Basic Darkness Energy, attach it to a Benched Darkness Pokémon, place 2 counters there. `canUse` needs a Benched Darkness Pokémon.
-  - Sableye: *Cocky Claw* 20, +70 if any Benched Stage 2 Darkness Pokémon.
-  - Seviper: *Excited Power* `modifyOutgoingDamage` +120 to the Active when its side has a Darkness Mega ex in play and the attacker is this Seviper.
-  - Eternatus: *Shatter* 50 + discard the Stadium in play. *Power Rush* 130, coin flip; tails → `cantAttackOnTurn = turn + 2`.
+  - Mega Gengar ex: _Shadowy Concealment_ `modifyPrizes` — if the Knocked Out Pokémon is Darkness, owned by the ability holder's side, and was Knocked Out by an attack from an opponent's ex → −1 (no stacking: apply once if any Mega Gengar ex is in play on that side). _Void Gale_ 230, then move 1 Energy from self to a chosen Benched Pokémon (skip if no Bench).
+  - Toxel: _Call for Family_ up to `min(2, free slots)` Basics → Bench; shuffle. _Playful Kick_ 20 (data only).
+  - Toxtricity: _Sinister Surge_ (once per turn) — search for a Basic Darkness Energy, attach it to a Benched Darkness Pokémon, place 2 counters there. `canUse` needs a Benched Darkness Pokémon.
+  - Sableye: _Cocky Claw_ 20, +70 if any Benched Stage 2 Darkness Pokémon.
+  - Seviper: _Excited Power_ `modifyOutgoingDamage` +120 to the Active when its side has a Darkness Mega ex in play and the attacker is this Seviper.
+  - Eternatus: _Shatter_ 50 + discard the Stadium in play. _Power Rush_ 130, coin flip; tails → `cantAttackOnTurn = turn + 2`.
 
 - [ ] **Step 1: Failing tests:**
   - one per behaviour, including Shadowy Concealment: an ex attacker Knocking Out a Darkness non-ex with Gengar in play → 0 prizes, Knocking Out Mega Gengar ex itself → 2;
@@ -436,20 +561,22 @@ Decklists (TCGdex ids):
 ### Task 11: Mega Diancie ex deck Pokémon scripts
 
 **Files:**
+
 - Create: `packages/cards/src/scripts/{me02/041,me02/040,me01/062,me01/063,me02/043,me02/044,me02/042,me02/039,me02/045}.ts`, `packages/cards/test/diancie-deck.test.ts`
 
 **Interfaces:**
+
 - Consumes: `CardScript` attacks, `modifyIncomingDamage`, `onEvolveFromHand`.
 - Behaviours:
-  - Mega Diancie ex: *Diamond Coat* −30 incoming (after W/R). *Garland Ray* discard up to 2 Energy cards from self, damage = 120 × number discarded.
-  - Meloetta: *Soothing Melody* heal 120 from a Benched Psychic Pokémon. *Magical Shot* 50.
-  - Spoink: *Triple Spin* 3 flips × 10.
-  - Grumpig: *Energized Steps* (`onEvolveFromHand`, optional yes/no prompt) — look at the top 4 cards, attach any number of Basic Energy among them to your Pokémon one at a time (choose energy, then choose target, `done` to stop), shuffle the rest back.
-  - Milcery: *Draining Kiss* 10 + heal 10 from self.
-  - Alcremie: *Sweet Circle* 20 × own Pokémon in play.
-  - Mimikyu: *Call for Family* 1 Basic → Bench. The attack is always usable; with a full Bench it does nothing.
-  - Cresselia: *Swelling Light* attach up to 2 Basic Psychic Energy from the deck to self; shuffle.
-  - Zacian: *Limit Break* 50, +90 if the opponent has ≤ 3 prizes left.
+  - Mega Diancie ex: _Diamond Coat_ −30 incoming (after W/R). _Garland Ray_ discard up to 2 Energy cards from self, damage = 120 × number discarded.
+  - Meloetta: _Soothing Melody_ heal 120 from a Benched Psychic Pokémon. _Magical Shot_ 50.
+  - Spoink: _Triple Spin_ 3 flips × 10.
+  - Grumpig: _Energized Steps_ (`onEvolveFromHand`, optional yes/no prompt) — look at the top 4 cards, attach any number of Basic Energy among them to your Pokémon one at a time (choose energy, then choose target, `done` to stop), shuffle the rest back.
+  - Milcery: _Draining Kiss_ 10 + heal 10 from self.
+  - Alcremie: _Sweet Circle_ 20 × own Pokémon in play.
+  - Mimikyu: _Call for Family_ 1 Basic → Bench. The attack is always usable; with a full Bench it does nothing.
+  - Cresselia: _Swelling Light_ attach up to 2 Basic Psychic Energy from the deck to self; shuffle.
+  - Zacian: _Limit Break_ 50, +90 if the opponent has ≤ 3 prizes left.
 - **Engine hook needed:** `evolve` from hand calls `onEvolveFromHand` through `runEffect` with source `{kind:'ability', …}`.
 
 - [ ] **Step 1: Failing tests:** one per behaviour, including:
@@ -464,9 +591,11 @@ Decklists (TCGdex ids):
 ### Task 12: Hidden information — viewFor
 
 **Files:**
+
 - Create: `packages/engine/src/view.ts`, `packages/engine/test/view.test.ts`
 
 **Interfaces:**
+
 - Produces: `PlayerView = { me: PlayerId; turn; current; phase; stadium; result; log; prompt: Prompt | null /* only if prompt.player === me */; waitingOn: PlayerId | null; you: { hand: CardInstance[]; deckCount; discard: CardInstance[]; prizeCount; active; bench; …turn flags }; opponent: { handCount; deckCount; discard; prizeCount; active; bench } }`. The slots are the same shape as `PokemonSlot`, with uids resolved to `CardInstance`.
 - Never includes: the opponent's hand contents, either deck's order or contents, prize identities, `rng`, `pending`. During the setup phase, the opponent's Active and Bench are hidden (`null` / `[]`).
 
@@ -480,9 +609,11 @@ Decklists (TCGdex ids):
 ### Task 13: Easy bot, match runner, fuzz tests, demo
 
 **Files:**
+
 - Create: `packages/bots/src/{easy.ts,runMatch.ts,demo.ts,index.ts}`, `packages/bots/test/{easy,fuzz}.test.ts`, `packages/engine/README.md`
 
 **Interfaces:**
+
 - Consumes: `Engine`, `PlayerView`, `Action`, `buildRegistry`, decklists.
 - Produces:
   - `type Bot = (view: PlayerView, legal: Action[], rng: number) => { action: Action; rng: number }`.
