@@ -1,3 +1,4 @@
+import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { coinFlip, shuffle } from './rng.ts';
@@ -214,6 +215,13 @@ export class EffectCtx {
       player: ref.player,
       text: `${from} evolves into ${this.def(uid).name}`,
     });
+  }
+
+  /** Give the Pokémon at `ref` a Special Condition. */
+  applyCondition(ref: SlotRef, c: Condition): void {
+    const slot = this.slot(ref);
+    applyCondition(slot, c);
+    this.log(`${slotDef(this.env, this.state, slot).name} is now ${c[0]!.toUpperCase()}${c.slice(1)}`);
   }
 
   heal(ref: SlotRef, hp: number): void {
