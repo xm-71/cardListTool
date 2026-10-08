@@ -1,9 +1,32 @@
 import { nextRandom, type CardDef } from '@ptcg/engine';
 import { CREDITS } from './config.ts';
 
-export const PACKS: readonly { setId: string; name: string; price: number }[] = [
-  { setId: 'me01', name: 'Mega Evolution', price: CREDITS.packPrice },
-  { setId: 'me02', name: 'Phantasmal Flames', price: CREDITS.packPrice },
+export interface PackDef {
+  setId: string;
+  name: string;
+  price: number;
+  /** 'mega': 10-card modern slots. 'classic': 11-card WotC slots (7 common, 3 uncommon, 1 rare). */
+  era: 'mega' | 'classic';
+}
+
+const pack = (setId: string, name: string, era: PackDef['era']): PackDef => ({
+  setId,
+  name,
+  price: CREDITS.packPrice,
+  era,
+});
+
+export const PACKS: readonly PackDef[] = [
+  pack('me01', 'Mega Evolution', 'mega'),
+  pack('me02', 'Phantasmal Flames', 'mega'),
+  pack('base1', 'Base Set', 'classic'),
+  pack('base2', 'Jungle', 'classic'),
+  pack('base3', 'Fossil', 'classic'),
+  pack('base4', 'Base Set 2', 'classic'),
+  pack('base5', 'Team Rocket', 'classic'),
+  pack('gym1', 'Gym Heroes', 'classic'),
+  pack('gym2', 'Gym Challenge', 'classic'),
+  pack('neo1', 'Neo Genesis', 'classic'),
 ];
 
 /** Slot-10 (rare or better) rates. Approximations, not official. */
@@ -51,6 +74,13 @@ export function openPack(
   };
 
   const out: string[] = [];
+  if (PACKS.find((p) => p.setId === setId)?.era === 'classic') {
+    // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
+    for (let i = 0; i < 7; i++) out.push(pick(byRarity('Common')));
+    for (let i = 0; i < 3; i++) out.push(pick(byRarity('Uncommon')));
+    out.push(pick(byRarity('Rare', 'Holo Rare')));
+    return { cards: out, rng: r };
+  }
   for (let i = 0; i < 4; i++) out.push(pick(byRarity('Common')));
   for (let i = 0; i < 3; i++) out.push(pick(byRarity('Uncommon')));
   out.push(pick(byRarity(...REVERSE_RARITIES)));

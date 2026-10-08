@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { CardDef, DeckList } from '@ptcg/engine';
-import { isPlayable } from '@ptcg/cards';
-import { DECK_SIZE, MAX_COPIES, validateCustomDeck } from '@ptcg/economy';
+import { SETS } from '@ptcg/cards';
+import { DECK_SIZE, isDeckUsable, MAX_COPIES, validateCustomDeck } from '@ptcg/economy';
 import { registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
@@ -9,9 +9,12 @@ import type { CustomDeck } from '../profile/types.ts';
 import { cardNumber } from './Binder.tsx';
 
 const isBasicEnergy = (def: CardDef): boolean => def.category === 'Energy' && def.energyKind === 'Basic';
+// One of each type, from the modern Mega Evolution Energy set.
 const BASIC_ENERGY = Object.values(registry.defs)
-  .filter(isBasicEnergy)
+  .filter((d) => isBasicEnergy(d) && d.id.startsWith('mee-'))
   .sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }));
+const CLASSIC_SETS = new Set(SETS.filter((s) => s.era === 'classic').map((s) => s.id));
+const isClassic = (id: string): boolean => CLASSIC_SETS.has(id.slice(0, id.lastIndexOf('-')));
 const CATEGORY_ORDER = { Pokemon: 0, Trainer: 1, Energy: 2 } as const;
 const byCategoryThenId = (a: CardDef, b: CardDef): number =>
   CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category] ||
@@ -108,9 +111,10 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
           .filter((id) => (collection[id] ?? 0) > 0)
           .map((id) => registry.defs[id])
           .filter((d): d is CardDef => d !== undefined && !isBasicEnergy(d))
-          .sort(byCategoryThenId),
+          // Usable cards first; classic (collect-only) cards after them.
+          .sort((a, b) => Number(isClassic(a.id)) - Number(isClassic(b.id)) || byCategoryThenId(a, b)),
         ...BASIC_ENERGY,
-      ].map((def) => ({ def, playable: isPlayable(def, registry) })),
+      ].map((def) => ({ def, playable: isDeckUsable(def, registry) })),
     [collection],
   );
 
@@ -195,7 +199,9 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
                       : `${counts[def.id] ?? 0} / ${collection[def.id] ?? 0} owned`}
                   </span>
                 ) : (
-                  <span className="text-lg opacity-70">Isn't playable yet</span>
+                  <span className="text-lg opacity-70">
+                    {isClassic(def.id) ? 'Classic: not playable yet' : "Isn't playable yet"}
+                  </span>
                 )}
                 <button
                   type="button"

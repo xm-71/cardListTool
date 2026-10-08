@@ -8,6 +8,8 @@ import { Box, Button } from '../ui/retro/index.ts';
 export function Options() {
   const sound = useSettings((s) => s.sound);
   const setSound = useSettings((s) => s.setSound);
+  const skipTitle = useSettings((s) => s.skipTitle);
+  const setSkipTitle = useSettings((s) => s.setSkipTitle);
   const current = useProfile((s) => s.profile.playerName);
   const setName = useProfile((s) => s.setName);
   const replayIntro = useProfile((s) => s.replayIntro);
@@ -24,6 +26,15 @@ export function Options() {
               className="size-5"
             />
             Sound
+          </label>
+          <label className="flex items-center gap-3 font-pixel text-xs">
+            <input
+              type="checkbox"
+              checked={skipTitle}
+              onChange={(e) => setSkipTitle(e.target.checked)}
+              className="size-5"
+            />
+            Skip title screen
           </label>
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-2">

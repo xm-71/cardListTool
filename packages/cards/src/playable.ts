@@ -4,7 +4,8 @@ import type { CardDef, CardRegistry } from '@ptcg/engine';
 export function isPlayable(def: CardDef, registry: CardRegistry): boolean {
   const script = registry.scripts[def.id];
   // Passive and triggered Abilities are written as hooks (modifyPrizes, onEvolveFromHand, …), not keyed by name.
-  const hasPassiveHook = script !== undefined && Object.keys(script).some((k) => k !== 'attacks' && k !== 'abilities');
+  const hasPassiveHook =
+    script !== undefined && Object.keys(script).some((k) => k !== 'attacks' && k !== 'abilities');
   switch (def.category) {
     case 'Pokemon':
       return (

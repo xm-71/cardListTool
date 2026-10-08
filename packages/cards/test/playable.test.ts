@@ -59,9 +59,26 @@ test('setCards returns the whole set', () => {
   expect(me02).toHaveLength(130);
   for (const c of me02) expect(c.id.startsWith('me02-')).toBe(true);
   expect(setCards('me01')).toHaveLength(188);
-  expect(SETS.map((s) => s.id)).toEqual(['me01', 'me02']);
+  expect(SETS.map((s) => s.id).slice(0, 2)).toEqual(['me01', 'me02']);
 });
 
 test.each([megaGengarDeck, megaDiancieDeck, megaLucarioDeck] as DeckList[])('every card in $name is playable', (deck) => {
   for (const c of deck.cards) expect(isPlayable(def(c.id), registry), c.id).toBe(true);
+});
+
+test('every shop set has an era, classic sets included', () => {
+  expect(SETS.map((s) => [s.id, s.era])).toEqual([
+    ['me01', 'mega'],
+    ['me02', 'mega'],
+    ['base1', 'classic'],
+    ['base2', 'classic'],
+    ['base3', 'classic'],
+    ['base4', 'classic'],
+    ['base5', 'classic'],
+    ['gym1', 'classic'],
+    ['gym2', 'classic'],
+    ['neo1', 'classic'],
+  ]);
+  expect(setCards('base1')).toHaveLength(102);
+  expect(setCards('neo1')).toHaveLength(111);
 });

@@ -1,7 +1,7 @@
 // Fetches every card of the sets in src/sets.json plus every card referenced by a decklist
 // from TCGdex and writes src/data/cards.json (set logos go to src/data/sets.json).
 // Usage: pnpm --filter @ptcg/cards import-cards
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CardDef, DeckList } from '@ptcg/engine';
 import { normalizeTcgdexCard } from '../src/normalize.ts';
@@ -9,10 +9,20 @@ import { normalizeTcgdexCard } from '../src/normalize.ts';
 const root = join(import.meta.dirname, '..');
 const API = 'https://api.tcgdex.net/v2/en';
 
+// Responses are cached on disk so re-runs (e.g. after a normalizer fix) don't refetch everything.
+const cacheDir = join(root, 'node_modules/.cache/tcgdex');
+mkdirSync(cacheDir, { recursive: true });
+
 async function get(path: string): Promise<unknown> {
+  const cached = join(cacheDir, `${path.replace(/\//g, '__')}.json`);
+  if (existsSync(cached)) return JSON.parse(readFileSync(cached, 'utf8'));
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(`${API}/${path}`);
-    if (res.ok) return res.json();
+    if (res.ok) {
+      const body: unknown = await res.json();
+      writeFileSync(cached, JSON.stringify(body));
+      return body;
+    }
     if (attempt >= 5 || (res.status !== 429 && res.status < 500))
       throw new Error(`TCGdex ${path}: HTTP ${res.status}`);
     await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));

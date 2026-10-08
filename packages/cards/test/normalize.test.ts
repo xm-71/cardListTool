@@ -60,6 +60,7 @@ describe('parseDamage', () => {
     ['20+', 20, '+'],
     ['120×', 120, '×'],
     ['240-', 240, '-'],
+    ['?', 0, '?'],
     [230, 230, ''],
     [undefined, 0, ''],
   ] as const)('%s → %s %s', (raw, damage, suffix) => {
@@ -78,4 +79,15 @@ test('an Energy TCGdex labels Normal but without a basic type name is Special', 
     rarity: 'Ultra Rare',
   });
   expect(def).toMatchObject({ category: 'Energy', energyKind: 'Special', provides: ['Colorless'] });
+});
+
+test('a classic Trainer without a trainer type is an Item', () => {
+  const def = normalizeTcgdexCard({
+    id: 'base1-70',
+    name: 'Clefairy Doll',
+    category: 'Trainer',
+    effect: 'Play Clefairy Doll as if it were a Basic Pokémon.',
+    rarity: 'Rare',
+  });
+  expect(def).toMatchObject({ category: 'Trainer', trainerType: 'Item', regulationMark: null });
 });

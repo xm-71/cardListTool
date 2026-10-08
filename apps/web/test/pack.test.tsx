@@ -37,8 +37,10 @@ describe('rarityTier', () => {
       'Illustration rare': 'special',
       'Special illustration rare': 'special',
       'Mega Hyper Rare': 'special',
+      'Holo Rare': 'ultra',
     };
     for (const r of new Set(all.map((c) => c.rarity))) expect(rarityTier(r), r).toBe(expected[r]);
+    expect(rarityTier('Holo Rare')).toBe('ultra');
     expect(rarityTier('Something new')).toBe('common');
     expect(TAG.common('Common')).toBeNull();
     expect(TAG.special('Special illustration rare')).toBe('SPECIAL ILLUSTRATION RARE!');
@@ -50,7 +52,12 @@ describe('PackOpening', () => {
     render(<PackOpening setId="me01" cards={[...commons, byRarity('Rare')]} onDone={() => {}} />);
     const dialog = screen.getByRole('dialog', { name: 'Pack opening' });
     expect(within(dialog).getByTestId('pack-art')).toBeInTheDocument();
-    expect(within(dialog).queryAllByRole('img')).toHaveLength(0);
+    // only the set logo on the wrapper, no card faces yet
+    expect(
+      within(dialog)
+        .queryAllByRole('img')
+        .map((i) => i.getAttribute('alt')),
+    ).toEqual(['Mega Evolution logo']);
     expect(played).toContain('shake');
     passIntro();
     expect(played).toContain('tear');
