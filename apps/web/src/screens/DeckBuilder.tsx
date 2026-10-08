@@ -34,34 +34,34 @@ function DeckBuilderBody() {
 
   if (editing) return <Editor initial={editing} onClose={() => setEditing(null)} />;
   return (
-    <section className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold">Your decks</h2>
+    <section className="flex flex-col gap-4">
+      <div className="retro-box flex items-center gap-3 p-4">
+        <h2 className="font-pixel text-xs uppercase">Your decks</h2>
         <button
           type="button"
           onClick={() => setEditing({ id: newId(), name: 'New deck', cards: [] })}
-          className="ml-auto rounded-lg bg-amber-400 px-4 py-2 font-semibold text-slate-900 hover:bg-amber-300"
+          className="retro-shadow ml-auto border-4 border-ink bg-yellow px-3 py-2 font-pixel text-[10px] uppercase"
         >
           New deck
         </button>
       </div>
-      <p className="text-sm text-white/60">
+      <p className="text-xl">
         Build decks from cards you own that the game can play. Basic Energy is free. Starter decks are always
         available on the Home screen.
       </p>
       {decks.length === 0 ? (
-        <p className="text-white/60">No custom decks yet.</p>
+        <p className="text-xl">No custom decks yet.</p>
       ) : (
         <ul aria-label="Saved decks" className="flex flex-col gap-2">
           {decks.map((d) => (
-            <li key={d.id} className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-2">
-              <span className="font-semibold">{d.name}</span>
-              <span className="text-sm text-white/50">{d.cards.reduce((n, c) => n + c.count, 0)} cards</span>
+            <li key={d.id} className="retro-box flex flex-wrap items-center gap-3 px-4 py-3">
+              <span className="font-pixel text-[10px]">{d.name}</span>
+              <span className="text-xl opacity-70">{d.cards.reduce((n, c) => n + c.count, 0)} cards</span>
               <button
                 type="button"
                 aria-label={`Edit ${d.name}`}
                 onClick={() => setEditing(d)}
-                className="ml-auto rounded-lg bg-white/10 px-3 py-1 hover:bg-white/20"
+                className="ml-auto border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-cream"
               >
                 Edit
               </button>
@@ -69,7 +69,7 @@ function DeckBuilderBody() {
                 type="button"
                 aria-label={`Delete ${d.name}`}
                 onClick={() => void deleteDeck(d.id)}
-                className="rounded-lg bg-white/10 px-3 py-1 hover:bg-red-500/40"
+                className="border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-red hover:text-paper"
               >
                 Delete
               </button>
@@ -136,73 +136,73 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="retro-box flex flex-wrap items-center gap-3 p-4">
         <label className="flex items-center gap-2">
-          <span className="text-sm text-white/70">Deck name</span>
+          <span className="font-pixel text-[9px] uppercase">Deck name</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-lg bg-white/10 px-3 py-1.5"
+            className="border-b-4 border-ink bg-transparent px-1 text-2xl outline-none"
           />
         </label>
-        <span className={`font-semibold ${total === DECK_SIZE ? 'text-emerald-300' : 'text-amber-300'}`}>
+        <span className={`font-pixel text-xs ${total === DECK_SIZE ? 'text-green' : 'text-red'}`}>
           {total} / {DECK_SIZE}
         </span>
         <button
           type="button"
           disabled={problems.length > 0}
           onClick={() => void save()}
-          className="ml-auto rounded-lg bg-amber-400 px-4 py-2 font-semibold text-slate-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
+          className="retro-shadow ml-auto border-4 border-ink bg-yellow px-3 py-2 font-pixel text-[10px] uppercase disabled:cursor-not-allowed disabled:opacity-40"
         >
           Save deck
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg bg-white/10 px-4 py-2 hover:bg-white/20"
+          className="border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase hover:bg-cream"
         >
           Cancel
         </button>
       </div>
       {saveError && (
-        <p role="alert" className="text-red-300">
+        <p role="alert" className="text-xl text-red">
           {saveError}
         </p>
       )}
       {problems.length > 0 && (
-        <ul aria-label="Problems" className="list-inside list-disc text-sm text-amber-200">
+        <ul aria-label="Problems" className="retro-box list-inside list-disc p-4 text-xl text-red">
           {problems.map((p) => (
             <li key={p}>{p}</li>
           ))}
         </ul>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <h3 className="font-semibold">Your cards</h3>
+        <div className="retro-box flex flex-col gap-2 p-4">
+          <h3 className="font-pixel text-[10px] uppercase">Your cards</h3>
           <ul aria-label="Available cards" className="flex max-h-[60vh] flex-col gap-1 overflow-auto">
             {available.map(({ def, playable }) => (
               <li
                 key={def.id}
-                className={`flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1 ${playable ? '' : 'opacity-50'}`}
+                className={`flex items-center gap-2 border-b-2 border-ink/20 px-1 py-1 text-xl ${playable ? '' : 'opacity-50'}`}
               >
                 <span className="flex-1">
-                  {def.name} <span className="text-xs text-white/40">#{cardNumber(def.id)}</span>
+                  {def.name} <span className="opacity-50">#{cardNumber(def.id)}</span>
                 </span>
                 {playable ? (
-                  <span className="text-xs text-white/50">
+                  <span className="text-lg opacity-70">
                     {isBasicEnergy(def)
                       ? 'Free'
                       : `${counts[def.id] ?? 0} / ${collection[def.id] ?? 0} owned`}
                   </span>
                 ) : (
-                  <span className="text-xs text-white/50">Isn't playable yet</span>
+                  <span className="text-lg opacity-70">Isn't playable yet</span>
                 )}
                 <button
                   type="button"
                   aria-label={`Add ${def.name}`}
                   disabled={!canAdd(def, playable)}
                   onClick={() => change(def.id, 1)}
-                  className="rounded bg-white/10 px-2 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-30"
+                  className="border-2 border-ink bg-yellow px-2 font-pixel text-xs disabled:cursor-not-allowed disabled:bg-paper disabled:opacity-30"
                 >
                   +
                 </button>
@@ -210,21 +210,21 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
             ))}
           </ul>
         </div>
-        <div className="flex flex-col gap-2">
-          <h3 className="font-semibold">Deck</h3>
+        <div className="retro-box flex flex-col gap-2 p-4">
+          <h3 className="font-pixel text-[10px] uppercase">Deck</h3>
           <ul aria-label="Deck" className="flex flex-col gap-1">
             {cards
               .map((c) => ({ ...c, def: registry.defs[c.id]! }))
               .sort((a, b) => byCategoryThenId(a.def, b.def))
               .map(({ id, count, def }) => (
-                <li key={id} className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1">
-                  <span className="w-8 font-semibold">{count}×</span>
+                <li key={id} className="flex items-center gap-2 border-b-2 border-ink/20 px-1 py-1 text-xl">
+                  <span className="w-10">{count}×</span>
                   <span className="flex-1">{def.name}</span>
                   <button
                     type="button"
                     aria-label={`Remove ${def.name}`}
                     onClick={() => change(id, -1)}
-                    className="rounded bg-white/10 px-2 hover:bg-white/20"
+                    className="border-2 border-ink bg-paper px-2 font-pixel text-xs hover:bg-cream"
                   >
                     −
                   </button>

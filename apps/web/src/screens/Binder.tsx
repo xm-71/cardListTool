@@ -34,26 +34,26 @@ function BinderBody() {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="retro-box flex flex-wrap items-center gap-3 p-4">
         {SETS.map((s) => (
           <button
             key={s.id}
             type="button"
             aria-pressed={s.id === setId}
             onClick={() => setSetId(s.id)}
-            className={`rounded-lg px-3 py-1.5 ${s.id === setId ? 'bg-amber-400/20 ring-2 ring-amber-400' : 'bg-white/5 hover:bg-white/10'}`}
+            className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
           >
             {s.name}
           </button>
         ))}
-        <span className="text-sm text-white/60">
+        <span className="text-xl">
           {ownedCount} / {cards.length} collected
         </span>
-        <label className="ml-auto flex items-center gap-2 text-sm">
+        <label className="ml-auto flex items-center gap-2 text-xl">
           <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> Owned
           only
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-xl">
           <input type="checkbox" checked={playableOnly} onChange={(e) => setPlayableOnly(e.target.checked)} />{' '}
           Playable only
         </label>
@@ -70,22 +70,24 @@ function BinderBody() {
               className={`flex flex-col items-center gap-1 ${count > 0 ? '' : 'opacity-35 grayscale'}`}
             >
               <CardView card={card} size="md" noPreview onClick={() => setDetails(card)} />
-              <div className="flex items-center gap-1 text-xs">
-                <span className="text-white/50">#{cardNumber(def.id)}</span>
+              <div className="flex flex-wrap items-center justify-center gap-1 text-lg leading-none">
+                <span className="opacity-60">#{cardNumber(def.id)}</span>
                 {count > 0 ? (
                   <span className="font-semibold">×{count}</span>
                 ) : (
                   <span className="sr-only">Not owned</span>
                 )}
                 {playable && (
-                  <span className="rounded bg-emerald-500/30 px-1 text-emerald-100">Playable</span>
+                  <span className="border-2 border-ink bg-green px-1 font-pixel text-[7px] text-paper">
+                    Playable
+                  </span>
                 )}
               </div>
             </li>
           );
         })}
       </ul>
-      {shown.length === 0 && <p className="text-white/60">No cards match these filters yet.</p>}
+      {shown.length === 0 && <p className="text-xl">No cards match these filters yet.</p>}
       {details && <CardDetails card={details} onClose={() => setDetails(null)} />}
     </section>
   );

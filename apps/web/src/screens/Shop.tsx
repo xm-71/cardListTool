@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { SETS } from '@ptcg/cards';
 import { PACKS } from '@ptcg/economy';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { PackOpening } from '../ui/PackOpening.tsx';
+import { PackArt } from '../ui/pack/PackArt.tsx';
+import { Box, Button } from '../ui/retro/index.ts';
 
 export function Shop() {
   return (
@@ -34,37 +35,29 @@ function ShopBody() {
   };
 
   return (
-    <section className="flex flex-col items-center gap-6">
-      <h2 className="text-2xl font-bold">Shop</h2>
-      <p className="text-sm text-white/60">Win games against the bots to earn credits.</p>
+    <section className="flex flex-col gap-5">
+      <Box title="Shop">
+        <p className="text-xl">Win games against the bots to earn credits, then spend them here.</p>
+      </Box>
       <div className="flex flex-wrap justify-center gap-6">
-        {PACKS.map((p) => {
-          const logo = SETS.find((s) => s.id === p.setId)?.logo;
-          return (
-            <div
-              key={p.setId}
-              role="group"
-              aria-label={p.name}
-              className="flex w-56 flex-col items-center gap-3 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10"
-            >
-              {logo ? <img src={`${logo}.webp`} alt="" className="h-20 object-contain" /> : null}
-              <h3 className="font-semibold">{p.name}</h3>
-              <p className="text-sm text-white/60">10 cards</p>
-              <p className="font-semibold text-amber-300">{p.price} credits</p>
-              <button
-                type="button"
-                disabled={!ready || busy || credits < p.price}
-                onClick={() => void buy(p.setId)}
-                className="rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Buy & open
-              </button>
-            </div>
-          );
-        })}
+        {PACKS.map((p) => (
+          <div
+            key={p.setId}
+            role="group"
+            aria-label={p.name}
+            className="retro-box flex w-60 flex-col items-center gap-3 p-5"
+          >
+            <PackArt setId={p.setId} name={p.name} className="-rotate-3" />
+            <h3 className="mt-2 font-pixel text-[10px]">{p.name}</h3>
+            <p className="text-2xl">{p.price} credits</p>
+            <Button disabled={!ready || busy || credits < p.price} onClick={() => void buy(p.setId)}>
+              Buy & open
+            </Button>
+          </div>
+        ))}
       </div>
       {error && (
-        <p role="alert" className="text-red-300">
+        <p role="alert" className="retro-box border-red p-3 text-xl text-red">
           {error}
         </p>
       )}
