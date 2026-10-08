@@ -1,3 +1,4 @@
+import { resolveConfusion } from './conditions.ts';
 import type { EffectCtx } from './effects.ts';
 import { canPayCost } from './energy.ts';
 import type { Env } from './env.ts';
@@ -111,12 +112,6 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
   }
   checkKnockouts(ctx);
   endTurn(ctx);
-}
-
-/** Hook for Confusion (Task 7). Returns false if the attack fails. */
-export let resolveConfusion: (ctx: EffectCtx) => boolean = () => true;
-export function setConfusionResolver(fn: (ctx: EffectCtx) => boolean): void {
-  resolveConfusion = fn;
 }
 
 /** Tools such as Punk Helmet react when the Pokémon holding them is damaged in the Active Spot. */

@@ -1,3 +1,4 @@
+import { pokemonCheckup } from './conditions.ts';
 import type { EffectCtx } from './effects.ts';
 import { log, other } from './state.ts';
 import type { GameResult, GameState } from './types.ts';
@@ -35,6 +36,7 @@ export function endTurn(ctx: EffectCtx): void {
   const s = ctx.state;
   if (s.result) return;
   log(s, 'turnEnd', `Player ${s.current + 1} ends their turn`, { player: s.current });
+  pokemonCheckup(ctx);
   if (s.result) return;
   s.turn++;
   s.current = other(s.current);
