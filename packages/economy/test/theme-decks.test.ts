@@ -1,6 +1,12 @@
 import { expect, test } from 'vitest';
 import type { DeckList } from '@ptcg/engine';
-import { buildRegistry, megaAbomasnowDeck, megaVenusaurDeck, megaCharizardXDeck } from '@ptcg/cards';
+import {
+  buildRegistry,
+  megaManectricDeck,
+  megaAbomasnowDeck,
+  megaVenusaurDeck,
+  megaCharizardXDeck,
+} from '@ptcg/cards';
 import { validateCustomDeck } from '../src/index.ts';
 
 const registry = buildRegistry();
@@ -11,6 +17,8 @@ test.each([
   ['Mega Venusaur ex Theme Deck', megaVenusaurDeck],
   ,
   ['Mega Abomasnow ex Theme Deck', megaAbomasnowDeck],
+  ,
+  ['Mega Manectric ex Theme Deck', megaManectricDeck],
 ] as [string, DeckList][])('%s theme deck passes the Standard format checks', (_name, deck) => {
   expect(validateCustomDeck(deck, registry, ownAll)).toEqual([]);
 });

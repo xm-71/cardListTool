@@ -82,6 +82,14 @@ export const ID = {
   kyogre: 'me01-034',
   mantine: 'me01-032',
   eiscue: 'me01-044',
+  lightning: 'mee-004',
+  electrike: 'me01-049',
+  megaManectric: 'me01-050',
+  raikou: 'me01-048',
+  yamper: 'me02-030',
+  boltund: 'me02-031',
+  magnemite: 'me01-045',
+  magneton: 'me01-046',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */
