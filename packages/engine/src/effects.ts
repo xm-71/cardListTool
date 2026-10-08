@@ -1,7 +1,23 @@
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
-import { defOf, other } from './state.ts';
-import type { EffectSource, GameState, Origin, PlayerId, Prompt, PromptOption } from './types.ts';
+import { coinFlip } from './rng.ts';
+import { defOf, getSlot, newSlot, other, slotDef } from './state.ts';
+import type {
+  EffectSource,
+  GameState,
+  Origin,
+  PlayerId,
+  PokemonSlot,
+  Prompt,
+  PromptOption,
+  SlotRef,
+} from './types.ts';
+import { drawCards, removeFrom, shuffleDeck } from './zones.ts';
+
+export type CardZone = 'hand' | 'deck' | 'deckBottom' | 'discard';
+
+export const slotKey = (ref: SlotRef): string =>
+  ref.zone === 'active' ? `p${ref.player}-active` : `p${ref.player}-bench${ref.index}`;
 
 /** Thrown inside an effect when it needs an answer that has not been given yet. */
 class NeedInput {
@@ -30,6 +46,120 @@ export class EffectCtx {
 
   def(uid: string) {
     return defOf(this.env, this.state, uid);
+  }
+
+  slot(ref: SlotRef): PokemonSlot {
+    const slot = getSlot(this.state, ref);
+    if (!slot) throw new Error(`No Pokémon at ${slotKey(ref)}`);
+    return slot;
+  }
+
+  log(text: string, type = 'effect'): void {
+    this.state.log.push({ type, player: this.me, text });
+  }
+
+  draw(player: PlayerId, n: number): string[] {
+    return drawCards(this.state, player, n);
+  }
+
+  shuffleDeck(player: PlayerId): void {
+    shuffleDeck(this.state, player);
+  }
+
+  flipCoin(): boolean {
+    const [heads, rng] = coinFlip(this.state.rng);
+    this.state.rng = rng;
+    this.state.log.push({
+      type: 'coinFlip',
+      player: this.me,
+      text: heads ? 'Coin flip: heads' : 'Coin flip: tails',
+    });
+    return heads;
+  }
+
+  /** Remove a card from whichever hand/deck/discard/prize zone holds it. */
+  private take(uid: string): void {
+    const owner = this.state.cards[uid]!.owner;
+    const p = this.state.players[owner];
+    for (const zone of ['hand', 'deck', 'discard', 'prizes'] as const) {
+      if (p[zone].includes(uid)) {
+        removeFrom(p[zone], uid);
+        return;
+      }
+    }
+    throw new Error(`Card ${uid} is not in a hand, deck, discard pile or prizes`);
+  }
+
+  moveCard(uid: string, to: { player: PlayerId; zone: CardZone }): void {
+    this.take(uid);
+    const p = this.state.players[to.player];
+    if (to.zone === 'deckBottom') p.deck.push(uid);
+    else if (to.zone === 'deck') p.deck.unshift(uid);
+    else p[to.zone].push(uid);
+  }
+
+  /** Put a Basic Pokémon card from hand/deck/discard onto its owner's Bench. */
+  putOnBench(player: PlayerId, uid: string): SlotRef {
+    this.take(uid);
+    const bench = this.state.players[player].bench;
+    bench.push(newSlot(uid, this.state.turn));
+    const ref: SlotRef = { player, zone: 'bench', index: bench.length - 1 };
+    this.log(`${this.def(uid).name} is put onto the Bench`);
+    return ref;
+  }
+
+  attachEnergy(uid: string, ref: SlotRef): void {
+    this.take(uid);
+    this.slot(ref).energy.push(uid);
+    this.log(`${this.def(uid).name} is attached to ${slotDef(this.env, this.state, this.slot(ref)).name}`);
+  }
+
+  discardEnergy(ref: SlotRef, uids: string[]): void {
+    const slot = this.slot(ref);
+    for (const uid of uids) {
+      removeFrom(slot.energy, uid);
+      this.state.players[this.state.cards[uid]!.owner].discard.push(uid);
+    }
+  }
+
+  heal(ref: SlotRef, hp: number): void {
+    const slot = this.slot(ref);
+    slot.damage = Math.max(0, slot.damage - hp);
+  }
+
+  placeCounters(ref: SlotRef, n: number): void {
+    this.slot(ref).damage += n * 10;
+  }
+
+  /** Swap a player's Active Pokémon with one of their Benched Pokémon. */
+  switchActive(player: PlayerId, benchIndex: number): void {
+    const p = this.state.players[player];
+    const incoming = p.bench[benchIndex];
+    if (!incoming || !p.active) throw new Error('Nothing to switch');
+    p.active.conditions = { rotation: 'none', poisoned: false, burned: false };
+    p.bench[benchIndex] = p.active;
+    p.active = incoming;
+  }
+
+  chooseSlot(o: {
+    player: PlayerId;
+    among: SlotRef[];
+    min: number;
+    max: number;
+    message: string;
+  }): SlotRef[] {
+    const options: PromptOption[] = o.among.map((ref) => ({
+      id: slotKey(ref),
+      label: slotDef(this.env, this.state, this.slot(ref)).name,
+      slot: ref,
+    }));
+    const ids = this.choose('slot', o.player, options, o.min, o.max, o.message);
+    return ids.map((id) => options.find((opt) => opt.id === id)!.slot!);
+  }
+
+  chooseOption(o: { player: PlayerId; options: { id: string; label: string }[]; message: string }): string {
+    const [id] = this.choose('option', o.player, o.options, 1, 1, o.message);
+    return id!;
   }
 
   chooseCards(o: { player: PlayerId; from: string[]; min: number; max: number; message: string }): string[] {
