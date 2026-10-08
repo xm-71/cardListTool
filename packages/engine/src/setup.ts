@@ -19,6 +19,7 @@ function emptyPlayer(): PlayerState {
     energyTurn: null,
     retreatTurn: null,
     stadiumUsedTurn: null,
+    stadiumPlayedTurn: null,
     mulligans: 0,
   };
 }
@@ -79,8 +80,10 @@ export function createGame(env: Env, config: { decks: [DeckList, DeckList]; seed
     }
   }
   // Each player draws one card for every mulligan their opponent took.
-  drawCards(state, 0, state.players[1].mulligans);
-  drawCards(state, 1, state.players[0].mulligans);
+  // Simultaneous mulligans give no bonus: each player draws only for the opponent's extra mulligans.
+  const [m0, m1] = [state.players[0].mulligans, state.players[1].mulligans];
+  drawCards(state, 0, Math.max(0, m1 - m0));
+  drawCards(state, 1, Math.max(0, m0 - m1));
   const [heads, rng] = coinFlip(state.rng);
   state.rng = rng;
   state.first = heads ? 0 : 1;

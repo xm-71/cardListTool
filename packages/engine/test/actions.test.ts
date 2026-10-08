@@ -20,7 +20,8 @@ describe('first turn', () => {
     expect(has(legal, 'endTurn')).toBe(true);
     expect(has(legal, 'attack')).toBe(false);
     expect(has(legal, 'evolve')).toBe(false);
-    expect(engine.getLegalActions(s, me === 0 ? 1 : 0)).toEqual([]);
+    // the waiting player can only concede
+    expect(engine.getLegalActions(s, me === 0 ? 1 : 0)).toEqual([{ type: 'concede' }]);
   });
 });
 

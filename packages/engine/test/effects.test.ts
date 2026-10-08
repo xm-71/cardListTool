@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import type { Action } from '../src/types.ts';
 import { createEngine } from '../src/engine.ts';
 import { runEffect, type EffectFn } from '../src/effects.ts';
 import type { Env } from '../src/env.ts';
@@ -34,7 +35,7 @@ describe('prompts and replay', () => {
     expect(s.prompt?.player).toBe(me);
     // card options carry their definition id so the chooser's UI can render them
     expect(s.prompt!.options.map((o) => o.defId)).toEqual(s0.players[me].hand.map((u) => s0.cards[u]!.defId));
-    let legal = engine.getLegalActions(s, me);
+    let legal: Action[] = engine.getLegalActions(s, me).filter((a) => a.type === 'answer');
     expect(legal).toHaveLength(s0.players[me].hand.length);
     expect(legal).not.toContainEqual({ type: 'answer', optionId: 'done' });
     const [a, b] = s0.players[me].hand;

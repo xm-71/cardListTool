@@ -58,6 +58,17 @@ export class EffectCtx {
     this.state.log.push({ type, player: this.me, text });
   }
 
+  /** Show cards to both players (e.g. a card searched out and "revealed"). */
+  reveal(uids: string[]): void {
+    if (uids.length === 0) return;
+    const owner = this.state.cards[uids[0]!]!.owner;
+    this.state.log.push({
+      type: 'reveal',
+      player: owner,
+      text: `Player ${owner + 1} reveals ${uids.map((u) => this.def(u).name).join(', ')}`,
+    });
+  }
+
   draw(player: PlayerId, n: number): string[] {
     return drawCards(this.state, player, n);
   }

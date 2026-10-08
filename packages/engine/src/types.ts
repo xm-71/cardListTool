@@ -71,6 +71,7 @@ export interface PlayerState {
   energyTurn: number | null;
   retreatTurn: number | null;
   stadiumUsedTurn: number | null;
+  stadiumPlayedTurn: number | null;
   mulligans: number;
 }
 

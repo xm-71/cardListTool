@@ -111,6 +111,8 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
     afterDamaged(ctx);
   }
   checkKnockouts(ctx);
+  // Anything after this (Pokémon Checkup) is no longer part of the attack.
+  attackInfo.delete(ctx);
   endTurn(ctx);
 }
 

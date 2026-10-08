@@ -17,6 +17,7 @@ export const script: CardScript = {
         message: 'Choose a Pokémon Tool card',
       });
       if (tool) ctx.moveCard(tool, { player: ctx.me, zone: 'hand' });
+      ctx.reveal([item, tool].filter((u): u is string => !!u));
       ctx.shuffleDeck(ctx.me);
     },
   },

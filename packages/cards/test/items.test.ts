@@ -195,3 +195,12 @@ describe('Wondrous Patch', () => {
     expect(engine.getLegalActions(s, me)).not.toContainEqual(playTrainer(patch));
   });
 });
+
+describe('reveals', () => {
+  test('Mega Signal shows the revealed card in the log', () => {
+    const { s: s0, me } = game({ ...base, [ID.megaSignal]: 2 });
+    let s = act(engine, s0, playTrainer(giveCard(s0, me, ID.megaSignal)));
+    s = answerCards(s, [ID.megaGengar]);
+    expect(s.log.some((e) => e.text === `Player ${me + 1} reveals Mega Gengar ex`)).toBe(true);
+  });
+});

@@ -179,15 +179,27 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
 
 export function getLegalActions(env: Env, state: GameState, player: PlayerId): Action[] {
   if (state.result) return [];
+  const concede: Action = { type: 'concede' };
   const prompt = state.prompt;
   if (prompt) {
-    if (prompt.player !== player) return [];
+    if (prompt.player !== player) return [concede];
     const answers: Action[] = prompt.options.map((o) => ({ type: 'answer', optionId: o.id }));
     if (prompt.selected.length >= prompt.min) answers.push({ type: 'answer', optionId: 'done' });
-    return answers;
+    return [...answers, concede];
   }
-  if (state.phase !== 'main' || player !== state.current) return [];
+  if (state.phase !== 'main' || player !== state.current) return [concede];
   return mainPhaseActions(env, state, player);
+}
+
+/** JSON with object keys sorted, so equivalent actions compare equal whatever their key order. */
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_k, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
+        )
+      : v,
+  );
 }
 
 export function applyAction(
@@ -197,9 +209,9 @@ export function applyAction(
   action: Action,
 ): { state: GameState; events: GameEvent[] } {
   const legal = getLegalActions(env, state, player);
-  const key = JSON.stringify(action);
-  if (!legal.some((a) => JSON.stringify(a) === key)) {
-    throw new IllegalActionError(`Illegal action for player ${player + 1}: ${key}`);
+  const key = canonical(action);
+  if (!legal.some((a) => canonical(a) === key)) {
+    throw new IllegalActionError(`Illegal action for player ${player + 1}: ${JSON.stringify(action)}`);
   }
   let next: GameState;
   if (action.type === 'answer') {
