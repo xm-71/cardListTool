@@ -58,6 +58,192 @@
     "isEx": false,
     "isMega": false
   },
+  "me01-072": {
+    "id": "me01-072",
+    "name": "Makuhita",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/072",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 80,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Corkscrew Punch",
+        "cost": ["Fighting"],
+        "damage": 10,
+        "damageSuffix": "",
+        "text": ""
+      },
+      {
+        "name": "Confront",
+        "cost": ["Fighting", "Fighting"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-073": {
+    "id": "me01-073",
+    "name": "Hariyama",
+    "regulationMark": "I",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/073",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 150,
+    "types": ["Fighting"],
+    "evolvesFrom": "Makuhita",
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 3,
+    "attacks": [
+      {
+        "name": "Wild Press",
+        "cost": ["Fighting", "Fighting", "Fighting"],
+        "damage": 210,
+        "damageSuffix": "",
+        "text": "This Pokémon also does 70 damage to itself."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Heave-Ho Catcher",
+        "text": "Once during your turn, when you play this Pokémon from your hand to evolve 1 of your Pokémon, you may use this Ability. Switch in 1 of your opponent's Benched Pokémon to the Active Spot."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-074": {
+    "id": "me01-074",
+    "name": "Lunatone",
+    "regulationMark": "I",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/074",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 110,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Power Gem",
+        "cost": ["Fighting", "Fighting"],
+        "damage": 50,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Lunar Cycle",
+        "text": "Once during your turn, if you have Solrock in play, you may discard a Basic {F} Energy card from your hand in order to use this Ability. Draw 3 cards. You can't use more than 1 Lunar Cycle Ability each turn."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-075": {
+    "id": "me01-075",
+    "name": "Solrock",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/075",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 110,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Cosmic Beam",
+        "cost": ["Fighting"],
+        "damage": 70,
+        "damageSuffix": "",
+        "text": "If you don't have Lunatone on your Bench, this attack does nothing. This attack's damage isn't affected by Weakness or Resistance."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-076": {
+    "id": "me01-076",
+    "name": "Riolu",
+    "regulationMark": "I",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me01/076",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 80,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Accelerating Stab",
+        "cost": ["Fighting"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": "During your next turn, this Pokémon can't use Accelerating Stab."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me01-077": {
+    "id": "me01-077",
+    "name": "Mega Lucario ex",
+    "regulationMark": "I",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/me/me01/077",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 340,
+    "types": ["Fighting"],
+    "evolvesFrom": "Riolu",
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Aura Jab",
+        "cost": ["Fighting"],
+        "damage": 130,
+        "damageSuffix": "",
+        "text": "Attach up to 3 Basic {F} Energy cards from your discard pile to your Benched Pokémon in any way you like."
+      },
+      {
+        "name": "Mega Brave",
+        "cost": ["Fighting", "Fighting"],
+        "damage": 270,
+        "damageSuffix": "",
+        "text": "During your next turn, this Pokémon can't use Mega Brave."
+      }
+    ],
+    "abilities": [],
+    "isEx": true,
+    "isMega": true
+  },
   "me01-114": {
     "id": "me01-114",
     "name": "Boss's Orders",
@@ -67,6 +253,17 @@
     "category": "Trainer",
     "trainerType": "Supporter",
     "text": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot.",
+    "isAceSpec": false
+  },
+  "me01-116": {
+    "id": "me01-116",
+    "name": "Fighting Gong",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/116",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "Search your deck for a Basic {F} Energy card or a Basic {F} Pokémon, reveal it, and put it into your hand. Then, shuffle your deck.",
     "isAceSpec": false
   },
   "me01-119": {
@@ -100,6 +297,17 @@
     "category": "Trainer",
     "trainerType": "Stadium",
     "text": "Once during each player's turn, that player may discard an Energy card from their hand in order to draw cards until they have as many cards in their hand as they have {P} Pokémon in play.",
+    "isAceSpec": false
+  },
+  "me01-124": {
+    "id": "me01-124",
+    "name": "Premium Power Pro",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/me/me01/124",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "During this turn, attacks used by your {F} Pokémon do 30 more damage to your opponent's Active Pokémon (before applying Weakness and Resistance).",
     "isAceSpec": false
   },
   "me01-125": {
@@ -683,6 +891,17 @@
     "provides": ["Psychic"],
     "text": ""
   },
+  "mee-006": {
+    "id": "mee-006",
+    "name": "Fighting Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Fighting"],
+    "text": ""
+  },
   "mee-007": {
     "id": "mee-007",
     "name": "Darkness Energy",
@@ -725,6 +944,114 @@
     "category": "Trainer",
     "trainerType": "Supporter",
     "text": "Each player shuffles their hand and puts it on the bottom of their deck. If either player put any cards on the bottom of their deck in this way, each player draws a card for each of their remaining Prize cards.",
+    "isAceSpec": false
+  },
+  "sv06-141": {
+    "id": "sv06-141",
+    "name": "Bloodmoon Ursaluna ex",
+    "regulationMark": "H",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv06/141",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 260,
+    "types": ["Colorless"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 3,
+    "attacks": [
+      {
+        "name": "Blood Moon",
+        "cost": ["Colorless", "Colorless", "Colorless", "Colorless", "Colorless"],
+        "damage": 240,
+        "damageSuffix": "",
+        "text": "During your next turn, this Pokémon can't attack."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Seasoned Skill",
+        "text": "Blood Moon used by this Pokémon costs {C} less for each Prize card your opponent has taken."
+      }
+    ],
+    "isEx": true,
+    "isMega": false
+  },
+  "sv06-163": {
+    "id": "sv06-163",
+    "name": "Secret Box",
+    "regulationMark": "H",
+    "rarity": "ACE SPEC Rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv06/163",
+    "category": "Trainer",
+    "trainerType": "Item",
+    "text": "You can use this card only if you discard 3 other cards from your hand.\n\nSearch your deck for an Item card, a Pokémon Tool card, a Supporter card, and a Stadium card, reveal them, and put them into your hand. Then, shuffle your deck.",
+    "isAceSpec": true
+  },
+  "sv06.5-038": {
+    "id": "sv06.5-038",
+    "name": "Fezandipiti ex",
+    "regulationMark": "H",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv06.5/038",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 210,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Cruel Arrow",
+        "cost": ["Colorless", "Colorless", "Colorless"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "This attack does 100 damage to 1 of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Flip the Script",
+        "text": "Once during your turn, if any of your Pokémon were Knocked Out during your opponent's last turn, you may draw 3 cards. You can't use more than 1 Flip the Script Ability each turn."
+      }
+    ],
+    "isEx": true,
+    "isMega": false
+  },
+  "sv08-177": {
+    "id": "sv08-177",
+    "name": "Gravity Mountain",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/177",
+    "category": "Trainer",
+    "trainerType": "Stadium",
+    "text": "Each Stage 2 Pokémon in play (both yours and your opponent's) gets -30 HP.",
+    "isAceSpec": false
+  },
+  "sv08-187": {
+    "id": "sv08-187",
+    "name": "Surfer",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/187",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "Switch your Active Pokémon with 1 of your Benched Pokémon. If you do, draw cards until you have 5 cards in your hand.",
+    "isAceSpec": false
+  },
+  "sv09-149": {
+    "id": "sv09-149",
+    "name": "Iris's Fighting Spirit",
+    "regulationMark": "I",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv09/149",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "You can use this card only if you discard another card from your hand.\n\nDraw cards until you have 6 cards in your hand.",
     "isAceSpec": false
   },
   "sv09-155": {

@@ -44,6 +44,21 @@ export const ID = {
   wondrousPatch: 'me02-094',
   psychic: 'mee-005',
   darkness: 'mee-007',
+  fighting: 'mee-006',
+  megaLucario: 'me01-077',
+  riolu: 'me01-076',
+  hariyama: 'me01-073',
+  makuhita: 'me01-072',
+  solrock: 'me01-075',
+  lunatone: 'me01-074',
+  fezandipiti: 'sv06.5-038',
+  ursaluna: 'sv06-141',
+  fightingGong: 'me01-116',
+  irisFightingSpirit: 'sv09-149',
+  surfer: 'sv08-187',
+  gravityMountain: 'sv08-177',
+  premiumPowerPro: 'me01-124',
+  secretBox: 'sv06-163',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */
