@@ -1,6 +1,6 @@
 import type { CardDef, PokemonDef } from './cards.ts';
 import type { Env } from './env.ts';
-import type { GameState, PlayerId, PokemonSlot, SlotRef } from './types.ts';
+import type { GameState, Marker, PlayerId, PokemonSlot, SlotRef } from './types.ts';
 
 export const other = (p: PlayerId): PlayerId => (p === 0 ? 1 : 0);
 
@@ -35,6 +35,8 @@ export function newSlot(uid: string, turn: number): PokemonSlot {
     abilityUsedTurn: {},
     cantAttackOnTurn: null,
     attackLocks: {},
+    markers: [],
+    becameActiveTurn: null,
   };
 }
 
@@ -85,4 +87,17 @@ export function maxHp(env: Env, state: GameState, ref: SlotRef): number {
     if (hook) hp = hook({ state, slot: ref, hp, registry: env.registry });
   }
   return Math.max(0, hp);
+}
+
+/** Timed markers still in force on this turn. */
+export function activeMarkers(state: GameState, slot: PokemonSlot): Marker[] {
+  return slot.markers.filter((m) => state.turn <= m.untilTurn);
+}
+
+/** Effects on a Pokémon that end when it leaves the Active Spot. */
+export function clearActiveEffects(slot: PokemonSlot): void {
+  slot.conditions = { rotation: 'none', poisoned: false, burned: false };
+  slot.cantAttackOnTurn = null;
+  slot.attackLocks = {};
+  slot.markers = [];
 }

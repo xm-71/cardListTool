@@ -1,4 +1,5 @@
 import type {
+  Marker,
   CardInstance,
   Conditions,
   GameEvent,
@@ -23,6 +24,9 @@ export interface SlotView {
   abilityUsedTurn: Record<string, number>;
   cantAttackOnTurn: number | null;
   attackLocks: Record<string, number>;
+  markers: Marker[];
+  becameActiveTurn: number | null;
+  abilityUses?: Record<string, { turn: number; count: number }>;
   /** Effective max HP (after Stadium/Tool modifiers), when the view was built with card data. */
   hp?: number;
 }
@@ -30,6 +34,8 @@ export interface SlotView {
 interface SideView {
   /** Public: the turn on which one of this player's Pokémon was last Knocked Out. */
   lastKnockedOutTurn: number | null;
+  /** Public: the turn on which this player can't play Stadium cards. */
+  stadiumLockedTurn: number | null;
   deckCount: number;
   discard: CardInstance[];
   prizeCount: number;
@@ -79,12 +85,16 @@ export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerVi
     abilityUsedTurn: { ...s.abilityUsedTurn },
     cantAttackOnTurn: s.cantAttackOnTurn,
     attackLocks: { ...(s.attackLocks ?? {}) },
+    markers: (s.markers ?? []).map((m) => ({ ...m })),
+    becameActiveTurn: s.becameActiveTurn ?? null,
+    ...(s.abilityUses ? { abilityUses: structuredClone(s.abilityUses) } : {}),
     ...(env ? { hp: maxHp(env, state, ref) } : {}),
   });
   const side = (p: PlayerId, hideBoard: boolean): SideView => {
     const ps = state.players[p];
     return {
       lastKnockedOutTurn: ps.lastKnockedOutTurn ?? null,
+      stadiumLockedTurn: ps.stadiumLockedTurn ?? null,
       deckCount: ps.deck.length,
       discard: ps.discard.map(card),
       prizeCount: ps.prizes.length,

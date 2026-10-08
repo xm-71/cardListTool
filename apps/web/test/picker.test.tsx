@@ -77,6 +77,8 @@ describe('SlotView', () => {
       abilityUsedTurn: {},
       cantAttackOnTurn: null,
       attackLocks: {},
+      markers: [],
+      becameActiveTurn: null,
       hp: 320,
     };
     render(<SlotView slot={slot} />);

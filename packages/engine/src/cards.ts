@@ -65,13 +65,21 @@ export interface DamageQuery {
 
 export interface AttackScript {
   canUse?(ctx: EffectCtx): boolean;
-  damage?(ctx: EffectCtx): number | { amount: number; ignoreWR: boolean };
+  damage?(ctx: EffectCtx): number | { amount: number; ignoreWR: boolean; ignoreDefenderEffects?: boolean };
   effect?(ctx: EffectCtx): void;
 }
 
 export interface CardScript {
   attacks?: Record<number, AttackScript>;
-  abilities?: Record<string, { canUse(ctx: EffectCtx): boolean; use(ctx: EffectCtx): void }>;
+  abilities?: Record<
+    string,
+    {
+      canUse(ctx: EffectCtx): boolean;
+      use(ctx: EffectCtx): void;
+      /** "As often as you like during your turn" (capped at REPEATABLE_CAP). */
+      repeatable?: boolean;
+    }
+  >;
   trainer?: { canPlay?(ctx: EffectCtx): boolean; play(ctx: EffectCtx): void };
   stadium?: {
     canUse?(ctx: EffectCtx): boolean;

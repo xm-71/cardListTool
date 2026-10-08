@@ -46,6 +46,16 @@ export interface Conditions {
   burned: boolean;
 }
 
+/** Timed effects on a Pokémon that last through the opponent's next turn (see EffectCtx.addMarker). */
+export type MarkerKind = 'reduceIncoming' | 'preventFromBasic' | 'reduceOutgoing' | 'cantRetreat';
+
+export interface Marker {
+  kind: MarkerKind;
+  amount: number;
+  /** Active while state.turn <= untilTurn. */
+  untilTurn: number;
+}
+
 export interface PokemonSlot {
   /** uids; last entry is the Pokémon in play, earlier entries are what it evolved from */
   stack: string[];
@@ -60,6 +70,12 @@ export interface PokemonSlot {
   cantAttackOnTurn: number | null;
   /** attack name → the turn on which it can't be used */
   attackLocks: Record<string, number>;
+  /** Timed effects; they end when this Pokémon leaves the Active Spot or evolves. */
+  markers: Marker[];
+  /** Turn on which this Pokémon last moved from the Bench to the Active Spot. */
+  becameActiveTurn: number | null;
+  /** Repeatable Abilities: uses on the given turn. */
+  abilityUses?: Record<string, { turn: number; count: number }>;
 }
 
 export interface PlayerState {
@@ -74,6 +90,8 @@ export interface PlayerState {
   retreatTurn: number | null;
   stadiumUsedTurn: number | null;
   stadiumPlayedTurn: number | null;
+  /** This player can't play Stadium cards from hand during this turn (e.g. Chi-Yu). */
+  stadiumLockedTurn?: number | null;
   mulligans: number;
   /** Turn on which one of this player's Pokémon was last Knocked Out. */
   lastKnockedOutTurn: number | null;
