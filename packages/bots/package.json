@@ -7,5 +7,9 @@
   "dependencies": {
     "@ptcg/engine": "workspace:*",
     "@ptcg/cards": "workspace:*"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "demo": "tsx src/demo.ts"
   }
 }

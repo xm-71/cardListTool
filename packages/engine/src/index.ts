@@ -8,3 +8,4 @@ export { checkInvariants } from './invariants.ts';
 export { EffectCtx } from './effects.ts';
 export { canPayCost, getRetreatCost } from './energy.ts';
 export { viewFor, type PlayerView, type SlotView } from './view.ts';
+export { nextRandom, shuffle, coinFlip } from './rng.ts';
