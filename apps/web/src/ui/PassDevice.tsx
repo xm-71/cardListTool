@@ -1,4 +1,9 @@
+import { useEffect } from 'react';
+import { usePreview } from './preview.ts';
+
 export function PassDevice({ player, onReady }: { player: number; onReady(): void }) {
+  // Never carry the previous player's zoomed card over to the next player.
+  useEffect(() => usePreview.getState().show(null), []);
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-6 bg-felt-dark p-6 text-center">
       <h2 className="text-3xl font-bold">Pass to Player {player + 1}</h2>

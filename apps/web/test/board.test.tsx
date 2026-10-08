@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { giveCard } from '@ptcg/engine/testing';
 import { registry } from '../src/game/catalog.ts';
 import { useGame } from '../src/game/store.ts';
@@ -16,7 +16,10 @@ describe('GameScreen', () => {
     const panel = screen.getByRole('dialog', { name: /Choose your Active Pokémon/ });
     const first = before.prompt!.options[0]!;
     const name = registry.defs[before.cards[first.uid!]!.defId]!.name;
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.now() + 1000); // past the prompt's double-click guard
     fireEvent.click(within(panel).getAllByRole('img', { name })[0]!);
+    vi.useRealTimers();
     expect(useGame.getState().state).not.toBe(before);
     expect(useGame.getState().actions[0]).toEqual({
       player: 0,

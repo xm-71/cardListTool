@@ -24,12 +24,20 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
     const mine = ++seq.current;
     const timer = setTimeout(async () => {
       const legal = engine.getLegalActions(state, botSeat);
-      if (legal.length === 0) return;
-      const { action, rng: next } = await client.choose(engine.viewFor(state, botSeat), legal, rng.current);
-      // Drop the reply if the game moved on meanwhile (new game, reset, or a newer request).
-      if (mine !== seq.current || useGame.getState().state !== state) return;
-      rng.current = next;
-      useGame.getState().dispatch(botSeat, action);
+      if (legal.length === 0) {
+        useGame.setState({ error: 'The bot has no legal move although it must act.' });
+        return;
+      }
+      try {
+        const { action, rng: next } = await client.choose(engine.viewFor(state, botSeat), legal, rng.current);
+        // Drop the reply if the game moved on meanwhile (new game, reset, or a newer request).
+        if (mine !== seq.current || useGame.getState().state !== state) return;
+        rng.current = next;
+        useGame.getState().dispatch(botSeat, action);
+      } catch (e) {
+        if (mine !== seq.current) return;
+        useGame.setState({ error: `Bot error: ${e instanceof Error ? e.message : String(e)}` });
+      }
     }, delayMs);
     return () => clearTimeout(timer);
   }, [state, mode, human, client, delayMs]);
