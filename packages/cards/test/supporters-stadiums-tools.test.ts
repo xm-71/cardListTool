@@ -197,7 +197,9 @@ describe('Punk Helmet', () => {
   }
 
   test('Knocks Out the attacker too; both take Prizes and the defending player promotes first', () => {
-    let { s, me, opp } = doubleKo();
+    const ko = doubleKo();
+    const { me, opp } = ko;
+    let s = ko.s;
     expect(s.players[me].prizes).toHaveLength(5);
     expect(s.players[opp].prizes).toHaveLength(5);
     expect(s.prompt?.player).toBe(opp);
