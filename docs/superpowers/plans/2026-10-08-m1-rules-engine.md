@@ -221,12 +221,13 @@ Decklists (TCGdex ids):
 ### Task 3: Engine core — RNG, createEngine, createGame, setup
 
 **Files:**
-- Create: `packages/engine/src/{types.ts,rng.ts,engine.ts,setup.ts,invariants.ts}`, `packages/engine/test/{rng,setup}.test.ts`, `packages/engine/test/fixtures.ts`
+- Create: `packages/engine/src/{types.ts,ruleset.ts,rng.ts,engine.ts,setup.ts,invariants.ts}`, `packages/engine/test/{rng,setup}.test.ts`, `packages/engine/test/fixtures.ts`
 
 **Interfaces:**
 - Produces:
   - `nextRandom(rng: number): [value: number /*0..1*/, rng: number]` (mulberry32), `shuffle<T>(arr: T[], rng: number): [T[], number]`, `coinFlip(rng): [heads: boolean, rng]`.
-  - `createEngine(registry: CardRegistry): Engine` where `Engine = { createGame(c: { decks: [DeckList, DeckList]; seed: number }): GameState; getLegalActions(s: GameState, p: PlayerId): Action[]; applyAction(s: GameState, p: PlayerId, a: Action): { state: GameState; events: GameEvent[] }; viewFor(s: GameState, p: PlayerId): PlayerView }`.
+  - `Ruleset` interface in `src/ruleset.ts`: `{ id: string; deckSize: 60; handSize: 7; prizeCount: 6; benchSize: 5; firstPlayerCanAttackTurn1: false; firstPlayerCanPlaySupporterTurn1: false; prizeValue(def: CardDef): number }`. Export `standard2026` (prizeValue: Mega ex 3, ex 2, else 1). All engine modules read these values from the ruleset, not literals, so `classic` can be added later (spec §4.1).
+  - `createEngine(registry: CardRegistry, ruleset: Ruleset = standard2026): Engine` where `Engine = { createGame(c: { decks: [DeckList, DeckList]; seed: number }): GameState; getLegalActions(s: GameState, p: PlayerId): Action[]; applyAction(s: GameState, p: PlayerId, a: Action): { state: GameState; events: GameEvent[] }; viewFor(s: GameState, p: PlayerId): PlayerView }`.
   - `checkInvariants(state): string[]` (empty = OK): each player owns exactly 60 uids across all zones (counting slot stacks, energy and tools), no uid appears twice, damage ≥ 0, bench ≤ 5.
   - `test/fixtures.ts`: `miniRegistry()` (a Basic "Testmon" with 60 HP, 1 attack [Colorless] 20 damage; a Stage 1 "Testevo"; Basic Darkness Energy; and a no-op Item) and `deckOf(spec: Record<defId, count>): DeckList`.
 - Setup flow: shuffle each deck (seeded) and draw 7. If a hand has no Basic, reveal it, shuffle it back, redraw and count a mulligan; repeat. Each player's opponent then draws 1 card per mulligan (auto). The coin flip winner is `first`. Then setup prompts, `system:'setup'` with `player 0` and then `player 1`: choose 1 Basic as Active (`min 1, max 1`), then choose 0–5 Basics for the Bench. After both players are done: 6 Prizes each from the top of the deck, `phase = 'main'`, `turn = 1`, `current = first`, and the first player draws 1.
@@ -234,7 +235,7 @@ Decklists (TCGdex ids):
 - [ ] **Step 1: Failing tests** (`rng.test.ts`): the same seed gives the same sequence. `shuffle` is a permutation. 10,000 coin flips at seed 1 give 45–55% heads.
 - [ ] **Step 2: Failing tests** (`setup.test.ts`):
   - after `createGame` the prompt is for player 0, `kind 'cards'`, options = the Basics in player 0's hand;
-  - answering both players' setup prompts → `phase 'main'`, each player has 6 prizes, `current === first`, the first player's hand size = 7 − (bench placed) − 1 + 1;
+  - answering both players' setup prompts → `phase 'main'`, each player has 6 prizes, `current === first`, the first player's hand size = 7 − 1 (Active) − Benched count + 1 (turn draw) + mulligan bonus draws;
   - a deck of 1 Basic + 59 Energy at seed 42 still produces a legal start, and `mulligans` is counted;
   - `checkInvariants` is `[]` after setup;
   - `JSON.parse(JSON.stringify(state))` deep-equals `state`.
@@ -313,7 +314,7 @@ Decklists (TCGdex ids):
 - Attack legality: not the first player's turn 1, cost payable, not Asleep or Paralyzed, `cantAttackOnTurn !== turn`, and `script.attacks[i].canUse?.()` holds.
 - Damage pipeline to the opponent's Active: base (`script.damage?(ctx)` else `def.damage`) → `+ Σ modifyOutgoingDamage` (attacker side) → ×2 if the defender's weakness ∈ attacker types → −30 if resistance matches → `+ Σ modifyIncomingDamage` (defender side) → floor 0.
 - Order: apply damage, then the attack `effect`, then `afterDamagedInActive` (defender's Tool), then Knockouts, then the turn ends.
-- A Knockout moves the whole slot (stack, Energy, Tool) to the discard pile. The opponent takes Prizes `isMega ? 3 : isEx ? 2 : 1`, adjusted by `modifyPrizes` (min 0). If the owner has a Bench, a `system:'promote'` prompt follows. Taking all Prizes wins, and so does the opponent having no Pokémon in play. Both at once → `draw`.
+- A Knockout moves the whole slot (stack, Energy, Tool) to the discard pile. The opponent takes Prizes `ruleset.prizeValue(def)`, adjusted by `modifyPrizes` (min 0). If the owner has a Bench, a `system:'promote'` prompt follows. Taking all Prizes wins, and so does the opponent having no Pokémon in play. Both at once → `draw`.
 - Confused attackers: in Task 7.
 
 - [ ] **Step 1: Failing tests** (`miniRegistry` plus test types/scripts):
@@ -403,7 +404,7 @@ Decklists (TCGdex ids):
   - Mystery Garden twice in one turn is not legal;
   - Risky Ruins: Nest Ball fetching a Psychic Basic → 20 damage on it, a Darkness Basic → 0;
   - Air Balloon on a retreat-2 Pokémon → `getRetreatCost === 0`;
-  - **(Review Focus 4)** Punk Helmet: the attacker's 40 HP of remaining damage room plus a defender Knocked Out by the same attack → both are Knocked Out, both players take prizes, the defending player promotes first, and if both reach 0 prizes the result is `draw`.
+  - **(Review Focus 4)** Punk Helmet: an attacker with ≤40 HP remaining Knocks Out the Helmet holder → both are Knocked Out, both players take prizes, the defending player promotes first, and if both reach 0 prizes the result is `draw`.
 - [ ] **Step 2:** Run, expect FAIL. **Step 3:** Implement. **Step 4:** Run, expect PASS.
 - [ ] **Step 5:** Commit `feat(cards): supporter, stadium and tool scripts`.
 
@@ -446,7 +447,7 @@ Decklists (TCGdex ids):
   - Grumpig: *Energized Steps* (`onEvolveFromHand`, optional yes/no prompt) — look at the top 4 cards, attach any number of Basic Energy among them to your Pokémon one at a time (choose energy, then choose target, `done` to stop), shuffle the rest back.
   - Milcery: *Draining Kiss* 10 + heal 10 from self.
   - Alcremie: *Sweet Circle* 20 × own Pokémon in play.
-  - Mimikyu: *Call for Family* 1 Basic → Bench (not legal… playable with a full Bench but finds nothing).
+  - Mimikyu: *Call for Family* 1 Basic → Bench. The attack is always usable; with a full Bench it does nothing.
   - Cresselia: *Swelling Light* attach up to 2 Basic Psychic Energy from the deck to self; shuffle.
   - Zacian: *Limit Break* 50, +90 if the opponent has ≤ 3 prizes left.
 - **Engine hook needed:** `evolve` from hand calls `onEvolveFromHand` through `runEffect` with source `{kind:'ability', …}`.
