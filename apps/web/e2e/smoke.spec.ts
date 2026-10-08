@@ -24,11 +24,15 @@ async function toMenu(page: Page) {
   await page.screenshot({ path: 'test-results/title.png', fullPage: true });
   await page.keyboard.press('Enter');
   const skip = page.getByRole('button', { name: 'Skip' });
+  await skip.or(page.getByRole('menu', { name: 'Main menu' })).waitFor();
   if (await skip.isVisible().catch(() => false)) {
+    // Enter must open the name step, not answer it
+    await expect(page.getByLabel('Your name')).toHaveValue('');
     await page.screenshot({ path: 'test-results/intro.png', fullPage: true });
     await skip.click();
   }
   await expect(page.getByRole('menu', { name: 'Main menu' })).toBeVisible();
+  await expect(page.getByRole('menu', { name: 'Main menu' })).toBeFocused();
 }
 
 test('play a turn against the Medium bot', async ({ page }) => {

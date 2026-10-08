@@ -18,9 +18,9 @@ export function Intro() {
   const finishIntro = useProfile((s) => s.finishIntro);
   const [step, setStep] = useState<Step>({ kind: 'name' });
   const [name, setName] = useState('');
-  const [deck, setDeck] = useState('mega-gengar');
+  const [deck, setDeck] = useState<string | null>(null);
 
-  const finish = async (n: string, d: string) => {
+  const finish = async (n: string, d: string | null) => {
     await finishIntro(n, d);
     useNav.getState().go('menu');
   };
@@ -28,7 +28,7 @@ export function Intro() {
   return (
     <main className="mx-auto flex min-h-full max-w-2xl flex-col justify-center gap-6 p-4">
       <div className="flex justify-end">
-        <Button variant="plain" onClick={() => void finish('', 'mega-gengar')}>
+        <Button variant="plain" onClick={() => void finish(name, deck)}>
           Skip
         </Button>
       </div>

@@ -18,7 +18,10 @@ export function Title() {
       useNav.getState().go(introDone ? 'menu' : 'intro');
     };
     const onKey = (e: KeyboardEvent) => {
-      if (START_KEYS.test(e.key)) start();
+      if (!START_KEYS.test(e.key)) return;
+      // Keep this key from also reaching the next screen (e.g. submitting or typing into the name field).
+      e.preventDefault();
+      start();
     };
     window.addEventListener('keydown', onKey);
     window.addEventListener('click', start);

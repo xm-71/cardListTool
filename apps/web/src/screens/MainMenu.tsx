@@ -31,7 +31,7 @@ export function MainMenu() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-6 p-4">
         <div className="flex flex-wrap items-center justify-center gap-8">
           <div className="retro-box w-64 px-6 py-4">
-            <Menu label="Main menu" items={ITEMS} onSelect={(id) => go(id as Route)} />
+            <Menu label="Main menu" items={ITEMS} onSelect={(id) => go(id as Route)} autoFocus />
           </div>
           <figure className="flex flex-col items-center gap-3">
             <img

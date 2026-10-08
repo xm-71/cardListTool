@@ -44,8 +44,8 @@ interface ProfileState {
   buyPack(setId: string): Promise<string[]>;
   saveDeck(deck: CustomDeck): Promise<void>;
   deleteDeck(id: string): Promise<void>;
-  /** Ends the first-launch intro with the chosen name and starter deck. */
-  finishIntro(name: string, deck: string): Promise<void>;
+  /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
+  finishIntro(name: string, deck: string | null): Promise<void>;
   setName(name: string): Promise<void>;
   replayIntro(): Promise<void>;
   reset(): void;
@@ -125,7 +125,12 @@ export const useProfile = create<ProfileState>()((set, get) => {
     },
     async finishIntro(name, deck) {
       await change((p) => ({
-        next: { ...p, playerName: cleanName(name), starterDeck: deck, introDone: true },
+        next: {
+          ...p,
+          playerName: name.trim() ? cleanName(name) : (p.playerName ?? 'PLAYER'),
+          starterDeck: deck ?? p.starterDeck ?? 'mega-gengar',
+          introDone: true,
+        },
         result: undefined,
       }));
     },

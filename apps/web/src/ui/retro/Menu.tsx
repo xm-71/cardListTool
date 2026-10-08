@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { sfx } from '../../audio/sfx.ts';
 
 export interface MenuItem {
@@ -13,10 +13,16 @@ interface Props {
   onSelect(id: string): void;
   initial?: string;
   className?: string;
+  /** Take keyboard focus on mount, so arrows and Enter work straight away. */
+  autoFocus?: boolean;
 }
 
 /** A ▶ cursor menu: arrow keys move, Enter/Space select, the mouse hovers and clicks. */
-export function Menu({ label, items, onSelect, initial, className = '' }: Props) {
+export function Menu({ label, items, onSelect, initial, className = '', autoFocus = false }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus();
+  }, [autoFocus]);
   const enabled = items.filter((i) => !i.disabled);
   const [active, setActive] = useState(initial ?? enabled[0]?.id);
   const move = (delta: number) => {
@@ -38,6 +44,7 @@ export function Menu({ label, items, onSelect, initial, className = '' }: Props)
   };
   return (
     <div
+      ref={ref}
       role="menu"
       aria-label={label}
       tabIndex={0}

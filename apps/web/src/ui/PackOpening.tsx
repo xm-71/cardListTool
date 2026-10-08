@@ -25,9 +25,12 @@ export function PackOpening({ setId, cards, onDone }: { setId: string; cards: st
   const [shown, setShown] = useState(0);
   const [flash, setFlash] = useState(false);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const dialog = useRef<HTMLDivElement>(null);
   const later = (ms: number, fn: () => void) => timers.current.push(setTimeout(fn, ms));
 
   useEffect(() => {
+    // Focus the dialog so Enter/Space flip cards (and can't re-press the Buy button underneath).
+    dialog.current?.focus();
     if (!reduced) {
       sfx('shake');
       later(SHAKE_MS, () => {
@@ -76,6 +79,7 @@ export function PackOpening({ setId, cards, onDone }: { setId: string; cards: st
         <div data-testid="flash" className="animate-flash pointer-events-none fixed inset-0 z-40 bg-white" />
       )}
       <div
+        ref={dialog}
         role="dialog"
         aria-label="Pack opening"
         tabIndex={-1}
