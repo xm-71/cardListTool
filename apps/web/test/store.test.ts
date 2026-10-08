@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, test } from 'vitest';
+import { deckById } from '../src/game/catalog.ts';
 import { actorOf, useGame } from '../src/game/store.ts';
 
 const cfg = {
   mode: 'bot' as const,
-  humanDeck: 'mega-gengar' as const,
-  botDeck: 'mega-diancie' as const,
+  humanDeck: deckById('mega-gengar').list,
+  botDeck: deckById('mega-diancie').list,
   seed: 7,
 };
 

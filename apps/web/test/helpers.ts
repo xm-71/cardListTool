@@ -5,8 +5,8 @@ import { useGame, type GameConfig } from '../src/game/store.ts';
 
 export const botCfg = (seed: number): GameConfig => ({
   mode: 'bot',
-  humanDeck: 'mega-gengar',
-  botDeck: 'mega-diancie',
+  humanDeck: deckById('mega-gengar').list,
+  botDeck: deckById('mega-diancie').list,
   seed,
 });
 

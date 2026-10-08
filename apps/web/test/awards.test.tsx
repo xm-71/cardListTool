@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, expect, test } from 'vitest';
 import type { GameResult } from '@ptcg/engine';
 import { gameAward, useGameAward } from '../src/game/awards.ts';
+import { deckById } from '../src/game/catalog.ts';
 import { useGame, type GameConfig } from '../src/game/store.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
@@ -9,8 +10,8 @@ import { useProfile } from '../src/profile/useProfile.ts';
 const cfg = (over: Partial<GameConfig> = {}): GameConfig => ({
   mode: 'bot',
   difficulty: 'medium',
-  humanDeck: 'mega-gengar',
-  botDeck: 'mega-diancie',
+  humanDeck: deckById('mega-gengar').list,
+  botDeck: deckById('mega-diancie').list,
   seed: 77,
   ...over,
 });

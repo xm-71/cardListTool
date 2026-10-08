@@ -6,6 +6,7 @@ import { actorOf, useGame } from './game/store.ts';
 import { useBotDriver } from './game/useBotDriver.ts';
 import { GameScreen } from './screens/GameScreen.tsx';
 import { Binder } from './screens/Binder.tsx';
+import { DeckBuilder } from './screens/DeckBuilder.tsx';
 import { Home } from './screens/Home.tsx';
 import { Shop } from './screens/Shop.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
@@ -81,6 +82,7 @@ const SCREENS = [
   ['home', 'Home'],
   ['shop', 'Shop'],
   ['binder', 'Binder'],
+  ['decks', 'Decks'],
 ] as const;
 type MenuScreen = (typeof SCREENS)[number][0];
 
@@ -114,6 +116,7 @@ function Menu() {
         {screen === 'home' && <Home />}
         {screen === 'shop' && <Shop />}
         {screen === 'binder' && <Binder />}
+        {screen === 'decks' && <DeckBuilder />}
       </div>
     </div>
   );

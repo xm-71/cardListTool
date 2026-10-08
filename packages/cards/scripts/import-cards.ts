@@ -13,7 +13,8 @@ async function get(path: string): Promise<unknown> {
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(`${API}/${path}`);
     if (res.ok) return res.json();
-    if (attempt >= 5 || (res.status !== 429 && res.status < 500)) throw new Error(`TCGdex ${path}: HTTP ${res.status}`);
+    if (attempt >= 5 || (res.status !== 429 && res.status < 500))
+      throw new Error(`TCGdex ${path}: HTTP ${res.status}`);
     await new Promise((r) => setTimeout(r, 2000 * 2 ** attempt));
   }
 }
@@ -26,10 +27,17 @@ for (const file of readdirSync(deckDir).filter((f) => f.endsWith('.json'))) {
 }
 
 const setIds = JSON.parse(readFileSync(join(root, 'src/sets.json'), 'utf8')) as string[];
+/** Imported in full but not sold in the shop: every Basic Energy type, for the deck builder. */
+const extraSets = ['mee'];
 const setInfo: { id: string; name: string; logo: string }[] = [];
-for (const setId of setIds) {
-  const set = (await get(`sets/${setId}`)) as { id: string; name: string; logo?: string; cards: { id: string }[] };
-  setInfo.push({ id: set.id, name: set.name, logo: set.logo ?? '' });
+for (const setId of [...setIds, ...extraSets]) {
+  const set = (await get(`sets/${setId}`)) as {
+    id: string;
+    name: string;
+    logo?: string;
+    cards: { id: string }[];
+  };
+  if (setIds.includes(setId)) setInfo.push({ id: set.id, name: set.name, logo: set.logo ?? '' });
   for (const c of set.cards) ids.add(c.id);
 }
 

@@ -1,6 +1,7 @@
 import { act as rtlAct, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, test } from 'vitest';
 import type { SlotView as SlotViewData } from '@ptcg/engine';
+import { megaLucarioDeck } from '@ptcg/cards';
 import { App } from '../src/App.tsx';
 import type { BotClient, BotSetup } from '../src/game/botClient.ts';
 import { createSyncBotClient } from '../src/game/botClient.ts';
@@ -19,7 +20,7 @@ describe('Home deck picker', () => {
     fireEvent.click(within(theirs).getByRole('button', { name: /Mega Lucario ex/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     const { config, state } = useGame.getState();
-    expect(config).toMatchObject({ humanDeck: 'mega-lucario', botDeck: 'mega-lucario' });
+    expect(config).toMatchObject({ humanDeck: megaLucarioDeck, botDeck: megaLucarioDeck });
     const owners = new Set(
       Object.values(state!.cards)
         .filter((c) => c.defId === 'me01-077')

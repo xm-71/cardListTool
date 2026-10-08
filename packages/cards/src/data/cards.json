@@ -8766,6 +8766,50 @@
     "isEx": true,
     "isMega": true
   },
+  "mee-001": {
+    "id": "mee-001",
+    "name": "Grass Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Grass"],
+    "text": ""
+  },
+  "mee-002": {
+    "id": "mee-002",
+    "name": "Fire Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Fire"],
+    "text": ""
+  },
+  "mee-003": {
+    "id": "mee-003",
+    "name": "Water Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Water"],
+    "text": ""
+  },
+  "mee-004": {
+    "id": "mee-004",
+    "name": "Lightning Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Lightning"],
+    "text": ""
+  },
   "mee-005": {
     "id": "mee-005",
     "name": "Psychic Energy",
@@ -8797,6 +8841,17 @@
     "category": "Energy",
     "energyKind": "Basic",
     "provides": ["Darkness"],
+    "text": ""
+  },
+  "mee-008": {
+    "id": "mee-008",
+    "name": "Metal Energy",
+    "regulationMark": null,
+    "rarity": "Common",
+    "image": "",
+    "category": "Energy",
+    "energyKind": "Basic",
+    "provides": ["Metal"],
     "text": ""
   },
   "sv01-166": {
