@@ -11,6 +11,8 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource/press-start-2p": "^5.3.0",
+    "@fontsource/vt323": "^5.3.0",
     "@ptcg/bots": "workspace:*",
     "@ptcg/cards": "workspace:*",
     "@ptcg/economy": "workspace:*",
