@@ -15,6 +15,15 @@ import * as me02_062 from './me02/062.ts';
 import * as me02_067 from './me02/067.ts';
 import * as me02_068 from './me02/068.ts';
 import * as me02_069 from './me02/069.ts';
+import * as me01_062 from './me01/062.ts';
+import * as me01_063 from './me01/063.ts';
+import * as me02_039 from './me02/039.ts';
+import * as me02_040 from './me02/040.ts';
+import * as me02_041 from './me02/041.ts';
+import * as me02_042 from './me02/042.ts';
+import * as me02_043 from './me02/043.ts';
+import * as me02_044 from './me02/044.ts';
+import * as me02_045 from './me02/045.ts';
 import * as me01_121 from './me01/121.ts';
 import * as me01_125 from './me01/125.ts';
 import * as me01_130 from './me01/130.ts';
@@ -50,4 +59,13 @@ export const scriptModules: { name: string; script: CardScript }[] = [
   me02_067,
   me02_068,
   me02_069,
+  me01_062,
+  me01_063,
+  me02_039,
+  me02_040,
+  me02_041,
+  me02_042,
+  me02_043,
+  me02_044,
+  me02_045,
 ];

@@ -66,6 +66,21 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
 
 function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {
   ctx.evolve(target, uid);
+  const hook = ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onEvolveFromHand;
+  if (!hook) return;
+  const name = ctx.def(uid).name;
+  const choice = ctx.chooseOption({
+    player: ctx.me,
+    options: [
+      { id: 'yes', label: 'Yes' },
+      { id: 'no', label: 'No' },
+    ],
+    message: `Use ${name}'s Ability?`,
+  });
+  if (choice === 'yes') {
+    ctx.source = { kind: 'evolve', slot: target };
+    hook.use(ctx, target);
+  }
 }
 
 function useAbility(ctx: EffectCtx, ref: SlotRef, ability: string): void {
