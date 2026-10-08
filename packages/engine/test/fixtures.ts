@@ -149,3 +149,21 @@ export function attachFromDeck(
 }
 
 export const has = (actions: Action[], type: Action['type']) => actions.some((a) => a.type === type);
+
+/** Replace a player's Active Pokémon with a card of `defId` taken from their deck (test setup only). */
+export function swapActiveTo(state: GameState, player: PlayerId, defId: string): string {
+  const p = state.players[player];
+  const zone = (['deck', 'hand', 'prizes'] as const).find((z) =>
+    p[z].some((u) => state.cards[u]!.defId === defId),
+  );
+  if (!zone) throw new Error(`No ${defId} outside play`);
+  const i = p[zone].findIndex((u) => state.cards[u]!.defId === defId);
+  const [uid] = p[zone].splice(i, 1);
+  p[zone].push(...p.active!.stack.splice(0));
+  p.active!.stack = [uid!];
+  return uid!;
+}
+
+export function pokemon(id: string, overrides: Partial<Extract<CardDef, { category: 'Pokemon' }>>): CardDef {
+  return { ...(TESTMON as Extract<CardDef, { category: 'Pokemon' }>), id, name: id, ...overrides };
+}

@@ -1,4 +1,5 @@
-import { runEffect, type EffectCtx, type EffectFn } from './effects.ts';
+import { attack, canUseAttack, checkKnockouts } from './combat.ts';
+import { EffectCtx, runEffect, type EffectFn } from './effects.ts';
 import { getRetreatCost } from './energy.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
@@ -8,7 +9,16 @@ import { endTurn, setResult } from './turn.ts';
 import type { Action, GameEvent, GameState, Origin, PlayerId, SlotRef } from './types.ts';
 import { removeFrom } from './zones.ts';
 
+/** Every action ends with a Knockout check (e.g. damage counters placed by abilities). */
 function handlerFor(origin: Origin): EffectFn {
+  const fn = baseHandler(origin);
+  return (ctx) => {
+    fn(ctx);
+    checkKnockouts(ctx);
+  };
+}
+
+function baseHandler(origin: Origin): EffectFn {
   switch (origin.type) {
     case 'setup':
       return setupEffect;
@@ -20,6 +30,8 @@ function handlerFor(origin: Origin): EffectFn {
       return (ctx) => evolve(ctx, origin.uid, origin.target);
     case 'retreat':
       return (ctx) => retreat(ctx, origin.benchIndex);
+    case 'attack':
+      return (ctx) => attack(ctx, origin.attackIndex);
     case 'endTurn':
       return endTurn;
     case 'concede':
@@ -116,6 +128,12 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
     if (!blocked && active.energy.length >= cost) {
       p.bench.forEach((_, benchIndex) => out.push({ type: 'retreat', benchIndex }));
     }
+  }
+  if (active) {
+    const probe = new EffectCtx(state, env, player, []);
+    slotDef(env, state, active).attacks.forEach((_, attackIndex) => {
+      if (canUseAttack(env, state, player, attackIndex, probe)) out.push({ type: 'attack', attackIndex });
+    });
   }
   out.push({ type: 'endTurn' }, { type: 'concede' });
   return out;

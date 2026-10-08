@@ -55,6 +55,8 @@ export type CardDef = PokemonDef | TrainerDef | EnergyDef;
 
 export interface DamageQuery {
   state: GameState;
+  /** The slot whose card (Pokémon or attached Tool) carries the hook being evaluated. */
+  holder: SlotRef;
   attacker: SlotRef;
   defender: SlotRef;
   amount: number;
