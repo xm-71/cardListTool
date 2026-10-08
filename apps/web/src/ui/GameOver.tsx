@@ -11,11 +11,13 @@ interface Props {
   result: GameResult;
   mode: 'bot' | 'hotseat';
   human: PlayerId;
+  /** Credits this game earned; null when the mode pays none. */
+  credits?: number | null;
   onAgain(): void;
   onHome(): void;
 }
 
-export function GameOver({ result, mode, human, onAgain, onHome }: Props) {
+export function GameOver({ result, mode, human, credits = null, onAgain, onHome }: Props) {
   const name = (p: PlayerId) => (mode === 'bot' ? (p === human ? 'You' : 'The bot') : `Player ${p + 1}`);
   const title =
     result.winner === 'draw'
@@ -35,6 +37,7 @@ export function GameOver({ result, mode, human, onAgain, onHome }: Props) {
       <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl bg-slate-900 p-6 text-center shadow-2xl ring-1 ring-white/10">
         <h2 className="text-3xl font-bold text-amber-300">{title}</h2>
         <p className="text-white/70">{REASON[result.reason](loser)}</p>
+        {credits !== null && <p className="font-semibold text-amber-300">+{credits} credits</p>}
         <div className="flex gap-3">
           <button
             type="button"

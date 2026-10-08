@@ -1,21 +1,36 @@
-import { useState } from 'react';
-import { DECKS, registry, type DeckId } from '../game/catalog.ts';
+import { useMemo, useState } from 'react';
+import { validateCustomDeck } from '@ptcg/economy';
+import { deckSources, registry, type DeckSource } from '../game/catalog.ts';
 import { useGame } from '../game/store.ts';
+import { useProfile } from '../profile/useProfile.ts';
 
 type Opponent = 'easy' | 'medium' | 'hotseat';
 
 export function Home() {
   const start = useGame((s) => s.start);
   const [opponent, setOpponent] = useState<Opponent>('easy');
-  const [mine, setMine] = useState<DeckId>('mega-gengar');
-  const [theirs, setTheirs] = useState<DeckId>('mega-diancie');
+  const customDecks = useProfile((s) => s.profile.decks);
+  const collection = useProfile((s) => s.profile.collection);
+  // Custom decks that no longer validate (e.g. a card's playable status changed) are left out.
+  const decks = useMemo(
+    () =>
+      deckSources(
+        customDecks.filter(
+          (d) => validateCustomDeck({ name: d.name, cards: d.cards }, registry, collection).length === 0,
+        ),
+      ),
+    [customDecks, collection],
+  );
+  const [mine, setMine] = useState('mega-gengar');
+  const [theirs, setTheirs] = useState('mega-diancie');
   const hotseat = opponent === 'hotseat';
+  const listOf = (id: string) => (decks.find((d) => d.id === id) ?? decks[0]!).list;
   const play = () =>
     start({
       mode: hotseat ? 'hotseat' : 'bot',
       difficulty: hotseat ? undefined : opponent,
-      humanDeck: mine,
-      botDeck: theirs,
+      humanDeck: listOf(mine),
+      botDeck: listOf(theirs),
       seed: (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) >>> 0,
     });
   return (
@@ -44,12 +59,14 @@ export function Home() {
       <DeckChoice
         label={hotseat ? "Player 1's deck" : 'Your deck'}
         group="Your deck"
+        decks={decks}
         value={mine}
         onChange={setMine}
       />
       <DeckChoice
         label={hotseat ? "Player 2's deck" : "Opponent's deck"}
         group="Opponent's deck"
+        decks={decks}
         value={theirs}
         onChange={setTheirs}
       />
@@ -71,19 +88,21 @@ export function Home() {
 function DeckChoice({
   label,
   group,
+  decks,
   value,
   onChange,
 }: {
   label: string;
   group: string;
-  value: DeckId;
-  onChange(id: DeckId): void;
+  decks: DeckSource[];
+  value: string;
+  onChange(id: string): void;
 }) {
   return (
     <div role="group" aria-label={group} className="flex flex-col items-center gap-2">
       <span className="font-semibold text-white/70">{label}</span>
       <div className="flex flex-wrap justify-center gap-3">
-        {DECKS.map((d) => (
+        {decks.map((d) => (
           <button
             key={d.id}
             type="button"
@@ -93,6 +112,7 @@ function DeckChoice({
           >
             <img src={`${registry.defs[d.cover]!.image}/low.webp`} alt="" className="w-24 rounded-lg" />
             <span className="text-sm font-semibold">{d.name}</span>
+            {d.custom && <span className="text-xs text-white/50">Custom</span>}
           </button>
         ))}
       </div>

@@ -31,9 +31,9 @@ interface RawCard {
 export function parseDamage(raw: number | string | undefined): Pick<AttackDef, 'damage' | 'damageSuffix'> {
   if (raw === undefined || raw === '') return { damage: 0, damageSuffix: '' };
   if (typeof raw === 'number') return { damage: raw, damageSuffix: '' };
-  const m = /^(\d+)\s*([+×x]?)$/.exec(raw.trim());
+  const m = /^(\d+)\s*([+×x-]?)$/.exec(raw.trim());
   if (!m) throw new Error(`Unparseable damage: ${raw}`);
-  const suffix = m[2] === 'x' ? '×' : (m[2] as '' | '+' | '×');
+  const suffix = m[2] === 'x' ? '×' : (m[2] as '' | '+' | '×' | '-');
   return { damage: Number(m[1]), damageSuffix: suffix };
 }
 
@@ -93,11 +93,13 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
       };
     }
     case 'Energy': {
-      const basic = raw.energyType === 'Normal';
+      const basicType = raw.name.replace(/^Basic /, '').replace(/ Energy$/, '');
+      // TCGdex labels some Special Energy (e.g. Ignition Energy) as 'Normal'; only a real type name is Basic.
+      const basic = raw.energyType === 'Normal' && (ENERGY_TYPES as readonly string[]).includes(basicType);
       const provides = raw.types?.length
         ? raw.types.map(energyType)
         : basic
-          ? [energyType(raw.name.replace(/^Basic /, '').replace(/ Energy$/, ''))]
+          ? [energyType(basicType)]
           : ['Colorless' as const];
       return {
         ...base,

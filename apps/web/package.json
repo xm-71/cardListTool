@@ -13,6 +13,7 @@
   "dependencies": {
     "@ptcg/bots": "workspace:*",
     "@ptcg/cards": "workspace:*",
+    "@ptcg/economy": "workspace:*",
     "@ptcg/engine": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -27,6 +28,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^4.7.0",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^25.0.1",
     "tailwindcss": "^4.3.3",
     "vite": "^6.4.4"

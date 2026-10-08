@@ -1,16 +1,16 @@
 import { create } from 'zustand';
-import { IllegalActionError, type Action, type GameState, type PlayerId } from '@ptcg/engine';
+import { IllegalActionError, type Action, type DeckList, type GameState, type PlayerId } from '@ptcg/engine';
 import { usePreview } from '../ui/preview.ts';
-import { deckById, engine, type DeckId } from './catalog.ts';
+import { engine } from './catalog.ts';
 
 export interface GameConfig {
   mode: 'bot' | 'hotseat';
   /** Bot strength (bot mode only). */
   difficulty?: 'easy' | 'medium';
   /** Seat 0's deck. In bot mode seat 0 is the human. */
-  humanDeck: DeckId;
+  humanDeck: DeckList;
   /** Seat 1's deck (the bot, or Player 2 in hotseat). */
-  botDeck: DeckId;
+  botDeck: DeckList;
   seed: number;
 }
 
@@ -39,7 +39,7 @@ export const useGame = create<GameStore>()((set, get) => ({
   error: null,
   start(cfg) {
     const state = engine.createGame({
-      decks: [deckById(cfg.humanDeck).list, deckById(cfg.botDeck).list],
+      decks: [cfg.humanDeck, cfg.botDeck],
       seed: cfg.seed,
     });
     usePreview.getState().show(null);
