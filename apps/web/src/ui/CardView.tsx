@@ -21,7 +21,7 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
   const [failed, setFailed] = useState(false);
   const show = usePreview((s) => s.show);
   const quality = size === 'lg' ? 'high' : 'low';
-  const ring = highlighted ? 'ring-4 ring-amber-400' : onClick ? 'hover:ring-2 hover:ring-amber-200' : '';
+  const ring = highlighted ? 'ring-4 ring-red' : onClick ? 'hover:ring-4 hover:ring-yellow' : '';
   const body = failed ? (
     <TextCard def={def} compact={size !== 'lg'} />
   ) : (

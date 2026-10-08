@@ -5,7 +5,7 @@ export function CardPreview() {
   const card = usePreview((s) => s.card);
   if (!card)
     return (
-      <div className="flex aspect-[63/88] w-64 items-center justify-center rounded-xl border border-dashed border-white/20 text-sm text-white/40">
+      <div className="flex aspect-[63/88] w-64 items-center justify-center border-4 border-dashed border-ink/30 font-pixel text-[9px] uppercase opacity-60">
         Hover a card to zoom
       </div>
     );

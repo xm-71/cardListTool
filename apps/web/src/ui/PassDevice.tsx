@@ -5,13 +5,13 @@ export function PassDevice({ player, onReady }: { player: number; onReady(): voi
   // Never carry the previous player's zoomed card over to the next player.
   useEffect(() => usePreview.getState().show(null), []);
   return (
-    <div className="flex min-h-full flex-col items-center justify-center gap-6 bg-felt-dark p-6 text-center">
-      <h2 className="text-3xl font-bold">Pass to Player {player + 1}</h2>
-      <p className="text-white/60">Make sure the other player can't see the screen.</p>
+    <div className="flex min-h-full flex-col items-center justify-center gap-6 p-6 text-center">
+      <h2 className="font-pixel text-lg uppercase">Pass to Player {player + 1}</h2>
+      <p className="text-2xl">Make sure the other player can't see the screen.</p>
       <button
         type="button"
         onClick={onReady}
-        className="rounded-lg bg-amber-400 px-8 py-3 font-semibold text-slate-900 hover:bg-amber-300"
+        className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
       >
         Ready
       </button>

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import type { GameResult, PlayerId } from '@ptcg/engine';
+import { sfx } from '../audio/sfx.ts';
 
 const REASON: Record<GameResult['reason'], (loser: string) => string> = {
   prizes: () => 'All Prize cards taken',
@@ -18,6 +20,10 @@ interface Props {
 }
 
 export function GameOver({ result, mode, human, credits = null, onAgain, onHome }: Props) {
+  const jingle = mode !== 'bot' || result.winner === 'draw' ? null : result.winner === human ? 'win' : 'lose';
+  useEffect(() => {
+    if (jingle) sfx(jingle);
+  }, [jingle]);
   const name = (p: PlayerId) => (mode === 'bot' ? (p === human ? 'You' : 'The bot') : `Player ${p + 1}`);
   const title =
     result.winner === 'draw'
@@ -32,24 +38,24 @@ export function GameOver({ result, mode, human, credits = null, onAgain, onHome 
     <div
       role="dialog"
       aria-label="Game over"
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-6"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-ink/70 p-6"
     >
-      <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl bg-slate-900 p-6 text-center shadow-2xl ring-1 ring-white/10">
-        <h2 className="text-3xl font-bold text-amber-300">{title}</h2>
-        <p className="text-white/70">{REASON[result.reason](loser)}</p>
-        {credits !== null && <p className="font-semibold text-amber-300">+{credits} credits</p>}
+      <div className="retro-box flex w-full max-w-sm flex-col items-center gap-4 p-6 text-center">
+        <h2 className="font-pixel text-lg text-red uppercase">{title}</h2>
+        <p className="text-2xl">{REASON[result.reason](loser)}</p>
+        {credits !== null && <p className="font-pixel text-xs text-green">+{credits} credits</p>}
         <div className="flex gap-3">
           <button
             type="button"
             onClick={onAgain}
-            className="rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-300"
+            className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
           >
             Play again
           </button>
           <button
             type="button"
             onClick={onHome}
-            className="rounded-lg bg-white/10 px-5 py-2 hover:bg-white/20"
+            className="border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase text-ink hover:bg-cream"
           >
             Home
           </button>

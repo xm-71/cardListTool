@@ -9,11 +9,8 @@ interface Props {
 
 export function Hand({ cards, playable, onCard }: Props) {
   return (
-    <section
-      aria-label="Your hand"
-      className="flex flex-wrap justify-center gap-1.5 rounded-xl bg-black/20 p-2"
-    >
-      {cards.length === 0 && <span className="py-6 text-sm text-white/50">No cards in hand</span>}
+    <section aria-label="Your hand" className="retro-box flex flex-wrap justify-center gap-1.5 p-3">
+      {cards.length === 0 && <span className="py-6 text-xl opacity-60">No cards in hand</span>}
       {cards.map((c) => {
         const ok = playable(c.uid);
         return (

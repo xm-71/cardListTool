@@ -67,7 +67,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           : "Opponent's turn";
 
   return (
-    <div className="grid min-h-full grid-cols-1 gap-3 p-3 lg:grid-cols-[1fr_18rem]">
+    <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:grid-cols-[1fr_18rem]">
       <main className="flex min-w-0 flex-col gap-3">
         <Side
           label="Opponent"
@@ -79,9 +79,9 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           onSlot={openSlot}
           benchSize={engine.ruleset.benchSize}
         />
-        <div className="flex items-center justify-center gap-3 text-sm text-white/70">
+        <div className="retro-box flex flex-wrap items-center justify-center gap-3 px-3 py-2 font-pixel text-[9px] uppercase">
           <span>Turn {view.turn}</span>
-          <span className="rounded-full bg-black/30 px-3 py-1 font-semibold text-amber-200">{status}</span>
+          <span className="border-2 border-ink bg-yellow px-2 py-1">{status}</span>
           {view.stadium && (
             <span className="flex items-center gap-2">
               Stadium: <CardView card={view.stadium.card} size="xs" />
@@ -115,8 +115,8 @@ export function GameScreen({ viewer: viewerProp }: Props) {
                 onClick={() => (a.type === 'concede' ? confirm('Concede this game?') && act(a) : act(a))}
                 className={
                   a.type === 'endTurn'
-                    ? 'flex-1 rounded-lg bg-amber-400 px-4 py-2 font-semibold text-slate-900 hover:bg-amber-300'
-                    : 'rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20'
+                    ? 'flex-1 retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105'
+                    : 'border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase text-ink hover:bg-cream'
                 }
               >
                 {describeAction(a, view)}
@@ -131,7 +131,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
             reset();
             useNav.getState().go('menu');
           }}
-          className="rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/10"
+          className="border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase text-ink hover:bg-cream"
         >
           Quit to home
         </button>
