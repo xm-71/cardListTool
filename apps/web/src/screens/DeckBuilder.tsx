@@ -115,9 +115,14 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
       (nameTotals.get(def.name) ?? 0) < MAX_COPIES
     );
   };
+  const [saveError, setSaveError] = useState<string | null>(null);
   const save = async () => {
-    await saveDeck({ id: initial.id, name: name.trim() || 'Untitled deck', cards });
-    onClose();
+    try {
+      await saveDeck({ id: initial.id, name: name.trim() || 'Untitled deck', cards });
+      onClose();
+    } catch (e) {
+      setSaveError(`Couldn't save: ${e instanceof Error ? e.message : String(e)}`);
+    }
   };
 
   return (
@@ -150,6 +155,11 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
           Cancel
         </button>
       </div>
+      {saveError && (
+        <p role="alert" className="text-red-300">
+          {saveError}
+        </p>
+      )}
       {problems.length > 0 && (
         <ul aria-label="Problems" className="list-inside list-disc text-sm text-amber-200">
           {problems.map((p) => (

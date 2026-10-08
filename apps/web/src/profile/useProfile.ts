@@ -40,11 +40,33 @@ interface ProfileState {
   reset(): void;
 }
 
+/** Resolves once `init` has loaded the real profile; recreated by `reset`. */
+function deferred(): { promise: Promise<void>; resolve(): void } {
+  let resolve!: () => void;
+  const promise = new Promise<void>((r) => (resolve = r));
+  return { promise, resolve };
+}
+
 export const useProfile = create<ProfileState>()((set, get) => {
-  /** Applies a change synchronously (so checks can't race) and then persists it. */
-  const commit = (next: Profile): Promise<void> => {
-    set({ profile: next });
-    return get().store.save(next);
+  let loaded = deferred();
+  let queue: Promise<unknown> = Promise.resolve();
+  /**
+   * Runs one change at a time: waits for the profile to load, re-reads the stored profile (another tab may
+   * have changed it), saves the result, and only then shows it. A change that throws or fails to save
+   * leaves both storage and the screen as they were.
+   */
+  const change = <T>(fn: (p: Profile) => { next: Profile; result: T } | null): Promise<T | undefined> => {
+    const run = queue.then(async () => {
+      await loaded.promise;
+      const { store } = get();
+      const outcome = fn(await store.load());
+      if (!outcome) return undefined;
+      await store.save(outcome.next);
+      set({ profile: outcome.next });
+      return outcome.result;
+    });
+    queue = run.catch(() => undefined);
+    return run;
   };
   return {
     profile: newProfile(),
@@ -54,38 +76,45 @@ export const useProfile = create<ProfileState>()((set, get) => {
     async init(store, persistent) {
       const profile = await store.load();
       set({ store, persistent, profile, ready: true });
+      loaded.resolve();
     },
-    award(seed, amount) {
-      const p = get().profile;
-      if (p.awardedGames.includes(seed)) return Promise.resolve();
-      return commit({
-        ...p,
-        credits: p.credits + amount,
-        awardedGames: [...p.awardedGames, seed].slice(-AWARD_HISTORY),
-      });
+    async award(seed, amount) {
+      await change((p) =>
+        p.awardedGames.includes(seed)
+          ? null
+          : {
+              next: {
+                ...p,
+                credits: p.credits + amount,
+                awardedGames: [...p.awardedGames, seed].slice(-AWARD_HISTORY),
+              },
+              result: undefined,
+            },
+      );
     },
     async buyPack(setId) {
-      const p = get().profile;
-      if (p.credits < CREDITS.packPrice) throw new Error('Not enough credits');
-      const { cards } = openPack(setId, setCards(setId), randomSeed());
-      const collection = { ...p.collection };
-      for (const id of cards) collection[id] = (collection[id] ?? 0) + 1;
-      await commit({ ...p, credits: p.credits - CREDITS.packPrice, collection });
-      return cards;
+      const cards = await change((p) => {
+        if (p.credits < CREDITS.packPrice) throw new Error('Not enough credits');
+        const { cards } = openPack(setId, setCards(setId), randomSeed());
+        const collection = { ...p.collection };
+        for (const id of cards) collection[id] = (collection[id] ?? 0) + 1;
+        return { next: { ...p, credits: p.credits - CREDITS.packPrice, collection }, result: cards };
+      });
+      return cards!;
     },
-    saveDeck(deck) {
-      const p = get().profile;
-      const exists = p.decks.some((d) => d.id === deck.id);
-      return commit({
-        ...p,
-        decks: exists ? p.decks.map((d) => (d.id === deck.id ? deck : d)) : [...p.decks, deck],
+    async saveDeck(deck) {
+      await change((p) => {
+        const exists = p.decks.some((d) => d.id === deck.id);
+        const decks = exists ? p.decks.map((d) => (d.id === deck.id ? deck : d)) : [...p.decks, deck];
+        return { next: { ...p, decks }, result: undefined };
       });
     },
-    deleteDeck(id) {
-      const p = get().profile;
-      return commit({ ...p, decks: p.decks.filter((d) => d.id !== id) });
+    async deleteDeck(id) {
+      await change((p) => ({ next: { ...p, decks: p.decks.filter((d) => d.id !== id) }, result: undefined }));
     },
     reset() {
+      loaded = deferred();
+      queue = Promise.resolve();
       set({ profile: newProfile(), persistent: false, ready: false, store: createMemoryStore() });
     },
   };

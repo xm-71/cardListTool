@@ -27,16 +27,14 @@ const ghosts: CustomDeck = {
 
 async function setProfile(decks: CustomDeck[] = []) {
   useProfile.getState().reset();
-  await useProfile
-    .getState()
-    .init(
-      createMemoryStore({
-        ...newProfile(),
-        collection: { [GASTLY]: 4, [ULTRA_BALL]: 3, [unplayable.id]: 2 },
-        decks,
-      }),
-      true,
-    );
+  await useProfile.getState().init(
+    createMemoryStore({
+      ...newProfile(),
+      collection: { [GASTLY]: 4, [ULTRA_BALL]: 3, [unplayable.id]: 2 },
+      decks,
+    }),
+    true,
+  );
 }
 
 beforeEach(async () => {
@@ -154,4 +152,20 @@ describe('custom decks in play', () => {
     expect(seen[0]!.decks[0]).toEqual({ name: 'Ghost Party', cards: ghosts.cards });
     expect(seen[0]!.decks[1]).toEqual(useGame.getState().config!.botDeck);
   });
+});
+
+test('a deck that fails to save shows the error and stays open', async () => {
+  useProfile.getState().reset();
+  await useProfile.getState().init(
+    {
+      load: () => Promise.resolve({ ...newProfile(), collection: { [GASTLY]: 4 }, decks: [ghosts] }),
+      save: () => Promise.reject(new Error('quota exceeded')),
+    },
+    true,
+  );
+  render(<DeckBuilder />);
+  fireEvent.click(screen.getByRole('button', { name: 'Edit Ghost Party' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save deck' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't save: quota exceeded");
+  expect(screen.getByText('60 / 60')).toBeInTheDocument();
 });

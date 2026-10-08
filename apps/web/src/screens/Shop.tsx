@@ -7,6 +7,7 @@ import { PackOpening } from '../ui/PackOpening.tsx';
 export function Shop() {
   const credits = useProfile((s) => s.profile.credits);
   const buyPack = useProfile((s) => s.buyPack);
+  const ready = useProfile((s) => s.ready);
   const [busy, setBusy] = useState(false);
   const [opened, setOpened] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export function Shop() {
               <p className="font-semibold text-amber-300">{p.price} credits</p>
               <button
                 type="button"
-                disabled={busy || credits < p.price}
+                disabled={!ready || busy || credits < p.price}
                 onClick={() => void buy(p.setId)}
                 className="rounded-lg bg-amber-400 px-5 py-2 font-semibold text-slate-900 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -53,7 +54,11 @@ export function Shop() {
           );
         })}
       </div>
-      {error && <p className="text-red-300">{error}</p>}
+      {error && (
+        <p role="alert" className="text-red-300">
+          {error}
+        </p>
+      )}
       {opened && <PackOpening cards={opened} onDone={() => setOpened(null)} />}
     </section>
   );

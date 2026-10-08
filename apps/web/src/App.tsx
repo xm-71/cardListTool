@@ -105,7 +105,9 @@ function Menu() {
             {label}
           </button>
         ))}
-        <span className="ml-auto font-semibold text-amber-300">{credits} credits</span>
+        <span className="ml-auto font-semibold text-amber-300">
+          {ready ? `${credits} credits` : 'Loading…'}
+        </span>
       </nav>
       {ready && !persistent && (
         <p role="status" className="bg-amber-500/20 px-4 py-1 text-center text-sm text-amber-100">

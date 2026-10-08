@@ -114,3 +114,42 @@ test('saveDeck adds or replaces by id and deleteDeck removes', async () => {
   await useProfile.getState().deleteDeck('d1');
   expect((await store.load()).decks).toEqual([]);
 });
+
+describe('review fixes', () => {
+  test('a change made in another tab is not overwritten by this tab', async () => {
+    const store = createMemoryStore();
+    await useProfile.getState().init(store, true);
+    // another tab buys something: the stored profile moves on without this tab knowing
+    await store.save({ ...newProfile(), credits: 900, collection: { 'me01-001': 1 } });
+    await useProfile.getState().award(55, 100);
+    expect(await store.load()).toMatchObject({ credits: 1000, collection: { 'me01-001': 1 } });
+    expect(useProfile.getState().profile.credits).toBe(1000);
+  });
+
+  test('changes requested before the profile has loaded wait for it', async () => {
+    const buying = useProfile.getState().buyPack('me01');
+    const store = createMemoryStore({ ...newProfile(), credits: 100 });
+    await useProfile.getState().init(store, true);
+    await expect(buying).rejects.toThrow(/credits/i);
+    expect((await store.load()).credits).toBe(100);
+  });
+
+  test('an award before the profile has loaded lands in the real profile', async () => {
+    const awarding = useProfile.getState().award(9, 100);
+    const store = createMemoryStore({ ...newProfile(), credits: 20 });
+    await useProfile.getState().init(store, true);
+    await awarding;
+    expect((await store.load()).credits).toBe(120);
+    expect(useProfile.getState().profile.credits).toBe(120);
+  });
+
+  test('a failed save rejects and leaves the shown profile unchanged', async () => {
+    const store: ProfileStore = {
+      load: () => Promise.resolve(newProfile()),
+      save: () => Promise.reject(new Error('quota exceeded')),
+    };
+    await useProfile.getState().init(store, true);
+    await expect(useProfile.getState().buyPack('me01')).rejects.toThrow('quota exceeded');
+    expect(useProfile.getState().profile).toEqual(newProfile());
+  });
+});

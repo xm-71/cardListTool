@@ -19,7 +19,11 @@ export function useGameAward(): number | null {
   const seed = config?.seed;
   useEffect(() => {
     if (amount === null || seed === undefined) return;
-    void useProfile.getState().award(seed, amount);
+    // A failed save leaves the profile unchanged; there is nothing more useful to do mid-game.
+    useProfile
+      .getState()
+      .award(seed, amount)
+      .catch((e: unknown) => console.error('Could not save credits', e));
   }, [amount, seed]);
   return amount;
 }

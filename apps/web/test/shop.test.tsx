@@ -90,3 +90,31 @@ test('a warning shows when progress cannot be saved', async () => {
   render(<App botClient={bot} botDelayMs={0} />);
   expect(screen.getByRole('status')).toHaveTextContent("Progress won't be saved in this browser");
 });
+
+test('while the profile is loading, the balance is hidden and buying is disabled', () => {
+  useGame.getState().reset();
+  useProfile.getState().reset();
+  render(<App botClient={bot} botDelayMs={0} />);
+  // jsdom has no IndexedDB, but the fallback resolves asynchronously: right after render we are still loading
+  expect(screen.queryByText('500 credits')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Shop' }));
+  for (const b of screen.getAllByRole('button', { name: 'Buy & open' })) expect(b).toBeDisabled();
+});
+
+test('a failed purchase shows its error', async () => {
+  useGame.getState().reset();
+  useProfile.getState().reset();
+  await useProfile
+    .getState()
+    .init(
+      { load: () => Promise.resolve(newProfile()), save: () => Promise.reject(new Error('quota exceeded')) },
+      true,
+    );
+  render(<App botClient={bot} botDelayMs={0} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Shop' }));
+  fireEvent.click(
+    within(screen.getByRole('group', { name: 'Mega Evolution' })).getByRole('button', { name: 'Buy & open' }),
+  );
+  expect(await screen.findByRole('alert')).toHaveTextContent('quota exceeded');
+  expect(screen.getByText('500 credits')).toBeInTheDocument();
+});
