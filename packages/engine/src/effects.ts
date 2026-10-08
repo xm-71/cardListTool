@@ -122,6 +122,21 @@ export class EffectCtx {
     }
   }
 
+  /** Evolve the Pokémon at `ref` with an evolution card from its owner's hand. */
+  evolve(ref: SlotRef, uid: string): void {
+    const slot = this.slot(ref);
+    const from = slotDef(this.env, this.state, slot).name;
+    this.take(uid);
+    slot.stack.push(uid);
+    slot.evolvedTurn = this.state.turn;
+    slot.conditions = { rotation: 'none', poisoned: false, burned: false };
+    this.state.log.push({
+      type: 'evolve',
+      player: ref.player,
+      text: `${from} evolves into ${this.def(uid).name}`,
+    });
+  }
+
   heal(ref: SlotRef, hp: number): void {
     const slot = this.slot(ref);
     slot.damage = Math.max(0, slot.damage - hp);

@@ -4,6 +4,7 @@ import { getRetreatCost } from './energy.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { setupEffect } from './setup.ts';
+import { playTrainer, trainerActions, useStadium } from './trainers.ts';
 import { defOf, getSlot, isFirstTurnOf, log, newSlot, slotDef, slotRefs } from './state.ts';
 import { endTurn, setResult } from './turn.ts';
 import type { Action, GameEvent, GameState, Origin, PlayerId, SlotRef } from './types.ts';
@@ -32,6 +33,10 @@ function baseHandler(origin: Origin): EffectFn {
       return (ctx) => retreat(ctx, origin.benchIndex);
     case 'attack':
       return (ctx) => attack(ctx, origin.attackIndex);
+    case 'playTrainer':
+      return (ctx) => playTrainer(ctx, origin.uid, origin.target);
+    case 'useStadium':
+      return useStadium;
     case 'endTurn':
       return endTurn;
     case 'concede':
@@ -62,16 +67,7 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
 }
 
 function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {
-  const p = ctx.state.players[ctx.me];
-  const slot = getSlot(ctx.state, target)!;
-  const from = slotDef(ctx.env, ctx.state, slot).name;
-  removeFrom(p.hand, uid);
-  slot.stack.push(uid);
-  slot.evolvedTurn = ctx.state.turn;
-  slot.conditions = { rotation: 'none', poisoned: false, burned: false };
-  log(ctx.state, 'evolve', `Player ${ctx.me + 1} evolves ${from} into ${ctx.def(uid).name}`, {
-    player: ctx.me,
-  });
+  ctx.evolve(target, uid);
 }
 
 function retreat(ctx: EffectCtx, benchIndex: number): void {
@@ -121,6 +117,7 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
       for (const target of mySlots) out.push({ type: 'attachEnergy', uid, target });
     }
   }
+  out.push(...trainerActions(env, state, player));
   const active = p.active;
   if (active && p.retreatTurn !== turn && p.bench.length > 0) {
     const blocked = active.conditions.rotation === 'asleep' || active.conditions.rotation === 'paralyzed';
