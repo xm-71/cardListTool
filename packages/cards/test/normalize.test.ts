@@ -59,9 +59,23 @@ describe('parseDamage', () => {
   test.each([
     ['20+', 20, '+'],
     ['120×', 120, '×'],
+    ['240-', 240, '-'],
     [230, 230, ''],
     [undefined, 0, ''],
   ] as const)('%s → %s %s', (raw, damage, suffix) => {
     expect(parseDamage(raw)).toEqual({ damage, damageSuffix: suffix });
   });
+});
+
+test('an Energy TCGdex labels Normal but without a basic type name is Special', () => {
+  const def = normalizeTcgdexCard({
+    id: 'me02-124',
+    name: 'Ignition Energy',
+    category: 'Energy',
+    energyType: 'Normal',
+    effect: 'As long as this card is attached to a Pokémon, it provides {C} Energy.',
+    regulationMark: 'I',
+    rarity: 'Ultra Rare',
+  });
+  expect(def).toMatchObject({ category: 'Energy', energyKind: 'Special', provides: ['Colorless'] });
 });
