@@ -21,6 +21,8 @@ function emptyPlayer(): PlayerState {
     stadiumUsedTurn: null,
     stadiumPlayedTurn: null,
     mulligans: 0,
+    lastKnockedOutTurn: null,
+    abilityNamesUsedTurn: {},
   };
 }
 
@@ -52,6 +54,7 @@ export function createGame(env: Env, config: { decks: [DeckList, DeckList]; seed
     rng: config.seed >>> 0,
     result: null,
     log: [],
+    lingering: [],
   };
   for (const player of [0, 1] as PlayerId[]) {
     const deck = config.decks[player];

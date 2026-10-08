@@ -7,7 +7,10 @@ import type {
   PlayerId,
   PokemonSlot,
   Prompt,
+  SlotRef,
 } from './types.ts';
+import type { Env } from './env.ts';
+import { maxHp } from './state.ts';
 
 export interface SlotView {
   stack: CardInstance[];
@@ -19,6 +22,9 @@ export interface SlotView {
   evolvedTurn: number | null;
   abilityUsedTurn: Record<string, number>;
   cantAttackOnTurn: number | null;
+  attackLocks: Record<string, number>;
+  /** Effective max HP (after Stadium/Tool modifiers), when the view was built with card data. */
+  hp?: number;
 }
 
 interface SideView {
@@ -53,9 +59,9 @@ export interface PlayerView {
 }
 
 /** What `player` is allowed to see of the game. */
-export function viewFor(state: GameState, player: PlayerId): PlayerView {
+export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerView {
   const card = (uid: string): CardInstance => ({ ...state.cards[uid]! });
-  const slot = (s: PokemonSlot): SlotView => ({
+  const slot = (s: PokemonSlot, ref: SlotRef): SlotView => ({
     stack: s.stack.map(card),
     energy: s.energy.map(card),
     tool: s.tool ? card(s.tool) : null,
@@ -65,6 +71,8 @@ export function viewFor(state: GameState, player: PlayerId): PlayerView {
     evolvedTurn: s.evolvedTurn,
     abilityUsedTurn: { ...s.abilityUsedTurn },
     cantAttackOnTurn: s.cantAttackOnTurn,
+    attackLocks: { ...(s.attackLocks ?? {}) },
+    ...(env ? { hp: maxHp(env, state, ref) } : {}),
   });
   const side = (p: PlayerId, hideBoard: boolean): SideView => {
     const ps = state.players[p];
@@ -72,8 +80,8 @@ export function viewFor(state: GameState, player: PlayerId): PlayerView {
       deckCount: ps.deck.length,
       discard: ps.discard.map(card),
       prizeCount: ps.prizes.length,
-      active: hideBoard || !ps.active ? null : slot(ps.active),
-      bench: hideBoard ? [] : ps.bench.map(slot),
+      active: hideBoard || !ps.active ? null : slot(ps.active, { player: p, zone: 'active' }),
+      bench: hideBoard ? [] : ps.bench.map((b, index) => slot(b, { player: p, zone: 'bench', index })),
     };
   };
   const opp: PlayerId = player === 0 ? 1 : 0;

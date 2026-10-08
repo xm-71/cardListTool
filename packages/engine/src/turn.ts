@@ -38,6 +38,7 @@ export function endTurn(ctx: EffectCtx): void {
   log(s, 'turnEnd', `Player ${s.current + 1} ends their turn`, { player: s.current });
   pokemonCheckup(ctx);
   if (s.result) return;
+  s.lingering = s.lingering.filter((l) => l.turn > s.turn);
   s.turn++;
   s.current = other(s.current);
   beginTurn(ctx);

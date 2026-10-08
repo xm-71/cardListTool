@@ -128,6 +128,7 @@ function retreat(ctx: EffectCtx, benchIndex: number): void {
   const incoming = p.bench[benchIndex]!;
   active.conditions = { rotation: 'none', poisoned: false, burned: false };
   active.cantAttackOnTurn = null;
+  active.attackLocks = {};
   p.bench[benchIndex] = active;
   p.active = incoming;
   p.retreatTurn = s.turn;

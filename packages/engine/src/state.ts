@@ -34,6 +34,7 @@ export function newSlot(uid: string, turn: number): PokemonSlot {
     evolvedTurn: null,
     abilityUsedTurn: {},
     cantAttackOnTurn: null,
+    attackLocks: {},
   };
 }
 
@@ -67,4 +68,21 @@ export function isFirstTurnOf(state: GameState, player: PlayerId): boolean {
 
 export function log(state: GameState, type: string, text: string, extra: Record<string, unknown> = {}): void {
   state.log.push({ type, text, ...extra });
+}
+
+/** A Pokémon's HP after Stadium, Tool and own-card modifiers. */
+export function maxHp(env: Env, state: GameState, ref: SlotRef): number {
+  const slot = getSlot(state, ref);
+  if (!slot) return 0;
+  let hp = slotDef(env, state, slot).hp;
+  const ids = [
+    ...(state.stadium ? [state.cards[state.stadium.uid]!.defId] : []),
+    state.cards[topUid(slot)]!.defId,
+    ...(slot.tool ? [state.cards[slot.tool]!.defId] : []),
+  ];
+  for (const id of ids) {
+    const hook = env.registry.scripts[id]?.modifyMaxHp;
+    if (hook) hp = hook({ state, slot: ref, hp, registry: env.registry });
+  }
+  return Math.max(0, hp);
 }
