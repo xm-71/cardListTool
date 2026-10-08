@@ -66,9 +66,11 @@ describe('medium bot', () => {
       const bots: [typeof easy, typeof easy] = mediumSeat === 0 ? [timed, easy] : [easy, timed];
       const r = runMatch({ engine, decks, seed: 1000 + seed, bots });
       expect(r.violations).toEqual([]);
+      expect(r.result?.reason).not.toBe('concede');
       if (r.result?.winner === mediumSeat) mediumWins++;
     }
     console.log(`medium won ${mediumWins}/${GAMES}; ${(ms / decisions).toFixed(1)} ms per decision`);
+    if (!process.env.CI_SLOW) expect(ms / decisions).toBeLessThan(250);
     expect(mediumWins / GAMES).toBeGreaterThanOrEqual(0.6);
   }, 900_000);
 });
@@ -84,5 +86,58 @@ describe('medium bot robustness', () => {
     const view = engine.viewFor(s, me);
     const legal = engine.getLegalActions(s, me);
     expect(bot(view, legal, 5)).toEqual(easy(view, legal, 5));
+  });
+});
+
+describe('medium bot promotion', () => {
+  test('promotes the Pokémon that is best afterwards, not just the one with the most Energy', () => {
+    const decks: [DeckList, DeckList] = [megaLucarioDeck, megaGengarDeck];
+    let s = finishSetup(engine, engine.createGame({ decks, seed: 12 }));
+    while (!(s.current === 1 && s.turn >= 2)) s = act(engine, s, { type: 'endTurn' });
+    // seat 1 (Gengar) attacks and Knocks Out seat 0's Active; seat 0 (Medium) must promote
+    swapActiveTo(s, 1, 'me02-056');
+    attachFromDeck(s, 1, 'mee-007');
+    attachFromDeck(s, 1, 'mee-007');
+    swapActiveTo(s, 0, 'me01-076');
+    s.players[0].active!.damage = 70;
+    const p0 = s.players[0];
+    const take = (defId: string) => {
+      const i = p0.deck.findIndex((u) => s.cards[u]!.defId === defId);
+      return p0.deck.splice(i, 1)[0]!;
+    };
+    const slot = (uid: string, energy: string[], damage: number) => ({
+      stack: [uid],
+      energy,
+      tool: null,
+      damage,
+      conditions: { rotation: 'none' as const, poisoned: false, burned: false },
+      enteredTurn: 0,
+      evolvedTurn: null,
+      abilityUsedTurn: {},
+      cantAttackOnTurn: null,
+      attackLocks: {},
+    });
+    // bench 0: Riolu with 2 Energy but only 10 HP left; bench 1: healthy Mega Lucario ex with 1 Energy
+    p0.bench = [
+      slot(take('me01-076'), [take('mee-006'), take('mee-006')], 70),
+      slot(take('me01-077'), [take('mee-006')], 0),
+    ];
+    s = act(engine, s, { type: 'attack', attackIndex: 0 });
+    expect(s.prompt?.player).toBe(0);
+    const view = engine.viewFor(s, 0);
+    const legal = engine.getLegalActions(s, 0);
+    const easyPick = easy(view, legal, 1).action;
+    const mediumPick = createMediumBot(registry, decks, 0)(view, legal, 1).action;
+    const benchOf = (a: typeof easyPick) =>
+      s.prompt!.options.find((o) => a.type === 'answer' && o.id === a.optionId)?.slot;
+    expect(benchOf(easyPick)).toEqual({ player: 0, zone: 'bench', index: 0 });
+    expect(benchOf(mediumPick)).toEqual({ player: 0, zone: 'bench', index: 1 });
+  });
+});
+
+describe('bots never concede', () => {
+  test('the Easy bot refuses to pick concede even when it is the only option', () => {
+    const s = finishSetup(engine, engine.createGame({ decks: [megaGengarDeck, megaDiancieDeck], seed: 3 }));
+    expect(() => easy(engine.viewFor(s, s.current), [{ type: 'concede' }], 1)).toThrow(/concede/);
   });
 });

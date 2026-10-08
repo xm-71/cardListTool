@@ -6,6 +6,7 @@ import {
   type DeckList,
   type GameState,
   type PlayerId,
+  type PlayerView,
 } from '@ptcg/engine';
 import { determinize } from './determinize.ts';
 import { createEasyBot } from './easy.ts';
@@ -13,11 +14,14 @@ import { evaluate } from './evaluate.ts';
 import type { Bot } from './types.ts';
 
 const ROLLOUT_STEPS = 30;
+/** Message of the engine's promotion prompt after a Knockout. */
+const PROMOTE = 'Choose a new Active Pokémon';
 
 /**
  * Medium bot: for each candidate move, plays it on several guessed versions of the hidden
  * cards, finishes the turn with the Easy policy, scores the result and picks the best average.
- * Prompts are answered heuristically (a paused effect can't be rebuilt from a view).
+ * Promotions are scored the same way; other prompts are answered by the Easy policy
+ * (a paused effect can't be rebuilt from a view).
  */
 export function createMediumBot(
   registry: CardRegistry,
@@ -44,6 +48,27 @@ export function createMediumBot(
     return { state: s, rng };
   };
 
+  /** Score each Benched Pokémon by promoting it on guessed states and evaluating the result. */
+  const choosePromotion = (view: PlayerView, candidates: Action[], rngIn: number) => {
+    let rng = rngIn;
+    const me = view.me;
+    const totals = new Map<Action, number>();
+    for (let k = 0; k < samples; k++) {
+      const d = determinize(view, decks, registry, rng);
+      rng = d.rng;
+      for (const action of candidates) {
+        if (action.type !== 'answer') continue;
+        const ref = view.prompt!.options.find((o) => o.id === action.optionId)?.slot;
+        if (!ref || ref.zone !== 'bench') continue;
+        const s = structuredClone(d.state);
+        const p = s.players[me];
+        p.active = p.bench.splice(ref.index, 1)[0]!;
+        totals.set(action, (totals.get(action) ?? 0) + evaluate(s, me, registry));
+      }
+    }
+    return pickBest(totals, rng);
+  };
+
   return (view, legal, rngIn) => {
     let rng = rngIn;
     const me = view.me ?? seat;
@@ -51,6 +76,13 @@ export function createMediumBot(
       legal.filter((a) => a.type !== 'concede'),
       view,
     );
+    if (view.prompt?.kind === 'slot' && view.prompt.message === PROMOTE && candidates.length > 1) {
+      try {
+        return choosePromotion(view, candidates, rng);
+      } catch {
+        return easy(view, legal, rng);
+      }
+    }
     if (view.prompt || candidates.length <= 1) return easy(view, legal, rng);
     try {
       const totals = new Map<Action, number>();
@@ -70,20 +102,26 @@ export function createMediumBot(
           totals.set(action, (totals.get(action) ?? 0) + score);
         }
       }
-      let best: Action[] = [];
-      let bestScore = -Infinity;
-      for (const [action, total] of totals) {
-        if (total > bestScore + 1e-9) {
-          best = [action];
-          bestScore = total;
-        } else if (Math.abs(total - bestScore) <= 1e-9) best.push(action);
-      }
-      const [v, next] = nextRandom(rng);
-      return { action: best[Math.floor(v * best.length)]!, rng: next };
+      return pickBest(totals, rng);
     } catch {
       return easy(view, legal, rng);
     }
   };
+}
+
+/** The highest total wins; ties are broken by the RNG. */
+function pickBest(totals: Map<Action, number>, rngIn: number): { action: Action; rng: number } {
+  let best: Action[] = [];
+  let bestScore = -Infinity;
+  for (const [action, total] of totals) {
+    if (total > bestScore + 1e-9) {
+      best = [action];
+      bestScore = total;
+    } else if (Math.abs(total - bestScore) <= 1e-9) best.push(action);
+  }
+  if (best.length === 0) throw new Error('no candidate could be scored');
+  const [v, rng] = nextRandom(rngIn);
+  return { action: best[Math.floor(v * best.length)]!, rng };
 }
 
 /** Collapse actions that differ only by which copy of the same card they use. */

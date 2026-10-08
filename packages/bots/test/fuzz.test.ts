@@ -20,7 +20,7 @@ test(`${GAMES} seeded Easy-bot games across all deck pairings finish with no inv
   for (let seed = 1; seed <= GAMES; seed++) {
     const [[n0, d0], [n1, d1]] = PAIRINGS[seed % PAIRINGS.length]!;
     const r = runMatch({ engine, decks: [d0, d1], seed, bots: [bot, bot] });
-    if (r.violations.length || !r.result) {
+    if (r.violations.length || !r.result || r.result.reason === 'concede') {
       throw new Error(
         `seed ${seed} (${n0} vs ${n1}): result=${JSON.stringify(r.result)} actions=${r.actions} violations=${r.violations.slice(0, 3).join('; ')}`,
       );
