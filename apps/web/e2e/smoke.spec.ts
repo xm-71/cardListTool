@@ -16,9 +16,14 @@ async function playThroughSetup(page: Page) {
   throw new Error('never reached the human turn');
 }
 
-test('play a turn against the Easy bot', async ({ page }) => {
+test('play a turn against the Medium bot', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Pokémon TCG' })).toBeVisible();
+  await page.getByLabel('Medium bot').check();
+  await page
+    .getByRole('group', { name: "Opponent's deck" })
+    .getByRole('button', { name: /Mega Lucario ex/ })
+    .click();
   await page.getByRole('button', { name: 'Play' }).click();
   await playThroughSetup(page);
   await expect(page.getByRole('region', { name: 'You', exact: true })).toBeVisible();

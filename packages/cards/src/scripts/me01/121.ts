@@ -10,7 +10,10 @@ export const script: CardScript = {
         max: 1,
         message: 'Choose a Mega Evolution Pokémon ex',
       });
-      if (uid) ctx.moveCard(uid, { player: ctx.me, zone: 'hand' });
+      if (uid) {
+        ctx.reveal([uid]);
+        ctx.moveCard(uid, { player: ctx.me, zone: 'hand' });
+      }
       ctx.shuffleDeck(ctx.me);
     },
   },

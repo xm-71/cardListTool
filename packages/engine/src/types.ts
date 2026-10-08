@@ -58,6 +58,8 @@ export interface PokemonSlot {
   evolvedTurn: number | null;
   abilityUsedTurn: Record<string, number>;
   cantAttackOnTurn: number | null;
+  /** attack name → the turn on which it can't be used */
+  attackLocks: Record<string, number>;
 }
 
 export interface PlayerState {
@@ -71,7 +73,12 @@ export interface PlayerState {
   energyTurn: number | null;
   retreatTurn: number | null;
   stadiumUsedTurn: number | null;
+  stadiumPlayedTurn: number | null;
   mulligans: number;
+  /** Turn on which one of this player's Pokémon was last Knocked Out. */
+  lastKnockedOutTurn: number | null;
+  /** Ability name → turn used, for "can't use more than 1 X Ability each turn". */
+  abilityNamesUsedTurn: Record<string, number>;
 }
 
 export interface PromptOption {
@@ -137,6 +144,8 @@ export interface GameState {
   rng: number;
   result: GameResult | null;
   log: GameEvent[];
+  /** Cards whose effects last for the rest of a turn (e.g. Premium Power Pro). */
+  lingering: { defId: string; owner: PlayerId; turn: number }[];
 }
 
 export type Action =

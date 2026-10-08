@@ -58,6 +58,46 @@ export class EffectCtx {
     this.state.log.push({ type, player: this.me, text });
   }
 
+  /** "During your next turn, this Pokémon can't use <attack>." */
+  lockAttack(ref: SlotRef, attackName: string): void {
+    this.slot(ref).attackLocks[attackName] = this.state.turn + 2;
+  }
+
+  /** Damage to the acting player's own Active Pokémon (no Weakness/Resistance). */
+  damageSelf(amount: number): void {
+    const slot = this.slot({ player: this.me, zone: 'active' });
+    slot.damage += amount;
+    this.log(`${slotDef(this.env, this.state, slot).name} does ${amount} damage to itself`);
+  }
+
+  /** Make a card's passive hooks apply for its owner for the rest of this turn. */
+  addLingering(defId: string): void {
+    this.state.lingering.push({ defId, owner: this.me, turn: this.state.turn });
+  }
+
+  wasKnockedOutLastOpponentTurn(player: PlayerId): boolean {
+    return this.state.players[player].lastKnockedOutTurn === this.state.turn - 1;
+  }
+
+  usedAbilityNameThisTurn(name: string): boolean {
+    return this.state.players[this.me].abilityNamesUsedTurn[name] === this.state.turn;
+  }
+
+  markAbilityName(name: string): void {
+    this.state.players[this.me].abilityNamesUsedTurn[name] = this.state.turn;
+  }
+
+  /** Show cards to both players (e.g. a card searched out and "revealed"). */
+  reveal(uids: string[]): void {
+    if (uids.length === 0) return;
+    const owner = this.state.cards[uids[0]!]!.owner;
+    this.state.log.push({
+      type: 'reveal',
+      player: owner,
+      text: `Player ${owner + 1} reveals ${uids.map((u) => this.def(u).name).join(', ')}`,
+    });
+  }
+
   draw(player: PlayerId, n: number): string[] {
     return drawCards(this.state, player, n);
   }
@@ -155,6 +195,7 @@ export class EffectCtx {
     slot.evolvedTurn = this.state.turn;
     slot.conditions = { rotation: 'none', poisoned: false, burned: false };
     slot.cantAttackOnTurn = null;
+    slot.attackLocks = {};
     this.state.log.push({
       type: 'evolve',
       player: ref.player,
@@ -178,6 +219,7 @@ export class EffectCtx {
     if (!incoming || !p.active) throw new Error('Nothing to switch');
     p.active.conditions = { rotation: 'none', poisoned: false, burned: false };
     p.active.cantAttackOnTurn = null; // effects on the Active end when it moves to the Bench
+    p.active.attackLocks = {};
     p.bench[benchIndex] = p.active;
     p.active = incoming;
   }

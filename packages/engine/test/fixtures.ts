@@ -130,6 +130,7 @@ export function benchFromHand(state: GameState, player: PlayerId, uid: string, e
     evolvedTurn: null,
     abilityUsedTurn: {},
     cantAttackOnTurn: null,
+    attackLocks: {},
   });
 }
 

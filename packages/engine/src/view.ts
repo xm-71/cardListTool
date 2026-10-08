@@ -7,7 +7,10 @@ import type {
   PlayerId,
   PokemonSlot,
   Prompt,
+  SlotRef,
 } from './types.ts';
+import type { Env } from './env.ts';
+import { maxHp } from './state.ts';
 
 export interface SlotView {
   stack: CardInstance[];
@@ -19,9 +22,14 @@ export interface SlotView {
   evolvedTurn: number | null;
   abilityUsedTurn: Record<string, number>;
   cantAttackOnTurn: number | null;
+  attackLocks: Record<string, number>;
+  /** Effective max HP (after Stadium/Tool modifiers), when the view was built with card data. */
+  hp?: number;
 }
 
 interface SideView {
+  /** Public: the turn on which one of this player's Pokémon was last Knocked Out. */
+  lastKnockedOutTurn: number | null;
   deckCount: number;
   discard: CardInstance[];
   prizeCount: number;
@@ -38,6 +46,8 @@ export interface PlayerView {
   stadium: { card: CardInstance; owner: PlayerId } | null;
   result: GameResult | null;
   log: GameEvent[];
+  /** Public "this turn" effects in play. */
+  lingering: GameState['lingering'];
   /** The prompt, only when this player is the one choosing. */
   prompt: Prompt | null;
   /** Set when the opponent is making a choice this player must wait for. */
@@ -48,14 +58,17 @@ export interface PlayerView {
     energyTurn: number | null;
     retreatTurn: number | null;
     stadiumUsedTurn: number | null;
+    stadiumPlayedTurn: number | null;
+    abilityNamesUsedTurn: Record<string, number>;
+    mulligans: number;
   };
   opponent: SideView & { handCount: number };
 }
 
 /** What `player` is allowed to see of the game. */
-export function viewFor(state: GameState, player: PlayerId): PlayerView {
+export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerView {
   const card = (uid: string): CardInstance => ({ ...state.cards[uid]! });
-  const slot = (s: PokemonSlot): SlotView => ({
+  const slot = (s: PokemonSlot, ref: SlotRef): SlotView => ({
     stack: s.stack.map(card),
     energy: s.energy.map(card),
     tool: s.tool ? card(s.tool) : null,
@@ -65,15 +78,18 @@ export function viewFor(state: GameState, player: PlayerId): PlayerView {
     evolvedTurn: s.evolvedTurn,
     abilityUsedTurn: { ...s.abilityUsedTurn },
     cantAttackOnTurn: s.cantAttackOnTurn,
+    attackLocks: { ...(s.attackLocks ?? {}) },
+    ...(env ? { hp: maxHp(env, state, ref) } : {}),
   });
   const side = (p: PlayerId, hideBoard: boolean): SideView => {
     const ps = state.players[p];
     return {
+      lastKnockedOutTurn: ps.lastKnockedOutTurn ?? null,
       deckCount: ps.deck.length,
       discard: ps.discard.map(card),
       prizeCount: ps.prizes.length,
-      active: hideBoard || !ps.active ? null : slot(ps.active),
-      bench: hideBoard ? [] : ps.bench.map(slot),
+      active: hideBoard || !ps.active ? null : slot(ps.active, { player: p, zone: 'active' }),
+      bench: hideBoard ? [] : ps.bench.map((b, index) => slot(b, { player: p, zone: 'bench', index })),
     };
   };
   const opp: PlayerId = player === 0 ? 1 : 0;
@@ -88,6 +104,7 @@ export function viewFor(state: GameState, player: PlayerId): PlayerView {
     stadium: state.stadium ? { card: card(state.stadium.uid), owner: state.stadium.owner } : null,
     result: state.result ? { ...state.result } : null,
     log: structuredClone(state.log),
+    lingering: structuredClone(state.lingering ?? []),
     prompt,
     waitingOn: state.prompt && state.prompt.player !== player ? state.prompt.player : null,
     you: {
@@ -97,6 +114,9 @@ export function viewFor(state: GameState, player: PlayerId): PlayerView {
       energyTurn: me.energyTurn,
       retreatTurn: me.retreatTurn,
       stadiumUsedTurn: me.stadiumUsedTurn,
+      stadiumPlayedTurn: me.stadiumPlayedTurn ?? null,
+      abilityNamesUsedTurn: { ...(me.abilityNamesUsedTurn ?? {}) },
+      mulligans: me.mulligans,
     },
     opponent: { ...side(opp, state.phase === 'setup'), handCount: state.players[opp].hand.length },
   };

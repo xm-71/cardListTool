@@ -37,7 +37,7 @@ export function trainerActions(env: Env, state: GameState, player: PlayerId): Ac
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Stadium':
-        if (stadiumName === def.name) continue;
+        if (stadiumName === def.name || p.stadiumPlayedTurn === state.turn) continue;
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Tool':
@@ -75,6 +75,7 @@ export function playTrainer(ctx: EffectCtx, uid: string, target?: SlotRef): void
     case 'Stadium': {
       if (s.stadium) s.players[s.stadium.owner].discard.push(s.stadium.uid);
       s.stadium = { uid, owner: ctx.me };
+      p.stadiumPlayedTurn = s.turn;
       return;
     }
     case 'Supporter':

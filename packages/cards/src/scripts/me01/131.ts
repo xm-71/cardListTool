@@ -19,7 +19,10 @@ export const script: CardScript = {
         max: 1,
         message: 'Choose a Pokémon',
       });
-      if (found) ctx.moveCard(found, { player: ctx.me, zone: 'hand' });
+      if (found) {
+        ctx.reveal([found]);
+        ctx.moveCard(found, { player: ctx.me, zone: 'hand' });
+      }
       ctx.shuffleDeck(ctx.me);
     },
   },

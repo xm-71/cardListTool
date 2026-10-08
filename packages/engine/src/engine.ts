@@ -23,6 +23,6 @@ export function createEngine(registry: CardRegistry, ruleset: Ruleset = standard
     createGame: (config) => createGame(env, config),
     getLegalActions: (state, player) => getLegalActions(env, state, player),
     applyAction: (state, player, action) => applyAction(env, state, player, action),
-    viewFor,
+    viewFor: (state, player) => viewFor(state, player, env),
   };
 }

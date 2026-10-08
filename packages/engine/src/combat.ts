@@ -3,7 +3,7 @@ import type { EffectCtx } from './effects.ts';
 import { canPayCost } from './energy.ts';
 import type { Env } from './env.ts';
 import { sameSlot, scriptsInPlay } from './hooks.ts';
-import { getSlot, isFirstTurnOf, log, other, slotDef, slotRefs } from './state.ts';
+import { getSlot, isFirstTurnOf, log, maxHp, other, slotDef, slotRefs } from './state.ts';
 import { endTurn, setResult } from './turn.ts';
 import type { GameState, PlayerId, SlotRef } from './types.ts';
 
@@ -32,7 +32,12 @@ export function canUseAttack(
   if (active.cantAttackOnTurn === state.turn) return false;
   const def = slotDef(env, state, active);
   const attack = def.attacks[attackIndex];
-  if (!attack || !canPayCost(attack.cost, active.energy, state, env.registry)) return false;
+  if (!attack || active.attackLocks?.[attack.name] === state.turn) return false;
+  let cost = attack.cost;
+  const costHook = env.registry.scripts[def.id]?.modifyAttackCost;
+  if (costHook)
+    cost = costHook({ state, holder: { player, zone: 'active' }, attackIndex, cost, registry: env.registry });
+  if (!canPayCost(cost, active.energy, state, env.registry)) return false;
   const script = env.registry.scripts[def.id]?.attacks?.[attackIndex];
   if (script?.canUse) {
     ctx.source = { kind: 'attack', slot: { player, zone: 'active' }, attackIndex };
@@ -46,7 +51,12 @@ export function canUseAttack(
  * Active goes through modifiers and Weakness/Resistance; damage to Benched Pokémon does not.
  * Returns the damage actually dealt.
  */
-export function dealAttackDamage(ctx: EffectCtx, target: SlotRef, base: number): number {
+export function dealAttackDamage(
+  ctx: EffectCtx,
+  target: SlotRef,
+  base: number,
+  opts: { ignoreWeaknessResistance?: boolean } = {},
+): number {
   const s = ctx.state;
   const info = currentAttack(ctx);
   if (!info) throw new Error('dealAttackDamage outside an attack');
@@ -67,10 +77,26 @@ export function dealAttackDamage(ctx: EffectCtx, target: SlotRef, base: number):
         });
       }
     }
+    // "This turn" effects (e.g. Premium Power Pro) act for their owner as if in play.
+    for (const l of s.lingering) {
+      const hook = registry.scripts[l.defId]?.modifyOutgoingDamage;
+      if (hook && l.turn === s.turn && l.owner === info.attacker.player) {
+        amount = hook({
+          state: s,
+          holder: info.attacker,
+          attacker: info.attacker,
+          defender: target,
+          amount,
+          registry,
+        });
+      }
+    }
     const attackerDef = slotDef(ctx.env, s, getSlot(s, info.attacker)!);
     const defenderDef = slotDef(ctx.env, s, targetSlot);
-    if (amount > 0 && defenderDef.weakness && attackerDef.types.includes(defenderDef.weakness)) amount *= 2;
-    if (defenderDef.resistance && attackerDef.types.includes(defenderDef.resistance)) amount -= 30;
+    if (!opts.ignoreWeaknessResistance) {
+      if (amount > 0 && defenderDef.weakness && attackerDef.types.includes(defenderDef.weakness)) amount *= 2;
+      if (defenderDef.resistance && attackerDef.types.includes(defenderDef.resistance)) amount -= 30;
+    }
     for (const h of scriptsInPlay(ctx.env, s, target.player)) {
       if (h.script.modifyIncomingDamage) {
         amount = h.script.modifyIncomingDamage({
@@ -104,13 +130,18 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
   log(s, 'attack', `${def.name} uses ${atk.name}`, { player: me });
 
   if (resolveConfusion(ctx)) {
-    const base = script?.damage ? script.damage(ctx) : atk.damage;
+    const scripted = script?.damage ? script.damage(ctx) : atk.damage;
+    const base = typeof scripted === 'number' ? scripted : scripted.amount;
+    const ignoreWeaknessResistance = typeof scripted === 'number' ? false : scripted.ignoreWR;
     const defenderRef: SlotRef = { player: ctx.opp, zone: 'active' };
-    if (base > 0 && getSlot(s, defenderRef)) dealAttackDamage(ctx, defenderRef, base);
+    if (base > 0 && getSlot(s, defenderRef))
+      dealAttackDamage(ctx, defenderRef, base, { ignoreWeaknessResistance });
     script?.effect?.(ctx);
     afterDamaged(ctx);
   }
   checkKnockouts(ctx);
+  // Anything after this (Pokémon Checkup) is no longer part of the attack.
+  attackInfo.delete(ctx);
   endTurn(ctx);
 }
 
@@ -135,7 +166,7 @@ export function checkKnockouts(ctx: EffectCtx): void {
   for (const player of [0, 1] as PlayerId[]) {
     for (const ref of slotRefs(s, player)) {
       const slot = getSlot(s, ref)!;
-      if (slot.damage >= slotDef(env, s, slot).hp) knocked.push(ref);
+      if (slot.damage >= maxHp(env, s, ref)) knocked.push(ref);
     }
   }
   if (knocked.length === 0) return;
@@ -170,6 +201,7 @@ export function checkKnockouts(ctx: EffectCtx): void {
     const p = s.players[ref.player];
     const slot = getSlot(s, ref)!;
     p.discard.push(...slot.stack, ...slot.energy, ...(slot.tool ? [slot.tool] : []));
+    p.lastKnockedOutTurn = s.turn;
     if (ref.zone === 'active') p.active = null;
     else p.bench.splice(ref.index, 1);
   }

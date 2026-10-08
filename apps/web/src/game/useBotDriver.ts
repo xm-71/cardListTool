@@ -1,13 +1,14 @@
 import { useEffect, useRef } from 'react';
 import type { PlayerId } from '@ptcg/engine';
-import type { BotClient } from './botClient.ts';
+import type { BotClient, BotSetup } from './botClient.ts';
 import { engine } from './catalog.ts';
 import { actorOf, useGame } from './store.ts';
 
 /** Whenever the bot seat must act (its turn, or a prompt during the human's turn), ask the bot and play its move. */
 export function useBotDriver(client: BotClient, delayMs: number): void {
   const state = useGame((s) => s.state);
-  const mode = useGame((s) => s.config?.mode);
+  const config = useGame((s) => s.config);
+  const mode = config?.mode;
   const seed = useGame((s) => s.config?.seed);
   const human = useGame((s) => s.human);
   const rng = useRef(0);
@@ -29,7 +30,17 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
         return;
       }
       try {
-        const { action, rng: next } = await client.choose(engine.viewFor(state, botSeat), legal, rng.current);
+        const setup: BotSetup = {
+          difficulty: config?.difficulty ?? 'easy',
+          decks: [config!.humanDeck, config!.botDeck],
+          seat: botSeat,
+        };
+        const { action, rng: next } = await client.choose(
+          engine.viewFor(state, botSeat),
+          legal,
+          rng.current,
+          setup,
+        );
         // Drop the reply if the game moved on meanwhile (new game, reset, or a newer request).
         if (mine !== seq.current || useGame.getState().state !== state) return;
         rng.current = next;
@@ -40,5 +51,5 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
       }
     }, delayMs);
     return () => clearTimeout(timer);
-  }, [state, mode, human, client, delayMs]);
+  }, [state, mode, config, human, client, delayMs]);
 }

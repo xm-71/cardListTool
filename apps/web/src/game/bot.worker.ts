@@ -1,11 +1,16 @@
 /// <reference lib="webworker" />
-import { createEasyBot } from '@ptcg/bots';
 import type { Action, PlayerView } from '@ptcg/engine';
-import { registry } from './catalog.ts';
+import { botFor, type BotSetup } from './botClient.ts';
 
-const bot = createEasyBot(registry);
+const get = botFor();
 
-self.onmessage = (e: MessageEvent<{ id: number; view: PlayerView; legal: Action[]; rng: number }>) => {
-  const { id, view, legal, rng } = e.data;
-  self.postMessage({ id, ...bot(view, legal, rng) });
+self.onmessage = (
+  e: MessageEvent<{ id: number; view: PlayerView; legal: Action[]; rng: number; setup: BotSetup }>,
+) => {
+  const { id, view, legal, rng, setup } = e.data;
+  try {
+    self.postMessage({ id, ...get(setup)(view, legal, rng) });
+  } catch (err) {
+    self.postMessage({ id, error: err instanceof Error ? err.message : String(err) });
+  }
 };

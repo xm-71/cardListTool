@@ -125,7 +125,10 @@ export function createEasyBot(registry: CardRegistry): Bot {
     // 8. End the turn
     const end = of('endTurn');
     if (end.length) return done(end[0]!);
-    return done(legal.find((a) => a.type !== 'concede') ?? legal[0]!);
+    const other = legal.find((a) => a.type !== 'concede');
+    // Only concede is left: the engine stalled. Fail loudly instead of quietly giving up the game.
+    if (!other) throw new Error('Bot has no move except concede');
+    return done(other);
 
     function hpOf(uid: string | undefined): number {
       if (!uid) return 0;

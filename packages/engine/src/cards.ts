@@ -65,7 +65,7 @@ export interface DamageQuery {
 
 export interface AttackScript {
   canUse?(ctx: EffectCtx): boolean;
-  damage?(ctx: EffectCtx): number;
+  damage?(ctx: EffectCtx): number | { amount: number; ignoreWR: boolean };
   effect?(ctx: EffectCtx): void;
 }
 
@@ -91,6 +91,16 @@ export interface CardScript {
     registry: CardRegistry;
   }): number;
   afterDamagedInActive?(ctx: EffectCtx, holder: SlotRef, attacker: SlotRef): void;
+  /** Applied for the attacking Pokémon's own card when checking an attack's cost. */
+  modifyAttackCost?(q: {
+    state: GameState;
+    holder: SlotRef;
+    attackIndex: number;
+    cost: EnergyType[];
+    registry: CardRegistry;
+  }): EnergyType[];
+  /** Applied from the Stadium in play and the Pokémon's own card and Tool. */
+  modifyMaxHp?(q: { state: GameState; slot: SlotRef; hp: number; registry: CardRegistry }): number;
   onEvolveFromHand?: { use(ctx: EffectCtx, slot: SlotRef): void };
 }
 

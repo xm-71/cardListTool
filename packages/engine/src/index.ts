@@ -9,3 +9,5 @@ export { EffectCtx } from './effects.ts';
 export { canPayCost, getRetreatCost } from './energy.ts';
 export { viewFor, type PlayerView, type SlotView } from './view.ts';
 export { nextRandom, shuffle, coinFlip } from './rng.ts';
+export { dealAttackDamage } from './combat.ts';
+export { maxHp } from './state.ts';
