@@ -33,13 +33,18 @@ const DECKS: [string, DeckList][] = [
 const PAIRINGS = DECKS.flatMap((a, i) => DECKS.slice(i).map((b) => [a, b] as const));
 const GAMES = Number(process.env.FUZZ_GAMES ?? 540);
 const PER_PAIRING = Math.max(1, Math.round(GAMES / PAIRINGS.length));
+/**
+ * Lets the Vitest worker answer its RPC between long synchronous tests. Without a macrotask turn, a test file
+ * that runs over 60 s fails with "Timeout calling onTaskUpdate" even though every test passes.
+ */
+const yieldToWorker = () => new Promise((resolve) => setTimeout(resolve, 0));
 const wins: Record<string, number> = { ...Object.fromEntries(DECKS.map(([n]) => [n, 0])), draw: 0 };
 
-// One test per pairing: a single long synchronous test blocks the Vitest worker past its 60 s RPC timeout on CI.
 describe(`${PER_PAIRING * PAIRINGS.length} seeded Easy-bot games across all deck pairings`, () => {
   test.each(PAIRINGS.map(([a, b], i) => [a[0], b[0], i] as const))(
     '%s vs %s finish with no invariant violations',
-    (n0, n1, i) => {
+    async (n0, n1, i) => {
+      await yieldToWorker();
       const [[, d0], [, d1]] = PAIRINGS[i]!;
       for (let g = 0; g < PER_PAIRING; g++) {
         const seed = i * PER_PAIRING + g + 1;

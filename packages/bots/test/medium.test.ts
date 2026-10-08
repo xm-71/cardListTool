@@ -11,6 +11,12 @@ const engine = createEngine(registry);
 const easy = createEasyBot(registry);
 const DECKS: DeckList[] = [megaGengarDeck, megaDiancieDeck, megaLucarioDeck];
 
+/**
+ * Lets the Vitest worker answer its RPC between long synchronous tests. Without a macrotask turn, a test file
+ * that runs over 60 s fails with "Timeout calling onTaskUpdate" even though every test passes.
+ */
+const yieldToWorker = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 describe('medium bot', () => {
   test('takes a Knockout when one is available', () => {
     const decks: [DeckList, DeckList] = [megaGengarDeck, megaDiancieDeck];
@@ -45,14 +51,14 @@ describe('medium bot', () => {
     expect(state.players[me].prizes.length).toBeLessThan(6);
   });
 
-  // Split into batches: one ~50 s synchronous test blocked the Vitest worker past its 60 s RPC timeout on CI.
   const GAMES = Number(process.env.MEDIUM_GAMES ?? 36);
   const BATCH = 6;
   const tally = { mediumWins: 0, games: 0, decisions: 0, ms: 0 };
   const batches = Array.from({ length: Math.ceil(GAMES / BATCH) }, (_, i) => i * BATCH + 1);
   test.each(batches)(
     'plays Medium vs Easy games from seed %i without violations',
-    (first) => {
+    async (first) => {
+      await yieldToWorker();
       for (let seed = first; seed < first + BATCH && seed <= GAMES; seed++) {
         const d0 = DECKS[seed % 3]!;
         const d1 = DECKS[Math.floor(seed / 3) % 3]!;
