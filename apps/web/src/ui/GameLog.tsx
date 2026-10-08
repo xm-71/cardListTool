@@ -3,7 +3,11 @@ import type { GameEvent, PlayerId } from '@ptcg/engine';
 
 export function GameLog({ log, me }: { log: GameEvent[]; me: PlayerId }) {
   const end = useRef<HTMLDivElement>(null);
-  useEffect(() => end.current?.scrollIntoView?.({ block: 'end' }), [log.length]);
+  // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect's return value is
+  // treated as its cleanup function (calling a Promise crashed the board on mobile Chrome).
+  useEffect(() => {
+    end.current?.scrollIntoView?.({ block: 'end' });
+  }, [log.length]);
   const recent = log.slice(-200);
   return (
     <section
