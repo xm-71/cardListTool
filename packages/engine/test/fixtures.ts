@@ -91,3 +91,61 @@ export function finishSetup(engine: Engine, state: GameState): GameState {
   }
   return s;
 }
+
+/** A game advanced past setup (each side: first Basic offered as Active, empty Bench). */
+export function started(
+  engine: Engine,
+  spec0: Record<string, number> = { 't-basic': 20, 't-evo': 4, 't-dark': 26, 't-psy': 10 },
+  spec1: Record<string, number> = spec0,
+  seed = 1,
+): GameState {
+  return finishSetup(engine, engine.createGame({ decks: [deckOf(spec0), deckOf(spec1)], seed }));
+}
+
+/** Move a card with the given definition from the player's deck (or prizes/discard) into their hand. */
+export function giveCard(state: GameState, player: PlayerId, defId: string): string {
+  const p = state.players[player];
+  for (const zone of ['deck', 'prizes', 'discard'] as const) {
+    const i = p[zone].findIndex((u) => state.cards[u]!.defId === defId);
+    if (i >= 0) {
+      const [uid] = p[zone].splice(i, 1);
+      p.hand.push(uid!);
+      return uid!;
+    }
+  }
+  throw new Error(`No ${defId} left outside the hand for player ${player}`);
+}
+
+/** Put a card from the player's hand straight onto their Bench (test setup only). */
+export function benchFromHand(state: GameState, player: PlayerId, uid: string, enteredTurn = 0): void {
+  const p = state.players[player];
+  p.hand.splice(p.hand.indexOf(uid), 1);
+  p.bench.push({
+    stack: [uid],
+    energy: [],
+    tool: null,
+    damage: 0,
+    conditions: { rotation: 'none', poisoned: false, burned: false },
+    enteredTurn,
+    evolvedTurn: null,
+    abilityUsedTurn: {},
+    cantAttackOnTurn: null,
+  });
+}
+
+/** Attach an Energy card from the player's deck directly to a slot (test setup only). */
+export function attachFromDeck(
+  state: GameState,
+  player: PlayerId,
+  defId: string,
+  zone: 'active' | number = 'active',
+): string {
+  const uid = giveCard(state, player, defId);
+  const p = state.players[player];
+  p.hand.splice(p.hand.indexOf(uid), 1);
+  const slot = zone === 'active' ? p.active! : p.bench[zone]!;
+  slot.energy.push(uid);
+  return uid;
+}
+
+export const has = (actions: Action[], type: Action['type']) => actions.some((a) => a.type === type);
