@@ -44,10 +44,11 @@ test('buying reveals the 10 cards one at a time and charges 150', async () => {
   );
   const opening = await screen.findByRole('dialog', { name: 'Pack opening' });
   expect(screen.getByText(/¢ 350 credits/)).toBeInTheDocument();
+  // the pack shakes and tears open first
+  expect(await within(opening).findByText('Card 0 of 10', {}, { timeout: 3000 })).toBeInTheDocument();
+  fireEvent.click(within(opening).getByRole('button', { name: 'Next' }));
   expect(within(opening).getByText('Card 1 of 10')).toBeInTheDocument();
   expect(within(opening).getAllByRole('img')).toHaveLength(1);
-  fireEvent.click(within(opening).getByRole('button', { name: 'Next' }));
-  expect(within(opening).getByText('Card 2 of 10')).toBeInTheDocument();
   fireEvent.click(within(opening).getByRole('button', { name: 'Reveal all' }));
   expect(within(opening).getAllByRole('img')).toHaveLength(10);
   fireEvent.click(within(opening).getByRole('button', { name: 'Done' }));

@@ -19,14 +19,14 @@ function ShopBody() {
   const buyPack = useProfile((s) => s.buyPack);
   const ready = useProfile((s) => s.ready);
   const [busy, setBusy] = useState(false);
-  const [opened, setOpened] = useState<string[] | null>(null);
+  const [opened, setOpened] = useState<{ setId: string; cards: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const buy = async (setId: string) => {
     setBusy(true);
     setError(null);
     try {
-      setOpened(await buyPack(setId));
+      setOpened({ setId, cards: await buyPack(setId) });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -61,7 +61,7 @@ function ShopBody() {
           {error}
         </p>
       )}
-      {opened && <PackOpening cards={opened} onDone={() => setOpened(null)} />}
+      {opened && <PackOpening setId={opened.setId} cards={opened.cards} onDone={() => setOpened(null)} />}
     </section>
   );
 }
