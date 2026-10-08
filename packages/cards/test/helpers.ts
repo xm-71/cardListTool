@@ -67,6 +67,14 @@ export const ID = {
   moltres: 'me02-014',
   volcanion: 'me01-025',
   chiYu: 'me01-031',
+  grass: 'mee-001',
+  bulbasaur: 'me01-001',
+  ivysaur: 'me01-002',
+  megaVenusaur: 'me01-003',
+  exeggcute: 'me01-004',
+  exeggutor: 'me01-005',
+  shuckle: 'me01-011',
+  celebi: 'me01-012',
 } as const;
 
 /** A 60-card deck: the given cards, padded with Darkness Energy. */

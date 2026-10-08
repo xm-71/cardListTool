@@ -96,3 +96,10 @@ export function energyOfType(ctx: EffectCtx, ref: SlotRef, type: EnergyType): st
     return d.category === 'Energy' && d.provides.includes(type);
   });
 }
+
+/** The Pokémon using the Ability currently resolving or being checked. */
+export function abilityHolder(ctx: EffectCtx): SlotRef {
+  const src = ctx.source;
+  if (src?.kind !== 'ability') throw new Error('Not an Ability');
+  return src.slot;
+}
