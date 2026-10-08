@@ -127,6 +127,7 @@ function retreat(ctx: EffectCtx, benchIndex: number): void {
   }
   const incoming = p.bench[benchIndex]!;
   active.conditions = { rotation: 'none', poisoned: false, burned: false };
+  active.cantAttackOnTurn = null;
   p.bench[benchIndex] = active;
   p.active = incoming;
   p.retreatTurn = s.turn;
@@ -211,6 +212,7 @@ export function applyAction(
   } else {
     next = runEffect(env, state, action, player, handlerFor(action));
   }
-  const before = state.pending ? state.pending.snapshot.log.length : state.log.length;
+  // A paused state already shows (and returned) its partial log; replay reproduces it as a prefix.
+  const before = state.log.length;
   return { state: next, events: next.log.slice(before) };
 }

@@ -154,6 +154,7 @@ export class EffectCtx {
     slot.stack.push(uid);
     slot.evolvedTurn = this.state.turn;
     slot.conditions = { rotation: 'none', poisoned: false, burned: false };
+    slot.cantAttackOnTurn = null;
     this.state.log.push({
       type: 'evolve',
       player: ref.player,
@@ -176,6 +177,7 @@ export class EffectCtx {
     const incoming = p.bench[benchIndex];
     if (!incoming || !p.active) throw new Error('Nothing to switch');
     p.active.conditions = { rotation: 'none', poisoned: false, burned: false };
+    p.active.cantAttackOnTurn = null; // effects on the Active end when it moves to the Bench
     p.bench[benchIndex] = p.active;
     p.active = incoming;
   }

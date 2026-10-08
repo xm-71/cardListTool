@@ -4,7 +4,8 @@ import { runEffect, type EffectFn } from '../src/effects.ts';
 import type { Env } from '../src/env.ts';
 import { standard2026 } from '../src/ruleset.ts';
 import type { GameState } from '../src/types.ts';
-import { benchFromHand, giveCard, miniRegistry, started } from './fixtures.ts';
+import type { CardDef } from '../src/cards.ts';
+import { ITEM, benchFromHand, giveCard, miniRegistry, started } from './fixtures.ts';
 
 const registry = miniRegistry();
 const engine = createEngine(registry);
@@ -169,5 +170,44 @@ describe('ctx operations', () => {
     };
     const s = answer(start(yesNo), yesNo, 'no');
     expect(s.log.at(-1)!.text).toBe('no');
+  });
+});
+
+describe('events returned by applyAction', () => {
+  test('a paused action and its answer return each event exactly once', () => {
+    const picker: CardDef = {
+      ...(ITEM as Extract<CardDef, { category: 'Trainer' }>),
+      id: 'picker',
+      name: 'Picker',
+    };
+    const eng = createEngine(
+      miniRegistry([picker], {
+        picker: {
+          trainer: {
+            play(ctx) {
+              ctx.log('before choice');
+              ctx.chooseCards({
+                player: ctx.me,
+                from: [...ctx.state.players[ctx.me].hand],
+                min: 1,
+                max: 1,
+                message: 'pick',
+              });
+              ctx.log('after choice');
+            },
+          },
+        },
+      }),
+    );
+    let s = started(eng, { 't-basic': 20, 't-dark': 36, picker: 4 });
+    const me = s.current;
+    const uid = s.players[me].hand.find((u) => s.cards[u]!.defId === 'picker') ?? giveCard(s, me, 'picker');
+    const start = s.log.length;
+    const first = eng.applyAction(s, me, { type: 'playTrainer', uid });
+    s = first.state;
+    const second = eng.applyAction(s, me, { type: 'answer', optionId: s.prompt!.options[0]!.id });
+    const seen = [...first.events, ...second.events].map((e) => e.text);
+    expect(seen).toEqual(second.state.log.slice(start).map((e) => e.text));
+    expect(seen.filter((t) => t === 'before choice')).toHaveLength(1);
   });
 });

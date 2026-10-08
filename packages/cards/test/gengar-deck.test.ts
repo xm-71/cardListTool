@@ -178,3 +178,18 @@ describe('Eternatus', () => {
     throw new Error('no usable seed');
   });
 });
+
+describe("leaving the Active Spot ends 'can't attack next turn' effects", () => {
+  test('Eternatus switched to the Bench and back can attack again', () => {
+    const { s: s0, me } = game({ ...gengarDeck, [ID.switch]: 4 });
+    swapActiveTo(s0, me, ID.eternatus);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, ID.darkness);
+    benchFromHand(s0, me, giveCard(s0, me, ID.seviper));
+    s0.players[me].active!.cantAttackOnTurn = s0.turn; // as if Power Rush flipped tails last turn
+    expect(has(engine.getLegalActions(s0, me), 'attack')).toBe(false);
+    let s = act(engine, s0, { type: 'playTrainer', uid: giveCard(s0, me, ID.switch) });
+    s = act(engine, s, { type: 'playTrainer', uid: giveCard(s, me, ID.switch) });
+    expect(s.cards[s.players[me].active!.stack[0]!]!.defId).toBe(ID.eternatus);
+    expect(has(engine.getLegalActions(s, me), 'attack')).toBe(true);
+  });
+});
