@@ -36,7 +36,7 @@ const flips = (s: GameState, from: number) =>
     .filter((e) => e.type === 'coinFlip')
     .map((e) => e.text.endsWith('heads'));
 
-function setup(attacker: string, energy: number, defender = ID.megaDiancie) {
+function setup(attacker: string, energy: number, defender: string = ID.megaDiancie) {
   const { s, me, opp } = game(psyDeck);
   swapActiveTo(s, me, attacker);
   swapActiveTo(s, opp, defender);
