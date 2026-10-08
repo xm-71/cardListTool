@@ -43,8 +43,9 @@ test('play a turn against the Medium bot', async ({ page }) => {
   await page.getByLabel('Medium bot').check();
   await page
     .getByRole('group', { name: "Opponent's deck" })
-    .getByRole('button', { name: /Mega Lucario ex/ })
+    .getByRole('button', { name: /Mega Charizard X ex/ })
     .click();
+  await page.screenshot({ path: 'test-results/duel-setup.png', fullPage: true });
   await page.getByRole('button', { name: 'Play' }).click();
   await playThroughSetup(page);
   await expect(page.getByRole('region', { name: 'You', exact: true })).toBeVisible();

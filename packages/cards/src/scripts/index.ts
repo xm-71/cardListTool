@@ -57,9 +57,53 @@ import * as me01_004 from './me01/004.ts';
 import * as me01_005 from './me01/005.ts';
 import * as me01_011 from './me01/011.ts';
 import * as me01_012 from './me01/012.ts';
+import * as me01_032 from './me01/032.ts';
+import * as me01_036 from './me01/036.ts';
+import * as me02_026 from './me02/026.ts';
+import * as me01_034 from './me01/034.ts';
+import * as me01_044 from './me01/044.ts';
+import * as me01_049 from './me01/049.ts';
+import * as me01_050 from './me01/050.ts';
+import * as me01_048 from './me01/048.ts';
+import * as me02_030 from './me02/030.ts';
+import * as me02_031 from './me02/031.ts';
+import * as me01_046 from './me01/046.ts';
+import * as me01_104 from './me01/104.ts';
+import * as me01_106 from './me01/106.ts';
+import * as me01_112 from './me01/112.ts';
+import * as me02_081 from './me02/081.ts';
+import * as me02_082 from './me02/082.ts';
+import * as me02_106 from './me02/106.ts';
+import * as me01_107 from './me01/107.ts';
+import * as me02_084 from './me02/084.ts';
+import * as me01_108 from './me01/108.ts';
+import * as me02_076 from './me02/076.ts';
+import * as me02_077 from './me02/077.ts';
 
 /** Every scripted card, keyed by card name so reprints share one script. */
 export const scriptModules: { name: string; script: CardScript }[] = [
+  me02_077,
+  me02_076,
+  me01_108,
+  me02_084,
+  me01_107,
+  me02_106,
+  me02_082,
+  me02_081,
+  me01_112,
+  me01_106,
+  me01_104,
+  me01_046,
+  me02_031,
+  me02_030,
+  me01_048,
+  me01_050,
+  me01_049,
+  me01_044,
+  me01_034,
+  me02_026,
+  me01_036,
+  me01_032,
   me01_012,
   me01_011,
   me01_005,

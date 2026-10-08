@@ -11,6 +11,12 @@ const engine = createEngine(registry);
 const easy = createEasyBot(registry);
 const DECKS: DeckList[] = [megaGengarDeck, megaDiancieDeck, megaLucarioDeck];
 
+/**
+ * Lets the Vitest worker answer its RPC between long synchronous tests. Without a macrotask turn, a test file
+ * that runs over 60 s fails with "Timeout calling onTaskUpdate" even though every test passes.
+ */
+const yieldToWorker = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 describe('medium bot', () => {
   test('takes a Knockout when one is available', () => {
     const decks: [DeckList, DeckList] = [megaGengarDeck, megaDiancieDeck];
@@ -45,31 +51,42 @@ describe('medium bot', () => {
     expect(state.players[me].prizes.length).toBeLessThan(6);
   });
 
+  const GAMES = Number(process.env.MEDIUM_GAMES ?? 36);
+  const BATCH = 6;
+  const tally = { mediumWins: 0, games: 0, decisions: 0, ms: 0 };
+  const batches = Array.from({ length: Math.ceil(GAMES / BATCH) }, (_, i) => i * BATCH + 1);
+  test.each(batches)(
+    'plays Medium vs Easy games from seed %i without violations',
+    async (first) => {
+      await yieldToWorker();
+      for (let seed = first; seed < first + BATCH && seed <= GAMES; seed++) {
+        const d0 = DECKS[seed % 3]!;
+        const d1 = DECKS[Math.floor(seed / 3) % 3]!;
+        const mediumSeat = (seed % 2) as 0 | 1;
+        const decks: [DeckList, DeckList] = [d0, d1];
+        const medium = createMediumBot(registry, decks, mediumSeat, 2);
+        const timed: typeof medium = (v, l, r) => {
+          const t = performance.now();
+          const out = medium(v, l, r);
+          tally.ms += performance.now() - t;
+          tally.decisions++;
+          return out;
+        };
+        const bots: [typeof easy, typeof easy] = mediumSeat === 0 ? [timed, easy] : [easy, timed];
+        const r = runMatch({ engine, decks, seed: 1000 + seed, bots });
+        expect(r.violations).toEqual([]);
+        expect(r.result?.reason).not.toBe('concede');
+        if (r.result?.winner === mediumSeat) tally.mediumWins++;
+        tally.games++;
+      }
+    },
+    120_000,
+  );
+
   test('beats the Easy bot in most games across deck pairings', () => {
-    const GAMES = Number(process.env.MEDIUM_GAMES ?? 36);
-    let mediumWins = 0;
-    let decisions = 0;
-    let ms = 0;
-    for (let seed = 1; seed <= GAMES; seed++) {
-      const d0 = DECKS[seed % 3]!;
-      const d1 = DECKS[Math.floor(seed / 3) % 3]!;
-      const mediumSeat = (seed % 2) as 0 | 1;
-      const decks: [DeckList, DeckList] = [d0, d1];
-      const medium = createMediumBot(registry, decks, mediumSeat, 2);
-      const timed: typeof medium = (v, l, r) => {
-        const t = performance.now();
-        const out = medium(v, l, r);
-        ms += performance.now() - t;
-        decisions++;
-        return out;
-      };
-      const bots: [typeof easy, typeof easy] = mediumSeat === 0 ? [timed, easy] : [easy, timed];
-      const r = runMatch({ engine, decks, seed: 1000 + seed, bots });
-      expect(r.violations).toEqual([]);
-      expect(r.result?.reason).not.toBe('concede');
-      if (r.result?.winner === mediumSeat) mediumWins++;
-    }
-    console.log(`medium won ${mediumWins}/${GAMES}; ${(ms / decisions).toFixed(1)} ms per decision`);
+    const { mediumWins, games, decisions, ms } = tally;
+    expect(games).toBe(GAMES);
+    console.log(`medium won ${mediumWins}/${games}; ${(ms / decisions).toFixed(1)} ms per decision`);
     if (!process.env.CI_SLOW) expect(ms / decisions).toBeLessThan(250);
     expect(mediumWins / GAMES).toBeGreaterThanOrEqual(0.6);
   }, 900_000);

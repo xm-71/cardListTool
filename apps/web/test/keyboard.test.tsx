@@ -78,3 +78,13 @@ test('Replay intro then Skip keeps the existing name and starter deck', async ()
   await waitFor(() => expect(useProfile.getState().profile.introDone).toBe(true));
   expect(useProfile.getState().profile).toMatchObject({ playerName: 'KAI', starterDeck: 'mega-lucario' });
 });
+
+test('the intro offers only the 3 starter decks, not the theme decks', async () => {
+  const user = userEvent.setup();
+  await launch();
+  await user.keyboard('{Enter}');
+  await user.type(await screen.findByLabelText('Your name'), 'ASH{Enter}');
+  await screen.findByRole('button', { name: /Mega Gengar ex/ });
+  expect(screen.getAllByRole('button', { name: /^Mega .* ex$/ })).toHaveLength(3);
+  expect(screen.queryByRole('button', { name: /Mega Venusaur ex/ })).toBeNull();
+});

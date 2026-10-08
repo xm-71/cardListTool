@@ -1,7 +1,7 @@
 import type { CardScript } from '@ptcg/engine';
 import { callForFamily } from '../util.ts';
 
-export const name = 'Toxel';
+export const name = 'Mantine';
 export const script: CardScript = {
   attacks: {
     // Call for Family

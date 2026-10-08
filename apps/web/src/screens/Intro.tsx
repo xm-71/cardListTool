@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { sfx } from '../audio/sfx.ts';
-import { DECKS, registry } from '../game/catalog.ts';
+import { STARTER_DECKS, registry } from '../game/catalog.ts';
 import { useNav } from '../nav/useNav.ts';
 import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
@@ -62,7 +62,7 @@ export function Intro() {
       {step.kind === 'deck' && (
         <>
           <div className="flex flex-wrap justify-center gap-4">
-            {DECKS.map((d) => (
+            {STARTER_DECKS.map((d) => (
               <button
                 key={d.id}
                 type="button"
