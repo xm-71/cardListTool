@@ -3,6 +3,7 @@ import type { CardRegistry } from './cards.ts';
 import type { Env } from './env.ts';
 import { standard2026, type Ruleset } from './ruleset.ts';
 import { createGame } from './setup.ts';
+import { viewFor, type PlayerView } from './view.ts';
 import type { Action, DeckList, GameEvent, GameState, PlayerId } from './types.ts';
 
 export interface Engine {
@@ -11,6 +12,7 @@ export interface Engine {
   createGame(config: { decks: [DeckList, DeckList]; seed: number }): GameState;
   getLegalActions(state: GameState, player: PlayerId): Action[];
   applyAction(state: GameState, player: PlayerId, action: Action): { state: GameState; events: GameEvent[] };
+  viewFor(state: GameState, player: PlayerId): PlayerView;
 }
 
 export function createEngine(registry: CardRegistry, ruleset: Ruleset = standard2026): Engine {
@@ -21,5 +23,6 @@ export function createEngine(registry: CardRegistry, ruleset: Ruleset = standard
     createGame: (config) => createGame(env, config),
     getLegalActions: (state, player) => getLegalActions(env, state, player),
     applyAction: (state, player, action) => applyAction(env, state, player, action),
+    viewFor,
   };
 }
