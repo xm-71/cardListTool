@@ -37,8 +37,10 @@ describe('rarityTier', () => {
       'Illustration rare': 'special',
       'Special illustration rare': 'special',
       'Mega Hyper Rare': 'special',
+      'Holo Rare': 'ultra',
     };
     for (const r of new Set(all.map((c) => c.rarity))) expect(rarityTier(r), r).toBe(expected[r]);
+    expect(rarityTier('Holo Rare')).toBe('ultra');
     expect(rarityTier('Something new')).toBe('common');
     expect(TAG.common('Common')).toBeNull();
     expect(TAG.special('Special illustration rare')).toBe('SPECIAL ILLUSTRATION RARE!');

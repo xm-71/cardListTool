@@ -68,7 +68,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
 
   return (
     <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:h-dvh lg:min-h-0 lg:grid-cols-[1fr_18rem] lg:gap-2 lg:overflow-hidden lg:p-2">
-      <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:justify-between lg:gap-2">
+      <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:justify-between lg:gap-2 lg:overflow-y-auto">
         <Side
           label="Opponent"
           player={opp}

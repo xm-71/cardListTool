@@ -111,7 +111,8 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
           .filter((id) => (collection[id] ?? 0) > 0)
           .map((id) => registry.defs[id])
           .filter((d): d is CardDef => d !== undefined && !isBasicEnergy(d))
-          .sort(byCategoryThenId),
+          // Usable cards first; classic (collect-only) cards after them.
+          .sort((a, b) => Number(isClassic(a.id)) - Number(isClassic(b.id)) || byCategoryThenId(a, b)),
         ...BASIC_ENERGY,
       ].map((def) => ({ def, playable: isDeckUsable(def, registry) })),
     [collection],

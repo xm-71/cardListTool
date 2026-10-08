@@ -55,11 +55,11 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
           <div className="aspect-[63/88] w-24 border-4 border-dashed border-ink/30 lg:w-[min(6rem,8.5vh)]" />
         )}
       </div>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-2 lg:flex-row lg:items-end">
         <Pile label="Deck" count={side.deckCount} />
-        <div className="flex flex-col items-center text-lg">
+        <div className="flex flex-col items-center text-lg lg:text-base lg:leading-none">
           {side.discard.length > 0 ? (
-            <CardView card={side.discard[side.discard.length - 1]!} size="xs" />
+            <CardView card={side.discard[side.discard.length - 1]!} size="pile" />
           ) : null}
           <span>Discard {side.discard.length}</span>
         </div>

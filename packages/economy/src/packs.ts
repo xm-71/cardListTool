@@ -75,7 +75,7 @@ export function openPack(
 
   const out: string[] = [];
   if (PACKS.find((p) => p.setId === setId)?.era === 'classic') {
-    // WotC boosters: 7 commons, 3 uncommons, 1 rare (holo or not, evenly).
+    // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
     for (let i = 0; i < 7; i++) out.push(pick(byRarity('Common')));
     for (let i = 0; i < 3; i++) out.push(pick(byRarity('Uncommon')));
     out.push(pick(byRarity('Rare', 'Holo Rare')));

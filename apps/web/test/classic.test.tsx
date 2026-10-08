@@ -115,3 +115,13 @@ test('Options has a Skip title screen toggle', async () => {
   fireEvent.click(screen.getByRole('checkbox', { name: 'Skip title screen' }));
   expect(useSettings.getState().skipTitle).toBe(true);
 });
+
+test('cards you can use are listed before classic ones in the deck builder', async () => {
+  await withProfile({ collection: { [charizard]: 1, 'me02-054': 2 } });
+  render(<DeckBuilder />);
+  fireEvent.click(screen.getByRole('button', { name: 'New deck' }));
+  const names = within(screen.getByRole('list', { name: 'Available cards' }))
+    .getAllByRole('button', { name: /^Add / })
+    .map((b) => b.getAttribute('aria-label'));
+  expect(names.indexOf('Add Gastly')).toBeLessThan(names.indexOf('Add Charizard'));
+});

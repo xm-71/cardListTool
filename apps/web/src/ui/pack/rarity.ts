@@ -6,6 +6,8 @@ const TIERS: Record<string, Tier> = {
   Rare: 'rare',
   'Double rare': 'ultra',
   'Ultra Rare': 'ultra',
+  // Classic Gym-era holos
+  'Holo Rare': 'ultra',
   'Illustration rare': 'special',
   'Special illustration rare': 'special',
   'Mega Hyper Rare': 'special',

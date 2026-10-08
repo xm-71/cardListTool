@@ -27,7 +27,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
     <div className="relative flex flex-col items-center gap-1">
       <div className="relative">
         <CardView card={topCard(slot)} size={size} onClick={onClick} highlighted={highlighted} />
-        <div className="absolute -top-3 -right-3 w-16 border-2 border-ink bg-paper px-1 py-0.5 font-pixel text-[7px] leading-tight">
+        <div className="absolute -top-3 -right-3 w-16 border-2 border-ink bg-paper px-1 py-0.5 font-pixel text-[7px] leading-tight lg:-right-1 lg:w-[calc(100%+0.5rem)] lg:text-[6px]">
           <span className={slot.damage > 0 ? 'text-red' : ''}>
             {hpLeft}/{hp}
           </span>
@@ -46,17 +46,25 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
           </div>
         )}
       </div>
-      <div className="flex min-h-4 flex-wrap justify-center gap-0.5">
-        {slot.energy.map((e) => {
-          const d = defOf(e);
-          return d.category === 'Energy' ? (
-            <EnergyDot key={e.uid} type={d.provides[0] ?? 'Colorless'} title={d.name} />
-          ) : null;
-        })}
+      {/* On desktop widths Energy and Tool sit over the card's lower edge so the board keeps a fixed height. */}
+      <div className="flex flex-col items-center gap-0.5 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0.5">
+        <div className="flex min-h-4 flex-wrap justify-center gap-0.5 lg:min-h-0">
+          {slot.energy.map((e) => {
+            const d = defOf(e);
+            return d.category === 'Energy' ? (
+              <EnergyDot key={e.uid} type={d.provides[0] ?? 'Colorless'} title={d.name} />
+            ) : null;
+          })}
+        </div>
+        {slot.tool && (
+          <span
+            title={defOf(slot.tool).name}
+            className="max-w-full truncate border-2 border-ink bg-blue px-1 text-base leading-tight text-paper lg:text-sm"
+          >
+            {defOf(slot.tool).name}
+          </span>
+        )}
       </div>
-      {slot.tool && (
-        <span className="border-2 border-ink bg-blue px-1 text-base text-paper">{defOf(slot.tool).name}</span>
-      )}
     </div>
   );
 }

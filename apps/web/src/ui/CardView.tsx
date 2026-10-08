@@ -13,6 +13,7 @@ const SIZES = {
   bench: 'w-16 lg:w-[min(4rem,6.5vh)]',
   active: 'w-24 lg:w-[min(6rem,8.5vh)]',
   hand: 'w-16 lg:w-[min(5rem,8vh)]',
+  pile: 'w-12 lg:w-[min(3.5rem,6vh)]',
   zoom: 'w-64 lg:w-[min(16rem,32vh)]',
 } as const;
 export type CardSize = keyof typeof SIZES;
