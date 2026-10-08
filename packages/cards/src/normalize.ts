@@ -43,6 +43,18 @@ function energyType(raw: string): EnergyType {
   return raw as EnergyType;
 }
 
+/** TCGdex has no pictures for some Basic Energy printings (e.g. Mega Evolution Energy); borrow Crown Zenith's. */
+const BASIC_ENERGY_ART: Partial<Record<EnergyType, string>> = {
+  Grass: '152',
+  Fire: '153',
+  Water: '154',
+  Lightning: '155',
+  Psychic: '156',
+  Fighting: '157',
+  Darkness: '158',
+  Metal: '159',
+};
+
 export function normalizeTcgdexCard(input: unknown): CardDef {
   const raw = input as RawCard;
   const base = {
@@ -103,8 +115,10 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
         : basic
           ? [energyType(basicType)]
           : ['Colorless' as const];
+      const art = basic && !base.image ? BASIC_ENERGY_ART[provides[0]!] : undefined;
       return {
         ...base,
+        ...(art ? { image: `https://assets.tcgdex.net/en/swsh/swsh12.5/${art}` } : {}),
         category: 'Energy',
         energyKind: basic ? 'Basic' : 'Special',
         provides,

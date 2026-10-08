@@ -68,34 +68,37 @@ export function GameScreen({ viewer: viewerProp }: Props) {
 
   return (
     <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:h-dvh lg:min-h-0 lg:grid-cols-[1fr_18rem] lg:gap-2 lg:overflow-hidden lg:p-2">
-      <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:justify-between lg:gap-2 lg:overflow-y-auto">
-        <Side
-          label="Opponent"
-          player={opp}
-          side={view.opponent}
-          mirrored
-          handCount={view.opponent.handCount}
-          isActive={slotHasActions}
-          onSlot={openSlot}
-          benchSize={engine.ruleset.benchSize}
-        />
-        <div className="retro-box flex flex-wrap items-center justify-center gap-3 px-3 py-2 font-pixel text-[9px] uppercase">
-          <span>Turn {view.turn}</span>
-          <span className="border-2 border-ink bg-yellow px-2 py-1">{status}</span>
-          {view.stadium && (
-            <span className="flex items-center gap-2">
-              Stadium: <CardView card={view.stadium.card} size="xs" />
-            </span>
-          )}
+      <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:gap-2">
+        {/* On large screens only the board scrolls (when the window is too short), so the hand never leaves the screen. */}
+        <div className="flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:justify-between lg:gap-2 lg:overflow-y-auto">
+          <Side
+            label="Opponent"
+            player={opp}
+            side={view.opponent}
+            mirrored
+            handCount={view.opponent.handCount}
+            isActive={slotHasActions}
+            onSlot={openSlot}
+            benchSize={engine.ruleset.benchSize}
+          />
+          <div className="retro-box flex flex-wrap items-center justify-center gap-3 px-3 py-2 font-pixel text-[9px] uppercase">
+            <span>Turn {view.turn}</span>
+            <span className="border-2 border-ink bg-yellow px-2 py-1">{status}</span>
+            {view.stadium && (
+              <span className="flex items-center gap-2">
+                Stadium: <CardView card={view.stadium.card} size="xs" />
+              </span>
+            )}
+          </div>
+          <Side
+            label="You"
+            player={viewer}
+            side={view.you}
+            isActive={slotHasActions}
+            onSlot={openSlot}
+            benchSize={engine.ruleset.benchSize}
+          />
         </div>
-        <Side
-          label="You"
-          player={viewer}
-          side={view.you}
-          isActive={slotHasActions}
-          onSlot={openSlot}
-          benchSize={engine.ruleset.benchSize}
-        />
         <Hand
           cards={view.you.hand}
           playable={(uid) => !view.prompt && actionsForCard(legal, uid).length > 0}
