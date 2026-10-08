@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import { SETS } from '@ptcg/cards';
 import { PACKS } from '@ptcg/economy';
+import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { PackOpening } from '../ui/PackOpening.tsx';
 
 export function Shop() {
+  return (
+    <ScreenFrame>
+      <ShopBody />
+    </ScreenFrame>
+  );
+}
+
+function ShopBody() {
   const credits = useProfile((s) => s.profile.credits);
   const buyPack = useProfile((s) => s.buyPack);
   const ready = useProfile((s) => s.ready);

@@ -64,7 +64,7 @@ test('clicking a card opens Card details', () => {
 test('the Binder tab opens the binder from the menu', async () => {
   const { App } = await import('../src/App.tsx');
   const { createSyncBotClient } = await import('../src/game/botClient.ts');
-  render(<App botClient={createSyncBotClient()} botDelayMs={0} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Binder' }));
+  render(<App startAt="menu" botClient={createSyncBotClient()} botDelayMs={0} />);
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Binder' }));
   expect(screen.getByRole('list', { name: 'Cards' })).toBeInTheDocument();
 });

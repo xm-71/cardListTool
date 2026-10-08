@@ -3,6 +3,7 @@ import type { Action, CardInstance, PlayerId, SlotRef } from '@ptcg/engine';
 import { actionsForCard, actionsForSlot, describeAction, globalActions } from '../game/actions.ts';
 import { engine } from '../game/catalog.ts';
 import { actorOf, useGame } from '../game/store.ts';
+import { useNav } from '../nav/useNav.ts';
 import { defOf, slotAt, topCard, topDef } from '../game/view.ts';
 import { ActionMenu } from '../ui/ActionMenu.tsx';
 import { CardDetails } from '../ui/CardDetails.tsx';
@@ -125,7 +126,11 @@ export function GameScreen({ viewer: viewerProp }: Props) {
         <GameLog log={view.log} me={viewer} />
         <button
           type="button"
-          onClick={() => (view.result || confirm('Leave this game?')) && reset()}
+          onClick={() => {
+            if (!view.result && !confirm('Leave this game?')) return;
+            reset();
+            useNav.getState().go('menu');
+          }}
           className="rounded-lg px-3 py-2 text-sm text-white/60 hover:bg-white/10"
         >
           Quit to home

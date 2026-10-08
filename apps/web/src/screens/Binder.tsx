@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { CardInstance } from '@ptcg/engine';
 import { isPlayable, SETS, setCards } from '@ptcg/cards';
 import { registry } from '../game/catalog.ts';
+import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardView } from '../ui/CardView.tsx';
@@ -9,6 +10,14 @@ import { CardView } from '../ui/CardView.tsx';
 export const cardNumber = (id: string): string => id.slice(id.lastIndexOf('-') + 1);
 
 export function Binder() {
+  return (
+    <ScreenFrame wide>
+      <BinderBody />
+    </ScreenFrame>
+  );
+}
+
+function BinderBody() {
   const collection = useProfile((s) => s.profile.collection);
   const [setId, setSetId] = useState(SETS[0]!.id);
   const [ownedOnly, setOwnedOnly] = useState(false);

@@ -105,7 +105,7 @@ describe('deck builder', () => {
 describe('custom decks in play', () => {
   test('a saved deck appears in the Home picker and starts a game with its cards', async () => {
     await setProfile([ghosts]);
-    render(<App botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
+    render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     const yours = screen.getByRole('group', { name: 'Your deck' });
     fireEvent.click(within(yours).getByRole('button', { name: /Ghost Party/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
@@ -125,7 +125,7 @@ describe('custom decks in play', () => {
         return sync.choose(view, legal, rng, setup);
       },
     };
-    render(<App botClient={spy} botDelayMs={0} />);
+    render(<App startAt="duel" botClient={spy} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText('Medium bot'));
     fireEvent.click(
       within(screen.getByRole('group', { name: 'Your deck' })).getByRole('button', { name: /Ghost Party/ }),

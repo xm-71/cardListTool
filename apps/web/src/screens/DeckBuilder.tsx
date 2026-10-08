@@ -3,6 +3,7 @@ import type { CardDef, DeckList } from '@ptcg/engine';
 import { isPlayable } from '@ptcg/cards';
 import { DECK_SIZE, MAX_COPIES, validateCustomDeck } from '@ptcg/economy';
 import { registry } from '../game/catalog.ts';
+import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import type { CustomDeck } from '../profile/types.ts';
 import { cardNumber } from './Binder.tsx';
@@ -19,6 +20,14 @@ const byCategoryThenId = (a: CardDef, b: CardDef): number =>
 const newId = (): string => `deck-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 export function DeckBuilder() {
+  return (
+    <ScreenFrame wide>
+      <DeckBuilderBody />
+    </ScreenFrame>
+  );
+}
+
+function DeckBuilderBody() {
   const decks = useProfile((s) => s.profile.decks);
   const deleteDeck = useProfile((s) => s.deleteDeck);
   const [editing, setEditing] = useState<CustomDeck | null>(null);

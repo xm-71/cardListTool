@@ -5,10 +5,15 @@ import { createWorkerBotClient, type BotClient } from './game/botClient.ts';
 import { actorOf, useGame } from './game/store.ts';
 import { useBotDriver } from './game/useBotDriver.ts';
 import { GameScreen } from './screens/GameScreen.tsx';
+import { useNav, type Route } from './nav/useNav.ts';
 import { Binder } from './screens/Binder.tsx';
 import { DeckBuilder } from './screens/DeckBuilder.tsx';
-import { Home } from './screens/Home.tsx';
+import { DuelSetup } from './screens/DuelSetup.tsx';
+import { Intro } from './screens/Intro.tsx';
+import { MainMenu } from './screens/MainMenu.tsx';
+import { Options } from './screens/Options.tsx';
 import { Shop } from './screens/Shop.tsx';
+import { Title } from './screens/Title.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
@@ -17,6 +22,8 @@ import { PassDevice } from './ui/PassDevice.tsx';
 interface Props {
   botClient?: BotClient;
   botDelayMs?: number;
+  /** Screen to open on (tests skip the title with it). */
+  startAt?: Route;
 }
 
 /** Seed for "Play again": a 32-bit LCG step (full period, so rematches don't repeat). */
@@ -24,7 +31,10 @@ export function nextSeed(seed: number): number {
   return (Math.imul(seed, 1103515245) + 12345) >>> 0;
 }
 
-export function App({ botClient, botDelayMs = 700 }: Props) {
+export function App({ botClient, botDelayMs = 700, startAt }: Props) {
+  useState(() => {
+    if (startAt) useNav.setState({ route: startAt });
+  });
   const client = useMemo(() => botClient ?? createWorkerBotClient(), [botClient]);
   useEffect(() => {
     if (useProfile.getState().ready) return;
@@ -44,13 +54,17 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   const human = useGame((s) => s.human);
   const error = useGame((s) => s.error);
   const start = useGame((s) => s.start);
-  const reset = useGame((s) => s.reset);
+  const resetGame = useGame((s) => s.reset);
+  const reset = () => {
+    resetGame();
+    useNav.getState().go('menu');
+  };
   // Hotseat: the seat that has confirmed it is looking at the screen.
   const [confirmed, setConfirmed] = useState<{ game: number; seat: PlayerId } | null>(null);
   const credits = useGameAward();
 
   if (error) return <ErrorScreen error={error} onHome={reset} />;
-  if (!state || !config) return <Menu />;
+  if (!state || !config) return <Screens />;
 
   let viewer: PlayerId = human;
   if (config.mode === 'hotseat') {
@@ -78,47 +92,31 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   );
 }
 
-const SCREENS = [
-  ['home', 'Home'],
-  ['shop', 'Shop'],
-  ['binder', 'Binder'],
-  ['decks', 'Decks'],
-] as const;
-type MenuScreen = (typeof SCREENS)[number][0];
+const SCREENS: Record<Route, () => React.JSX.Element> = {
+  title: Title,
+  intro: Intro,
+  menu: MainMenu,
+  duel: DuelSetup,
+  shop: Shop,
+  binder: Binder,
+  decks: DeckBuilder,
+  options: Options,
+};
 
-function Menu() {
-  const [screen, setScreen] = useState<MenuScreen>('home');
-  const credits = useProfile((s) => s.profile.credits);
+function Screens() {
+  const route = useNav((s) => s.route);
   const persistent = useProfile((s) => s.persistent);
   const ready = useProfile((s) => s.ready);
+  const Screen = SCREENS[route];
   return (
     <div className="flex min-h-full flex-col">
-      <nav className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
-        {SCREENS.map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-current={screen === id ? 'page' : undefined}
-            onClick={() => setScreen(id)}
-            className={`rounded-lg px-3 py-1.5 ${screen === id ? 'bg-white/15 font-semibold' : 'hover:bg-white/10'}`}
-          >
-            {label}
-          </button>
-        ))}
-        <span className="ml-auto font-semibold text-amber-300">
-          {ready ? `${credits} credits` : 'Loading…'}
-        </span>
-      </nav>
-      {ready && !persistent && (
-        <p role="status" className="bg-amber-500/20 px-4 py-1 text-center text-sm text-amber-100">
+      {route !== 'title' && ready && !persistent && (
+        <p role="status" className="border-b-4 border-ink bg-yellow px-4 py-1 text-center text-lg">
           Progress won't be saved in this browser (storage is unavailable).
         </p>
       )}
-      <div className="flex-1 p-4">
-        {screen === 'home' && <Home />}
-        {screen === 'shop' && <Shop />}
-        {screen === 'binder' && <Binder />}
-        {screen === 'decks' && <DeckBuilder />}
+      <div className="flex-1">
+        <Screen />
       </div>
     </div>
   );

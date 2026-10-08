@@ -14,15 +14,15 @@ async function openShop(credits: number) {
   useGame.getState().reset();
   useProfile.getState().reset();
   await useProfile.getState().init(createMemoryStore({ ...newProfile(), credits }), true);
-  render(<App botClient={bot} botDelayMs={0} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Shop' }));
+  render(<App startAt="menu" botClient={bot} botDelayMs={0} />);
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Shop' }));
 }
 
 beforeEach(() => useProfile.getState().reset());
 
 test('the shop shows the balance and both packs at 150', async () => {
   await openShop(500);
-  expect(screen.getByText('500 credits')).toBeInTheDocument();
+  expect(screen.getByText(/¢ 500 credits/)).toBeInTheDocument();
   for (const name of ['Mega Evolution', 'Phantasmal Flames']) {
     const pack = screen.getByRole('group', { name });
     expect(within(pack).getByText('150 credits')).toBeInTheDocument();
@@ -43,7 +43,7 @@ test('buying reveals the 10 cards one at a time and charges 150', async () => {
     }),
   );
   const opening = await screen.findByRole('dialog', { name: 'Pack opening' });
-  expect(screen.getByText('350 credits')).toBeInTheDocument();
+  expect(screen.getByText(/¢ 350 credits/)).toBeInTheDocument();
   expect(within(opening).getByText('Card 1 of 10')).toBeInTheDocument();
   expect(within(opening).getAllByRole('img')).toHaveLength(1);
   fireEvent.click(within(opening).getByRole('button', { name: 'Next' }));
@@ -87,17 +87,17 @@ test('the game-over overlay shows no credits line for hotseat', () => {
 test('a warning shows when progress cannot be saved', async () => {
   useProfile.getState().reset();
   await useProfile.getState().init(createMemoryStore(), false);
-  render(<App botClient={bot} botDelayMs={0} />);
+  render(<App startAt="menu" botClient={bot} botDelayMs={0} />);
   expect(screen.getByRole('status')).toHaveTextContent("Progress won't be saved in this browser");
 });
 
 test('while the profile is loading, the balance is hidden and buying is disabled', () => {
   useGame.getState().reset();
   useProfile.getState().reset();
-  render(<App botClient={bot} botDelayMs={0} />);
+  render(<App startAt="menu" botClient={bot} botDelayMs={0} />);
   // jsdom has no IndexedDB, but the fallback resolves asynchronously: right after render we are still loading
-  expect(screen.queryByText('500 credits')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Shop' }));
+  expect(screen.queryByText(/500 credits/)).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Shop' }));
   for (const b of screen.getAllByRole('button', { name: 'Buy & open' })) expect(b).toBeDisabled();
 });
 
@@ -110,11 +110,11 @@ test('a failed purchase shows its error', async () => {
       { load: () => Promise.resolve(newProfile()), save: () => Promise.reject(new Error('quota exceeded')) },
       true,
     );
-  render(<App botClient={bot} botDelayMs={0} />);
-  fireEvent.click(screen.getByRole('button', { name: 'Shop' }));
+  render(<App startAt="menu" botClient={bot} botDelayMs={0} />);
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Shop' }));
   fireEvent.click(
     within(screen.getByRole('group', { name: 'Mega Evolution' })).getByRole('button', { name: 'Buy & open' }),
   );
   expect(await screen.findByRole('alert')).toHaveTextContent('quota exceeded');
-  expect(screen.getByText('500 credits')).toBeInTheDocument();
+  expect(screen.getByText(/¢ 500 credits/)).toBeInTheDocument();
 });
