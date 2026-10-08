@@ -46,12 +46,10 @@ describe('Home deck picker', () => {
         if (st.prompt?.player === 0) {
           const pr = st.prompt;
           rtlAct(() =>
-            useGame
-              .getState()
-              .dispatch(0, {
-                type: 'answer',
-                optionId: pr.selected.length >= pr.min ? 'done' : pr.options[0]!.id,
-              }),
+            useGame.getState().dispatch(0, {
+              type: 'answer',
+              optionId: pr.selected.length >= pr.min ? 'done' : pr.options[0]!.id,
+            }),
           );
         } else if (st.phase === 'main' && st.current === 0 && !st.prompt) {
           rtlAct(() => useGame.getState().dispatch(0, { type: 'endTurn' }));
