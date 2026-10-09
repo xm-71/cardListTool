@@ -16,6 +16,7 @@ import { runDeckSource, snapshotOf, startEliteMatch, startGymMatch } from '../ga
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { DeckChoice } from '../ui/DeckChoice.tsx';
+import { CharacterPortrait } from '../ui/CharacterPortrait.tsx';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
 
 type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite' };
@@ -51,7 +52,7 @@ export function GymChallenge() {
               aria-label={leader.name}
               className={`retro-box flex flex-col items-center gap-2 p-3 text-center ${status === 'locked' ? 'opacity-60' : ''}`}
             >
-              <img src={art(leader.cover)} alt="" className="w-20" />
+              <CharacterPortrait id={leader.id} size={80} />
               <h3 className="font-pixel text-[10px]">{leader.name}</h3>
               <p className="text-lg">{leader.type}</p>
               <p className={`font-pixel text-[8px] ${status === 'beaten' ? 'text-green' : 'opacity-70'}`}>
@@ -97,6 +98,7 @@ function EliteFour({ onStart }: { onStart(): void }) {
               aria-current={run?.stage === i ? 'step' : undefined}
               className={`border-2 border-ink px-2 py-1 ${run && i < run.stage ? 'bg-green/30 line-through' : ''} ${run?.stage === i ? 'bg-yellow' : ''}`}
             >
+              <CharacterPortrait id={o.id} size={20} className="mr-1 inline-block border-2 align-middle" />
               {i + 1}. {o.name}
             </li>
           ))}
@@ -181,7 +183,7 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     <ScreenFrame>
       <Box title={setup.kind === 'gym' ? `${opponent.name}'s Gym` : opponent.name}>
         <div className="flex flex-wrap items-center gap-4">
-          <img src={art(opponent.cover)} alt="" className="w-24" />
+          <CharacterPortrait id={opponent.id} name={opponent.name} size={96} />
           <div className="min-w-60 flex-1">
             <DialogBox text={opponent.intro} />
           </div>

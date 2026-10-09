@@ -23,6 +23,7 @@ import {
   type RunDeck,
 } from '../src/game/gym.ts';
 import { registry } from '../src/game/catalog.ts';
+import { portraitGrid } from '../src/game/portraits.ts';
 
 const all = LEADERS.map((l) => l.id);
 const withBadges = (n: number): GymProgress => ({ ...emptyGym(), badges: all.slice(0, n) });
@@ -50,7 +51,7 @@ describe('data', () => {
     expect(ELITE.map((l) => l.id)).toEqual(['lorelei', 'bruno', 'agatha', 'lance', 'champion']);
     for (const o of [...LEADERS, ...ELITE]) {
       expect(GYM_DECKS[o.deck], o.id).toBeDefined();
-      expect(registry.defs[o.cover], o.id).toBeDefined();
+      expect(portraitGrid(o.id), o.id).not.toBeNull();
     }
     expect(LEADERS.map((l) => l.difficulty)).toEqual([...Array(4).fill('easy'), ...Array(4).fill('medium')]);
     expect(ELITE.every((o) => o.difficulty === 'medium')).toBe(true);

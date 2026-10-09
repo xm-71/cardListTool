@@ -298,3 +298,14 @@ test('a run whose match never finished (the page was reloaded) ends when Gym Cha
   await waitFor(() => expect(useProfile.getState().profile.gym.run).toBeNull());
   expect(screen.getByRole('button', { name: 'Start Elite Four' })).toBeEnabled();
 });
+
+test('the badge case and the intro show character portraits, not card art', async () => {
+  await launch('gym');
+  const list = screen.getByRole('list', { name: 'Badge case' });
+  expect(list.querySelectorAll('svg')).toHaveLength(8);
+  expect(list.querySelectorAll('img')).toHaveLength(0);
+  const order = screen.getByRole('list', { name: 'Elite Four order' });
+  expect(order.querySelectorAll('svg')).toHaveLength(5);
+  fireEvent.click(screen.getByRole('button', { name: 'Challenge Brock' }));
+  expect(screen.getByRole('img', { name: 'Brock' })).toBeInTheDocument();
+});
