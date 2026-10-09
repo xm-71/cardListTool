@@ -46,6 +46,14 @@ const NINE_CARD: readonly Slot[] = [
   { count: 1, rarities: ['Common', 'Uncommon', 'Rare'] },
   { weights: { Rare: 0.67, 'Holo Rare': 0.33 } },
 ];
+/** Diamond & Pearl, Platinum and HeartGold SoulSilver boosters: 10 cards with a reverse-holo slot before the rare slot. */
+const tenCard = (rare: Readonly<Record<string, number>>): readonly Slot[] => [
+  { count: 5, rarities: ['Common'] },
+  { count: 3, rarities: ['Uncommon'] },
+  { count: 1, rarities: ['Common', 'Uncommon', 'Rare'] },
+  { weights: rare },
+];
+
 /** Pack contents per older era, one table row each. Pure data: the opener below just walks the slots. */
 const LAYOUTS: Partial<Record<PackEra, readonly Slot[]>> = {
   // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
@@ -56,6 +64,9 @@ const LAYOUTS: Partial<Record<PackEra, readonly Slot[]>> = {
   ],
   ecard: NINE_CARD,
   ex: NINE_CARD,
+  dp: tenCard({ Rare: 0.65, 'Rare Holo': 0.27, 'Rare Holo LV.X': 0.08 }),
+  pt: tenCard({ Rare: 0.65, 'Holo Rare': 0.27, 'Rare Holo LV.X': 0.08 }),
+  hgss: tenCard({ Rare: 0.6, 'Holo Rare': 0.25, 'Rare PRIME': 0.09, LEGEND: 0.05, 'Ultra Rare': 0.01 }),
 };
 
 /** Every rarity some slot of the era can produce (a card of any other rarity could never be pulled). */
@@ -64,7 +75,8 @@ export function layoutRarities(era: PackEra): string[] {
   const slots = LAYOUTS[era];
   if (!slots) {
     const rates = era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
-    for (const r of [...REVERSE_RARITIES, 'Illustration rare', 'Common', 'Uncommon', ...Object.keys(rates)]) out.add(r);
+    for (const r of [...REVERSE_RARITIES, 'Illustration rare', 'Common', 'Uncommon', ...Object.keys(rates)])
+      out.add(r);
   }
   for (const slot of slots ?? []) {
     for (const r of 'rarities' in slot ? slot.rarities : Object.keys(slot.weights)) out.add(r);
@@ -113,6 +125,22 @@ export const PACKS: readonly PackDef[] = [
   pack('ex14', 'Crystal Guardians', 'ex'),
   pack('ex15', 'Dragon Frontiers', 'ex'),
   pack('ex16', 'Power Keepers', 'ex'),
+  ...[
+    'Diamond & Pearl',
+    'Mysterious Treasures',
+    'Secret Wonders',
+    'Great Encounters',
+    'Majestic Dawn',
+    'Legends Awakened',
+    'Stormfront',
+  ].map((name, i) => pack(`dp${i + 1}`, name, 'dp')),
+  ...['Platinum', 'Rising Rivals', 'Supreme Victors', 'Arceus'].map((name, i) =>
+    pack(`pl${i + 1}`, name, 'pt'),
+  ),
+  ...['HeartGold SoulSilver', 'Unleashed', 'Undaunted', 'Triumphant'].map((name, i) =>
+    pack(`hgss${i + 1}`, name, 'hgss'),
+  ),
+  pack('col1', 'Call of Legends', 'hgss'),
   pack('sv03.5', 'Scarlet & Violet 151', 'sv'),
 ];
 
@@ -189,18 +217,19 @@ export function openPack(
         for (let i = 0; i < slot.count; i++) out.push(pick(byRarity(...slot.rarities)));
         continue;
       }
-      let roll = random();
-      let chosen = Object.keys(slot.weights).at(-1)!;
-      for (const [rarity, weight] of Object.entries(slot.weights)) {
+      // A rarity the set lacks is left out and the others share its chance.
+      const present = Object.entries(slot.weights).filter(([rarity]) => byRarity(rarity).length > 0);
+      const total = present.reduce((sum, [, weight]) => sum + weight, 0);
+      let roll = random() * total;
+      let chosen = present.at(-1)![0];
+      for (const [rarity, weight] of present) {
         if (roll < weight) {
           chosen = rarity;
           break;
         }
         roll -= weight;
       }
-      // A rarity the set lacks falls back to its plain Rare cards.
-      const pool = byRarity(chosen);
-      out.push(pick(pool.length > 0 ? pool : byRarity('Rare')));
+      out.push(pick(byRarity(chosen)));
     }
     return { cards: out, rng: r };
   }

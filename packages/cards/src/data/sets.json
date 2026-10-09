@@ -165,6 +165,86 @@
     "logo": "https://assets.tcgdex.net/en/ex/ex16/logo"
   },
   {
+    "id": "dp1",
+    "name": "Diamond & Pearl",
+    "logo": "https://assets.tcgdex.net/en/dp/dp1/logo"
+  },
+  {
+    "id": "dp2",
+    "name": "Mysterious Treasures",
+    "logo": "https://assets.tcgdex.net/en/dp/dp2/logo"
+  },
+  {
+    "id": "dp3",
+    "name": "Secret Wonders",
+    "logo": "https://assets.tcgdex.net/en/dp/dp3/logo"
+  },
+  {
+    "id": "dp4",
+    "name": "Great Encounters",
+    "logo": "https://assets.tcgdex.net/en/dp/dp4/logo"
+  },
+  {
+    "id": "dp5",
+    "name": "Majestic Dawn",
+    "logo": "https://assets.tcgdex.net/en/dp/dp5/logo"
+  },
+  {
+    "id": "dp6",
+    "name": "Legends Awakened",
+    "logo": "https://assets.tcgdex.net/en/dp/dp6/logo"
+  },
+  {
+    "id": "dp7",
+    "name": "Stormfront",
+    "logo": "https://assets.tcgdex.net/en/dp/dp7/logo"
+  },
+  {
+    "id": "pl1",
+    "name": "Platinum",
+    "logo": "https://assets.tcgdex.net/en/pl/pl1/logo"
+  },
+  {
+    "id": "pl2",
+    "name": "Rising Rivals",
+    "logo": "https://assets.tcgdex.net/en/pl/pl2/logo"
+  },
+  {
+    "id": "pl3",
+    "name": "Supreme Victors",
+    "logo": "https://assets.tcgdex.net/en/pl/pl3/logo"
+  },
+  {
+    "id": "pl4",
+    "name": "Arceus",
+    "logo": "https://assets.tcgdex.net/en/pl/pl4/logo"
+  },
+  {
+    "id": "hgss1",
+    "name": "HeartGold SoulSilver",
+    "logo": "https://assets.tcgdex.net/en/hgss/hgss1/logo"
+  },
+  {
+    "id": "hgss2",
+    "name": "Unleashed",
+    "logo": "https://assets.tcgdex.net/en/hgss/hgss2/logo"
+  },
+  {
+    "id": "hgss3",
+    "name": "Undaunted",
+    "logo": "https://assets.tcgdex.net/en/hgss/hgss3/logo"
+  },
+  {
+    "id": "hgss4",
+    "name": "Triumphant",
+    "logo": "https://assets.tcgdex.net/en/hgss/hgss4/logo"
+  },
+  {
+    "id": "col1",
+    "name": "Call of Legends",
+    "logo": "https://assets.tcgdex.net/en/col/col1/logo"
+  },
+  {
     "id": "sv03.5",
     "name": "151",
     "logo": "https://assets.tcgdex.net/en/sv/sv03.5/logo"

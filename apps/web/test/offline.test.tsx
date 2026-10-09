@@ -97,7 +97,7 @@ test('eraArt groups the art of each era by its sets', () => {
   const classicIds = SETS.filter((s) => s.era === 'classic').map((s) => s.id);
   expect(classic.label).toBe('Classic');
   expect(classic.urls).toEqual(artUrls(classicIds.flatMap((id) => setCards(id))));
-  expect(groups.map((g) => g.id)).not.toContain('hgss');
+  expect(groups.map((g) => g.id)).toEqual(['mega', 'classic', 'ecard', 'ex', 'dp', 'pt', 'hgss', 'sv']);
   expect(new Set(groups.map((g) => g.id)).size).toBe(groups.length);
 });
 

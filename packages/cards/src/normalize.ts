@@ -64,6 +64,7 @@ const VINTAGE_STAGES: Record<string, 'Basic' | 'Stage1' | 'Stage2'> = {
   Restored: 'Basic',
   LEGEND: 'Basic',
   'Level-Up': 'Stage1',
+  'LEVEL-UP': 'Stage1',
   BREAK: 'Stage2',
 };
 
