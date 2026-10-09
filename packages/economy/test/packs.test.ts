@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { GameResult } from '@ptcg/engine';
 import { setCards } from '@ptcg/cards';
-import { CREDITS, PACKS, SLOT10_RATES, creditsFor, openPack } from '../src/index.ts';
+import { CREDITS, PACKS, SLOT10_RATES, SV_SLOT10_RATES, creditsFor, openPack } from '../src/index.ts';
 
 const me01 = setCards('me01');
 const rarityOf = new Map(me01.map((c) => [c.id, c.rarity]));
@@ -131,5 +131,54 @@ describe('classic packs', () => {
       seen.add(rarity.get(pack.cards[10]!)!);
     }
     expect(seen).toEqual(new Set(['Rare', 'Holo Rare']));
+  });
+});
+
+describe('Scarlet & Violet 151 pack', () => {
+  const sv = setCards('sv03.5');
+  const rarity = new Map(sv.map((c) => [c.id, c.rarity]));
+
+  test('is on sale in its own era at the usual price', () => {
+    const pack = PACKS.find((p) => p.setId === 'sv03.5');
+    expect(pack).toMatchObject({ name: 'Scarlet & Violet 151', era: 'sv', price: 150 });
+  });
+
+  test('a pack has 10 cards from the set: 4 Common, 3 Uncommon, then the reverse slot, slot 9 and slot 10', () => {
+    let rng = 5;
+    for (let i = 0; i < 200; i++) {
+      const pack = openPack('sv03.5', sv, rng);
+      rng = pack.rng;
+      expect(pack.cards).toHaveLength(10);
+      for (const id of pack.cards) expect(rarity.has(id), id).toBe(true);
+      expect(pack.cards.slice(0, 4).map((id) => rarity.get(id))).toEqual(Array(4).fill('Common'));
+      expect(pack.cards.slice(4, 7).map((id) => rarity.get(id))).toEqual(Array(3).fill('Uncommon'));
+    }
+  });
+
+  test('slot 10 follows the 151 rates, including Hyper rare', () => {
+    const n = 20000;
+    const slot10 = new Map<string, number>();
+    let rng = 777;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('sv03.5', sv, rng);
+      rng = pack.rng;
+      const r = rarity.get(pack.cards[9]!)!;
+      slot10.set(r, (slot10.get(r) ?? 0) + 1);
+    }
+    expect(Object.values(SV_SLOT10_RATES).reduce((a, b) => a + b, 0)).toBeCloseTo(1, 10);
+    for (const [name, rate] of Object.entries(SV_SLOT10_RATES)) {
+      expect(Math.abs((slot10.get(name) ?? 0) / n - rate), name).toBeLessThanOrEqual(0.015);
+    }
+    expect(slot10.get('Hyper rare')).toBeGreaterThan(0);
+  });
+
+  test('the Mega Evolution rates are unchanged', () => {
+    expect(SLOT10_RATES).toEqual({
+      Rare: 0.7,
+      'Double rare': 0.18,
+      'Ultra Rare': 0.07,
+      'Special illustration rare': 0.03,
+      'Mega Hyper Rare': 0.02,
+    });
   });
 });

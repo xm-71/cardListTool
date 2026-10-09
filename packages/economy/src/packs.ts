@@ -5,8 +5,11 @@ export interface PackDef {
   setId: string;
   name: string;
   price: number;
-  /** 'mega': 10-card modern slots. 'classic': 11-card WotC slots (7 common, 3 uncommon, 1 rare). */
-  era: 'mega' | 'classic';
+  /**
+   * 'mega': 10-card modern slots. 'sv': the same 10 slots with Scarlet & Violet rarities.
+   * 'classic': 11-card WotC slots (7 common, 3 uncommon, 1 rare).
+   */
+  era: 'mega' | 'classic' | 'sv';
 }
 
 const pack = (setId: string, name: string, era: PackDef['era']): PackDef => ({
@@ -27,6 +30,7 @@ export const PACKS: readonly PackDef[] = [
   pack('gym1', 'Gym Heroes', 'classic'),
   pack('gym2', 'Gym Challenge', 'classic'),
   pack('neo1', 'Neo Genesis', 'classic'),
+  pack('sv03.5', 'Scarlet & Violet 151', 'sv'),
 ];
 
 /** Slot-10 (rare or better) rates. Approximations, not official. */
@@ -36,6 +40,15 @@ export const SLOT10_RATES: Readonly<Record<string, number>> = {
   'Ultra Rare': 0.07,
   'Special illustration rare': 0.03,
   'Mega Hyper Rare': 0.02,
+};
+
+/** Slot-10 rates for Scarlet & Violet packs (which have Hyper rare, not Mega Hyper Rare). Approximations. */
+export const SV_SLOT10_RATES: Readonly<Record<string, number>> = {
+  Rare: 0.55,
+  'Double rare': 0.2,
+  'Ultra Rare': 0.12,
+  'Special illustration rare': 0.07,
+  'Hyper rare': 0.06,
 };
 
 /** Chance that reverse-holo slot 9 is an Illustration rare. */
@@ -61,9 +74,10 @@ export function openPack(
     if (pool.length === 0) throw new Error(`Set ${setId} has no cards for a pack slot`);
     return pool[Math.floor(random() * pool.length)]!.id;
   };
+  const rates = PACKS.find((p) => p.setId === setId)?.era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
   const rareOrBetter = (): CardDef[] => {
     let roll = random();
-    for (const [rarity, rate] of Object.entries(SLOT10_RATES)) {
+    for (const [rarity, rate] of Object.entries(rates)) {
       if (roll < rate) {
         const pool = byRarity(rarity);
         return pool.length > 0 ? pool : byRarity('Rare');

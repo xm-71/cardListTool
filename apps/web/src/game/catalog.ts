@@ -150,4 +150,5 @@ export function deckSources(
 export const ERAS = [
   { id: 'mega', label: 'Mega Evolution era' },
   { id: 'classic', label: 'Classic' },
+  { id: 'sv', label: 'Scarlet & Violet' },
 ] as const;

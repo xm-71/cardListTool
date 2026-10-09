@@ -11,6 +11,7 @@ const TIERS: Record<string, Tier> = {
   'Illustration rare': 'special',
   'Special illustration rare': 'special',
   'Mega Hyper Rare': 'special',
+  'Hyper rare': 'special',
 };
 
 /** How big a reveal a card's rarity gets. Unknown rarities reveal quietly. */

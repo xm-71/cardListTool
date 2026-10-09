@@ -19,5 +19,5 @@ test.each([
 
 test('the shop draws a booster pack for each set', () => {
   render(<Shop />);
-  expect(screen.getAllByTestId('pack-art')).toHaveLength(10);
+  expect(screen.getAllByTestId('pack-art')).toHaveLength(11);
 });
