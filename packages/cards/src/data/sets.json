@@ -70,6 +70,101 @@
     "logo": "https://assets.tcgdex.net/en/lc/lc/logo"
   },
   {
+    "id": "ecard1",
+    "name": "Expedition Base Set",
+    "logo": "https://assets.tcgdex.net/en/ecard/ecard1/logo"
+  },
+  {
+    "id": "ecard2",
+    "name": "Aquapolis",
+    "logo": "https://assets.tcgdex.net/en/ecard/ecard2/logo"
+  },
+  {
+    "id": "ecard3",
+    "name": "Skyridge",
+    "logo": "https://assets.tcgdex.net/en/ecard/ecard3/logo"
+  },
+  {
+    "id": "ex1",
+    "name": "Ruby & Sapphire",
+    "logo": "https://assets.tcgdex.net/en/ex/ex1/logo"
+  },
+  {
+    "id": "ex2",
+    "name": "Sandstorm",
+    "logo": "https://assets.tcgdex.net/en/ex/ex2/logo"
+  },
+  {
+    "id": "ex3",
+    "name": "Dragon",
+    "logo": "https://assets.tcgdex.net/en/ex/ex3/logo"
+  },
+  {
+    "id": "ex4",
+    "name": "Team Magma vs Team Aqua",
+    "logo": "https://assets.tcgdex.net/en/ex/ex4/logo"
+  },
+  {
+    "id": "ex5",
+    "name": "Hidden Legends",
+    "logo": "https://assets.tcgdex.net/en/ex/ex5/logo"
+  },
+  {
+    "id": "ex6",
+    "name": "FireRed & LeafGreen",
+    "logo": "https://assets.tcgdex.net/en/ex/ex6/logo"
+  },
+  {
+    "id": "ex7",
+    "name": "Team Rocket Returns",
+    "logo": "https://assets.tcgdex.net/en/ex/ex7/logo"
+  },
+  {
+    "id": "ex8",
+    "name": "Deoxys",
+    "logo": "https://assets.tcgdex.net/en/ex/ex8/logo"
+  },
+  {
+    "id": "ex9",
+    "name": "Emerald",
+    "logo": "https://assets.tcgdex.net/en/ex/ex9/logo"
+  },
+  {
+    "id": "ex10",
+    "name": "Unseen Forces",
+    "logo": "https://assets.tcgdex.net/en/ex/ex10/logo"
+  },
+  {
+    "id": "ex11",
+    "name": "Delta Species",
+    "logo": "https://assets.tcgdex.net/en/ex/ex11/logo"
+  },
+  {
+    "id": "ex12",
+    "name": "Legend Maker",
+    "logo": "https://assets.tcgdex.net/en/ex/ex12/logo"
+  },
+  {
+    "id": "ex13",
+    "name": "Holon Phantoms",
+    "logo": "https://assets.tcgdex.net/en/ex/ex13/logo"
+  },
+  {
+    "id": "ex14",
+    "name": "Crystal Guardians",
+    "logo": "https://assets.tcgdex.net/en/ex/ex14/logo"
+  },
+  {
+    "id": "ex15",
+    "name": "Dragon Frontiers",
+    "logo": "https://assets.tcgdex.net/en/ex/ex15/logo"
+  },
+  {
+    "id": "ex16",
+    "name": "Power Keepers",
+    "logo": "https://assets.tcgdex.net/en/ex/ex16/logo"
+  },
+  {
     "id": "sv03.5",
     "name": "151",
     "logo": "https://assets.tcgdex.net/en/sv/sv03.5/logo"

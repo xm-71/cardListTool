@@ -39,6 +39,13 @@ interface WeightedSlot {
 
 type Slot = FixedSlot | WeightedSlot;
 
+/** e-Card and EX boosters: 9 cards, with a reverse-holo slot (any non-holo rarity) before the rare. */
+const NINE_CARD: readonly Slot[] = [
+  { count: 4, rarities: ['Common'] },
+  { count: 3, rarities: ['Uncommon'] },
+  { count: 1, rarities: ['Common', 'Uncommon', 'Rare'] },
+  { weights: { Rare: 0.67, 'Holo Rare': 0.33 } },
+];
 /** Pack contents per older era, one table row each. Pure data: the opener below just walks the slots. */
 const LAYOUTS: Partial<Record<PackEra, readonly Slot[]>> = {
   // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
@@ -47,6 +54,8 @@ const LAYOUTS: Partial<Record<PackEra, readonly Slot[]>> = {
     { count: 3, rarities: ['Uncommon'] },
     { count: 1, rarities: ['Rare', 'Holo Rare'] },
   ],
+  ecard: NINE_CARD,
+  ex: NINE_CARD,
 };
 
 /** Every rarity some slot of the era can produce (a card of any other rarity could never be pulled). */
@@ -85,6 +94,25 @@ export const PACKS: readonly PackDef[] = [
   pack('neo3', 'Neo Revelation', 'classic'),
   pack('neo4', 'Neo Destiny', 'classic'),
   pack('lc', 'Legendary Collection', 'classic'),
+  pack('ecard1', 'Expedition Base Set', 'ecard'),
+  pack('ecard2', 'Aquapolis', 'ecard'),
+  pack('ecard3', 'Skyridge', 'ecard'),
+  pack('ex1', 'Ruby & Sapphire', 'ex'),
+  pack('ex2', 'Sandstorm', 'ex'),
+  pack('ex3', 'Dragon', 'ex'),
+  pack('ex4', 'Team Magma vs Team Aqua', 'ex'),
+  pack('ex5', 'Hidden Legends', 'ex'),
+  pack('ex6', 'FireRed & LeafGreen', 'ex'),
+  pack('ex7', 'Team Rocket Returns', 'ex'),
+  pack('ex8', 'Deoxys', 'ex'),
+  pack('ex9', 'Emerald', 'ex'),
+  pack('ex10', 'Unseen Forces', 'ex'),
+  pack('ex11', 'Delta Species', 'ex'),
+  pack('ex12', 'Legend Maker', 'ex'),
+  pack('ex13', 'Holon Phantoms', 'ex'),
+  pack('ex14', 'Crystal Guardians', 'ex'),
+  pack('ex15', 'Dragon Frontiers', 'ex'),
+  pack('ex16', 'Power Keepers', 'ex'),
   pack('sv03.5', 'Scarlet & Violet 151', 'sv'),
 ];
 

@@ -97,6 +97,8 @@ test('every shop set has an era, classic sets included', () => {
     ['neo3', 'classic'],
     ['neo4', 'classic'],
     ['lc', 'classic'],
+    ...['ecard1', 'ecard2', 'ecard3'].map((id) => [id, 'ecard']),
+    ...Array.from({ length: 16 }, (_, i) => [`ex${i + 1}`, 'ex']),
     ['sv03.5', 'sv'],
   ]);
   expect(setCards('base1')).toHaveLength(102);
