@@ -64,6 +64,8 @@ export interface DamageQuery {
 }
 
 export interface AttackScript {
+  /** "This attack can be used even if this Pokémon is on the Bench." */
+  fromBench?: boolean;
   canUse?(ctx: EffectCtx): boolean;
   damage?(
     ctx: EffectCtx,

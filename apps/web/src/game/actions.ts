@@ -30,8 +30,8 @@ export function describeAction(a: Action, view: PlayerView): string {
     case 'retreat':
       return `Retreat to ${slotName({ player: view.me, zone: 'bench', index: a.benchIndex })}`;
     case 'attack': {
-      const active = view.you.active;
-      const atk = active ? topDef(active).attacks[a.attackIndex] : undefined;
+      const attacker = a.benchIndex === undefined ? view.you.active : view.you.bench[a.benchIndex];
+      const atk = attacker ? topDef(attacker).attacks[a.attackIndex] : undefined;
       if (!atk) return 'Attack';
       return atk.damage > 0
         ? `Attack: ${atk.name} (${atk.damage}${atk.damageSuffix})`
@@ -69,6 +69,9 @@ export function actionsForSlot(legal: Action[], ref: SlotRef, actor: PlayerId): 
       case 'useAbility':
         return sameRef(ref, a.slot);
       case 'attack':
+        if (a.benchIndex !== undefined)
+          return ref.zone === 'bench' && ref.player === actor && ref.index === a.benchIndex;
+        return ref.zone === 'active' && ref.player === actor;
       case 'retreat':
         return ref.zone === 'active' && ref.player === actor;
       default:

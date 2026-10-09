@@ -39,8 +39,12 @@ export function createEasyBot(registry: CardRegistry): Bot {
     }
     return short + Math.max(0, cost.filter((c) => c === 'Colorless').length - pool.length);
   };
-  const estimate = (view: PlayerView, attackIndex: number): { damage: number; kos: boolean } => {
-    const me = view.you.active;
+  const estimate = (
+    view: PlayerView,
+    attackIndex: number,
+    benchIndex?: number,
+  ): { damage: number; kos: boolean } => {
+    const me = benchIndex === undefined ? view.you.active : view.you.bench[benchIndex];
     const them = view.opponent.active;
     if (!me || !them) return { damage: 0, kos: false };
     const attacker = top(me);
@@ -120,7 +124,7 @@ export function createEasyBot(registry: CardRegistry): Bot {
     // 7. Attack: one that Knocks Out, else the most base damage
     const attacks = of('attack');
     if (attacks.length) {
-      const scored = attacks.map((a) => ({ a, ...estimate(view, a.attackIndex) }));
+      const scored = attacks.map((a) => ({ a, ...estimate(view, a.attackIndex, a.benchIndex) }));
       const ko = scored.find((x) => x.kos);
       if (ko) return done(ko.a);
       scored.sort((x, y) => y.damage - x.damage);

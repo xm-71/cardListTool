@@ -4,16 +4,7 @@ export const name = "Erika's Invitation";
 export const set = 'sv03.5';
 export const script: CardScript = {
   trainer: {
-    canPlay: (ctx) => {
-      const opp = ctx.state.players[ctx.opp];
-      return (
-        opp.bench.length < ctx.env.ruleset.benchSize &&
-        opp.hand.some((uid) => {
-          const d = ctx.def(uid);
-          return d.category === 'Pokemon' && d.stage === 'Basic';
-        })
-      );
-    },
+    // The card can be played even with nothing to find: the hand is still revealed.
     play(ctx) {
       const opp = ctx.state.players[ctx.opp];
       ctx.reveal(opp.hand);
@@ -21,6 +12,7 @@ export const script: CardScript = {
         const d = ctx.def(uid);
         return d.category === 'Pokemon' && d.stage === 'Basic';
       });
+      if (basics.length === 0 || opp.bench.length >= ctx.env.ruleset.benchSize) return;
       const [pick] = ctx.chooseCards({
         player: ctx.me,
         from: basics,

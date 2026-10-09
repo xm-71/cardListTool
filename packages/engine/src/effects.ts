@@ -3,7 +3,7 @@ import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { coinFlip, shuffle } from './rng.ts';
-import { clearActiveEffects, defOf, getSlot, newSlot, other, slotDef } from './state.ts';
+import { clearActiveEffects, defOf, getSlot, maxHp, newSlot, other, slotDef } from './state.ts';
 import type {
   EffectSource,
   GameState,
@@ -258,6 +258,12 @@ export class EffectCtx {
     if (ref.zone === 'active') p.active = null;
     else p.bench.splice(ref.index, 1);
     this.log(`${name} is discarded`);
+  }
+
+  /** Knock out the Pokémon at `ref` by effect (not damage from an attack): it takes enough damage to be Knocked Out. */
+  knockOut(ref: SlotRef): void {
+    const slot = this.slot(ref);
+    slot.damage = Math.max(slot.damage, maxHp(this.env, this.state, ref));
   }
 
   /** Swap a player's Active Pokémon with one of their Benched Pokémon. */

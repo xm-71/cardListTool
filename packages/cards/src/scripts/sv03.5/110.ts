@@ -9,8 +9,7 @@ export const script: CardScript = {
     if (holder.zone !== 'active' || knocked.zone !== 'active') return;
     if (!ctx.flipCoin()) return;
     ctx.log("Let's Have a Blast Knocks the Attacking Pokémon Out");
-    const slot = ctx.slot(attacker);
-    slot.damage = Math.max(slot.damage, 9999);
+    ctx.knockOut(attacker);
   },
   attacks: {
     // Spinning Fumes: 10 damage to each of the opponent's Benched Pokémon (no Weakness or Resistance).

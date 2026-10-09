@@ -157,18 +157,23 @@ describe('Tangela and Erika’s Invitation', () => {
     expect(s.log.some((l) => l.type === 'reveal')).toBe(true);
   });
 
-  test('cannot be played with no Basic Pokémon in their hand, or a full Bench', () => {
+  test('can still be played with no Basic Pokémon in their hand or a full Bench: the hand is revealed and nothing else happens', () => {
     const { s: s0, me, opp } = game(ALL, ALL);
     const uid = giveCard(s0, me, INVITE);
     const o = s0.players[opp];
     o.deck.push(...o.hand.splice(0));
-    o.hand.push(giveCard(s0, opp, G));
-    expect(() => act(engine, s0, playTrainer(uid))).toThrow();
+    giveCard(s0, opp, G);
+    const s = resolvePrompts(act(engine, s0, playTrainer(uid)));
+    expect(s.log.some((l) => l.type === 'reveal')).toBe(true);
+    expect(s.players[opp].bench).toHaveLength(s0.players[opp].bench.length);
     const MANY = { [ODDISH]: 30, [INVITE]: 4, [G]: 26 };
     const { s: s1, me: me1, opp: opp1 } = game(MANY, MANY);
     const uid1 = giveCard(s1, me1, INVITE);
     giveCard(s1, opp1, ODDISH);
     while (s1.players[opp1].bench.length < 5) benchFromHand(s1, opp1, giveCard(s1, opp1, ODDISH));
-    expect(() => act(engine, s1, playTrainer(uid1))).toThrow();
+    const activeBefore = s1.players[opp1].active!.stack[0];
+    const t = resolvePrompts(act(engine, s1, playTrainer(uid1)));
+    expect(t.players[opp1].bench).toHaveLength(5);
+    expect(t.players[opp1].active!.stack[0]).toBe(activeBefore);
   });
 });
