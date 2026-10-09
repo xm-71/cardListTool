@@ -4,6 +4,7 @@ import { sfx } from '../audio/sfx.ts';
 import { CHAMPION_STAGE, ELITE, LEADERS } from '../game/gym.ts';
 import type { GameContext } from '../game/store.ts';
 import type { GymPayout } from '../profile/useProfile.ts';
+import { CharacterPortrait } from './CharacterPortrait.tsx';
 import { PackOpening } from './PackOpening.tsx';
 import { Button } from './retro/index.ts';
 
@@ -50,6 +51,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
       className="fixed inset-0 z-40 flex items-center justify-center bg-ink/70 p-6"
     >
       <div className="retro-box flex w-full max-w-md flex-col items-center gap-4 p-6 text-center">
+        <CharacterPortrait id={opponent.id} name={opponent.name} size={96} />
         <h2 className="font-pixel text-lg text-red uppercase">{title}</h2>
         <p className="text-2xl">
           <strong>{opponent.name}:</strong> {won ? opponent.win : opponent.lose}

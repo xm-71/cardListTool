@@ -50,8 +50,6 @@ export interface Opponent {
   type: string;
   deck: GymDeckId;
   difficulty: 'easy' | 'medium';
-  /** Card id of the signature Pokémon shown as the portrait. */
-  cover: string;
   intro: string;
   win: string;
   lose: string;
@@ -66,7 +64,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Fighting',
     deck: 'brock',
     difficulty: 'easy',
-    cover: 'sv03.5-076',
     intro:
       "I'm Brock! I'm Pewter's Gym Leader. My rock-hard willpower is reflected by my Pokémon. Show me your best!",
     win: 'Your Pokémon were stronger than my rocks. Take the Boulder Badge!',
@@ -79,7 +76,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Water',
     deck: 'misty',
     difficulty: 'easy',
-    cover: 'sv03.5-121',
     intro: "Hi, you're a new face! I'm Misty. My policy is an all-out offensive with water-type Pokémon!",
     win: "Wow! You're too much! All right, you can have the Cascade Badge.",
     lose: "Is that all? You'll need a lot more practice before you can beat my Water Pokémon!",
@@ -91,7 +87,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Lightning',
     deck: 'surge',
     difficulty: 'easy',
-    cover: 'sv03.5-026',
     intro: "Hey, kid! What do you think you're doing here? You won't live long in combat! I'm Lt. Surge!",
     win: "Now that's a shocker! You are the real deal, kid! Take the Thunder Badge!",
     lose: "Ha ha ha! Lightning-fast attacks are what I'm all about. Get back in the ring when you're ready!",
@@ -103,7 +98,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Grass',
     deck: 'erika',
     difficulty: 'easy',
-    cover: 'sv03.5-045',
     intro: "Hello. Lovely weather isn't it? It's so pleasant... I'm Erika, the Gym Leader. Shall we battle?",
     win: 'Oh! I concede defeat. You are remarkably strong. Please take the Rainbow Badge.',
     lose: 'Oh, dear. I have won, it seems. Please try again when the flowers bloom!',
@@ -115,7 +109,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Darkness',
     deck: 'koga',
     difficulty: 'medium',
-    cover: 'sv03.5-024',
     intro: 'Fwahahaha! A mere child like you dares to challenge me? Very well. I shall show you true terror!',
     win: 'Humph! You have proven your worth! Here! Take the Soul Badge!',
     lose: 'Fwahaha! Poison and confusion beat many a challenger. Come back when you can resist them!',
@@ -127,7 +120,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Psychic',
     deck: 'sabrina',
     difficulty: 'medium',
-    cover: 'sv03.5-065',
     intro:
       'I had a vision of your arrival! I have had psychic powers since I was little. I dislike battling, but if you wish, I will show you my powers!',
     win: "I am shocked! But a loss is a loss. I admit I didn't work hard enough to win. Take the Marsh Badge!",
@@ -140,7 +132,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Fire',
     deck: 'blaine',
     difficulty: 'medium',
-    cover: 'sv03.5-038',
     intro:
       "Hah! I am Blaine, the red-hot Leader of Cinnabar Gym! My fiery Pokémon are all fired up and ready. You'd better have a Burn Heal!",
     win: "I've burnt out! You have earned the Volcano Badge!",
@@ -153,7 +144,6 @@ export const LEADERS: readonly Opponent[] = [
     type: 'Darkness + Fighting',
     deck: 'giovanni',
     difficulty: 'medium',
-    cover: 'sv03.5-034',
     intro:
       'So, you are the one who has been making trouble for Team Rocket. I am Giovanni, the Leader of this Gym. Do not expect any mercy!',
     win: 'Ha! That was a truly intense fight. You have won! As proof, here is the Earth Badge!',
@@ -169,7 +159,6 @@ export const ELITE: readonly Opponent[] = [
     type: 'Water',
     deck: 'lorelei',
     difficulty: 'medium',
-    cover: 'sv03.5-131',
     intro:
       'Welcome to the Pokémon League! I am Lorelei of the Elite Four. No one can best me when it comes to icy Pokémon!',
     win: 'How dare you! You have bested me. The next Elite Four member awaits.',
@@ -181,7 +170,6 @@ export const ELITE: readonly Opponent[] = [
     type: 'Fighting',
     deck: 'bruno',
     difficulty: 'medium',
-    cover: 'sv03.5-068',
     intro:
       'I am Bruno of the Elite Four! Through rigorous training, people and Pokémon can become stronger. Hoo hah!',
     win: 'Why? How could I lose? Go on, face the next challenge!',
@@ -193,7 +181,6 @@ export const ELITE: readonly Opponent[] = [
     type: 'Psychic + Darkness',
     deck: 'agatha',
     difficulty: 'medium',
-    cover: 'sv03.5-094',
     intro:
       "I am Agatha of the Elite Four! Oak's taken a lot of interest in you, child. But a battle is a battle — let's see what you've got!",
     win: 'You win! I see what the old duff sees in you now. Go on, child!',
@@ -205,7 +192,6 @@ export const ELITE: readonly Opponent[] = [
     type: 'Water + Lightning',
     deck: 'lance',
     difficulty: 'medium',
-    cover: 'sv03.5-149',
     intro: "I've been waiting for you! I am Lance, the dragon master. Prepare to face my Dragon Pokémon!",
     win: "That's it! I hate to admit it, but you are a Pokémon master! The Champion awaits.",
     lose: 'My dragons are unmatched. The run ends here. Try again!',
@@ -216,7 +202,6 @@ export const ELITE: readonly Opponent[] = [
     type: 'Psychic + ace',
     deck: 'blue-fire', // replaced by championDeckFor() when the match starts
     difficulty: 'medium',
-    cover: 'sv03.5-065',
     intro:
       "Hey! I was looking forward to seeing you, my rival! My rival should be strong to keep me sharp. Let's see if you're good enough!",
     win: "NO! That can't be! You beat my best! You are the new Champion!",
