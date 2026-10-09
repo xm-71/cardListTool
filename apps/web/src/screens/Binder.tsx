@@ -8,13 +8,44 @@ import { useProfile } from '../profile/useProfile.ts';
 import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardView } from '../ui/CardView.tsx';
 import { ERAS } from '../game/catalog.ts';
+import { BinderBook } from '../ui/binder/BinderBook.tsx';
+import { BinderShelf } from '../ui/binder/BinderShelf.tsx';
 
 export const cardNumber = (id: string): string => id.slice(id.lastIndexOf('-') + 1);
 
 export function Binder() {
+  const [tab, setTab] = useState<'all' | 'mine'>('all');
+  const [openId, setOpenId] = useState<string | null>(null);
+  const tabs = [
+    { id: 'all', label: 'All cards' },
+    { id: 'mine', label: 'My binders' },
+  ] as const;
   return (
     <ScreenFrame wide>
-      <BinderBody />
+      <div role="tablist" aria-label="Binder" className="mb-4 flex gap-2">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => {
+              setTab(t.id);
+              setOpenId(null);
+            }}
+            className={`border-4 border-ink px-3 py-2 font-pixel text-[10px] uppercase ${tab === t.id ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      {tab === 'all' && <BinderBody />}
+      {tab === 'mine' &&
+        (openId ? (
+          <BinderBook binderId={openId} onBack={() => setOpenId(null)} />
+        ) : (
+          <BinderShelf onOpen={setOpenId} />
+        ))}
     </ScreenFrame>
   );
 }
