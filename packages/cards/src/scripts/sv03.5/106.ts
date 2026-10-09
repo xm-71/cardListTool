@@ -1,4 +1,4 @@
-import type { CardScript } from '@ptcg/engine';
+import { dealAttackDamage, type CardScript } from '@ptcg/engine';
 import { benchRefs } from '../util.ts';
 
 export const name = 'Hitmonlee';
@@ -9,7 +9,7 @@ export const script: CardScript = {
     0: {
       damage: () => 10,
       effect(ctx) {
-        for (const ref of benchRefs(ctx, ctx.opp)) ctx.placeCounters(ref, 1);
+        for (const ref of benchRefs(ctx, ctx.opp)) dealAttackDamage(ctx, ref, 10);
         const among = benchRefs(ctx, ctx.me);
         if (among.length === 0) return;
         const [pick] = ctx.chooseSlot({

@@ -57,9 +57,7 @@ describe('Dragonair', () => {
     expect(s.players[opp].active!.damage).toBe(-400 + 90);
     s = act(engine, s, { type: 'endTurn' });
     expect(s.current).toBe(me);
-    const attacks = engine.getLegalActions(s, me).filter((a) => a.type === 'attack');
-    expect(attacks).toContainEqual({ type: 'attack', attackIndex: 0 }); // Beat is still available
-    expect(attacks).not.toContainEqual({ type: 'attack', attackIndex: 1 });
+    expect(engine.getLegalActions(s, me).some((a) => a.type === 'attack')).toBe(false);
   });
 });
 

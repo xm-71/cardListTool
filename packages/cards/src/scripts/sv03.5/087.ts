@@ -1,4 +1,4 @@
-import type { CardScript } from '@ptcg/engine';
+import { dealAttackDamage, type CardScript } from '@ptcg/engine';
 import { inPlayRefs } from '../util.ts';
 
 export const name = 'Dewgong';
@@ -20,7 +20,7 @@ export const script: CardScript = {
         let activeHit = false;
         for (const ref of picks) {
           if (ref.zone === 'active') activeHit = true;
-          else ctx.placeCounters(ref, 5);
+          else dealAttackDamage(ctx, ref, 50);
         }
         return activeHit ? 50 : 0;
       },

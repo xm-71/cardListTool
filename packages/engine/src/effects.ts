@@ -1,3 +1,4 @@
+import { followSwitch } from './combat.ts';
 import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
@@ -268,6 +269,7 @@ export class EffectCtx {
     p.bench[benchIndex] = p.active;
     p.active = incoming;
     incoming.becameActiveTurn = this.state.turn;
+    followSwitch(this, player, benchIndex);
   }
 
   chooseSlot(o: {

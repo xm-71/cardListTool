@@ -1,4 +1,4 @@
-import type { CardScript } from '@ptcg/engine';
+import { dealAttackDamage, type CardScript } from '@ptcg/engine';
 import { inPlayRefs } from '../util.ts';
 
 export const name = 'Golbat';
@@ -16,7 +16,7 @@ export const script: CardScript = {
           message: "Choose 1 of your opponent's Pokémon to do 40 damage to",
         });
         if (ref!.zone === 'active') return 40;
-        ctx.placeCounters(ref!, 4);
+        dealAttackDamage(ctx, ref!, 40);
         return 0;
       },
     },

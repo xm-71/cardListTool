@@ -1,4 +1,4 @@
-import type { CardScript } from '@ptcg/engine';
+import { dealAttackDamage, type CardScript } from '@ptcg/engine';
 import { benchRefs } from '../util.ts';
 
 export const name = 'Weezing';
@@ -16,7 +16,7 @@ export const script: CardScript = {
     // Spinning Fumes: 10 damage to each of the opponent's Benched Pokémon (no Weakness or Resistance).
     0: {
       effect(ctx) {
-        for (const ref of benchRefs(ctx, ctx.opp)) ctx.placeCounters(ref, 1);
+        for (const ref of benchRefs(ctx, ctx.opp)) dealAttackDamage(ctx, ref, 10);
       },
     },
   },

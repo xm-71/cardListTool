@@ -17,6 +17,22 @@ export interface AttackInfo {
 const attackInfo = new WeakMap<EffectCtx, AttackInfo>();
 export const currentAttack = (ctx: EffectCtx): AttackInfo | undefined => attackInfo.get(ctx);
 
+/**
+ * The attack bookkeeping names board positions, so when an effect swaps a player's Active Pokémon with a
+ * Benched one (Mach Turn, Push Down) the positions of the two Pokémon are swapped with them.
+ */
+export function followSwitch(ctx: EffectCtx, player: PlayerId, benchIndex: number): void {
+  const info = attackInfo.get(ctx);
+  if (!info) return;
+  const move = (ref: SlotRef): SlotRef => {
+    if (ref.player !== player) return ref;
+    if (ref.zone === 'active') return { player, zone: 'bench', index: benchIndex };
+    return ref.index === benchIndex ? { player, zone: 'active' } : ref;
+  };
+  info.attacker = move(info.attacker);
+  info.damaged = info.damaged.map(move);
+}
+
 export function canUseAttack(
   env: Env,
   state: GameState,
