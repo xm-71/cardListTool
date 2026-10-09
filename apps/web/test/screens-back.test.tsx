@@ -1,3 +1,4 @@
+import { PACKS } from '@ptcg/economy';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, test } from 'vitest';
 import { useNav } from '../src/nav/useNav.ts';
@@ -19,5 +20,5 @@ test.each([
 
 test('the shop draws a booster pack for each set', () => {
   render(<Shop />);
-  expect(screen.getAllByTestId('pack-art')).toHaveLength(11);
+  expect(screen.getAllByTestId('pack-art')).toHaveLength(PACKS.length);
 });

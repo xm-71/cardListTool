@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { GYM_SET, setCards } from '@ptcg/cards';
-import { CREDITS, openPack } from '@ptcg/economy';
+import { openPack, packPrice } from '@ptcg/economy';
 import { openIndexedDbStore } from './indexedDbStore.ts';
 import { createMemoryStore } from './memoryStore.ts';
 import {
@@ -182,7 +182,7 @@ export const useProfile = create<ProfileState>()((set, get) => {
     },
     async buyPack(setId) {
       const cards = await change((p) => {
-        const price = p.collectorMode ? 0 : CREDITS.packPrice;
+        const price = p.collectorMode ? 0 : packPrice(setId);
         if (p.credits < price) throw new Error('Not enough credits');
         const { cards } = openPack(setId, setCards(setId), randomSeed());
         const collection = { ...p.collection };

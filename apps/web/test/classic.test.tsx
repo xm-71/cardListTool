@@ -37,13 +37,13 @@ test('a pack shows its set logo, and the set name if the logo fails to load', ()
   expect(screen.getByText('BASE SET')).toBeInTheDocument();
 });
 
-test('the shop groups packs by era and sells all 8 classic sets', async () => {
+test('the shop groups packs by era and sells all 12 classic sets', async () => {
   await withProfile();
   render(<Shop />);
   const mega = screen.getByRole('region', { name: 'Mega Evolution era' });
   const classic = screen.getByRole('region', { name: 'Classic' });
   expect(within(mega).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(2);
-  expect(within(classic).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(8);
+  expect(within(classic).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(12);
   for (const name of [
     'Base Set',
     'Jungle',
@@ -53,6 +53,10 @@ test('the shop groups packs by era and sells all 8 classic sets', async () => {
     'Gym Heroes',
     'Gym Challenge',
     'Neo Genesis',
+    'Neo Discovery',
+    'Neo Revelation',
+    'Neo Destiny',
+    'Legendary Collection',
   ]) {
     expect(within(classic).getByRole('group', { name })).toBeInTheDocument();
   }

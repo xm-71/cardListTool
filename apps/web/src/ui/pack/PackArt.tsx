@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { SETS } from '@ptcg/cards';
-import { PACKS } from '@ptcg/economy';
+import { packSize } from '@ptcg/economy';
 
 /** Wrapper colours per set. */
 const COLOURS: Record<string, [string, string]> = {
@@ -14,6 +14,10 @@ const COLOURS: Record<string, [string, string]> = {
   gym1: ['#c84070', '#6e1e3c'],
   gym2: ['#3878b0', '#1c3c60'],
   neo1: ['#58a8b8', '#245a66'],
+  neo2: ['#6860b8', '#302a74'],
+  neo3: ['#d8b030', '#7a5c10'],
+  neo4: ['#8c3c98', '#431a4c'],
+  lc: ['#c8a838', '#6a5410'],
 };
 
 /** A CSS-drawn booster pack with its set logo; `torn` hides the top strip (pack opening). */
@@ -60,7 +64,7 @@ export function PackArt({
         )}
       </div>
       <div aria-hidden className="absolute inset-x-0 bottom-3 text-center font-pixel text-[7px] text-paper">
-        {PACKS.find((p) => p.setId === setId)?.era === 'classic' ? 11 : 10} CARDS
+        {packSize(setId)} CARDS
       </div>
     </div>
   );

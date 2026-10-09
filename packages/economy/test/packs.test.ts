@@ -1,7 +1,18 @@
 import { describe, expect, test } from 'vitest';
 import type { GameResult } from '@ptcg/engine';
 import { setCards } from '@ptcg/cards';
-import { CREDITS, PACKS, SLOT10_RATES, SV_SLOT10_RATES, creditsFor, openPack } from '../src/index.ts';
+import {
+  CREDITS,
+  PACKS,
+  PACK_PRICES,
+  SLOT10_RATES,
+  SV_SLOT10_RATES,
+  creditsFor,
+  layoutRarities,
+  openPack,
+  packPrice,
+  packSize,
+} from '../src/index.ts';
 
 const me01 = setCards('me01');
 const rarityOf = new Map(me01.map((c) => [c.id, c.rarity]));
@@ -99,11 +110,34 @@ describe('creditsFor', () => {
 });
 
 describe('classic packs', () => {
-  const classicIds = ['base1', 'base2', 'base3', 'base4', 'base5', 'gym1', 'gym2', 'neo1'];
+  const classicIds = [
+    'base1',
+    'base2',
+    'base3',
+    'base4',
+    'base5',
+    'gym1',
+    'gym2',
+    'neo1',
+    'neo2',
+    'neo3',
+    'neo4',
+    'lc',
+  ];
 
-  test('every classic set is on sale', () => {
+  test('every classic set is on sale, cheaper than the modern packs', () => {
     expect(PACKS.filter((p) => p.era === 'classic').map((p) => p.setId)).toEqual(classicIds);
-    for (const p of PACKS) expect(p.price).toBe(150);
+    for (const p of PACKS.filter((p) => p.era === 'classic')) expect(p.price).toBe(PACK_PRICES.classic);
+    expect(PACK_PRICES.classic).toBeLessThan(PACK_PRICES.mega);
+    expect(packPrice('base1')).toBe(PACK_PRICES.classic);
+    expect(packPrice('me01')).toBe(150);
+  });
+
+  test('every card of every pack set can be pulled', () => {
+    for (const p of PACKS) {
+      const rarities = new Set(layoutRarities(p.era));
+      for (const c of setCards(p.setId)) expect(rarities, `${c.id} ${c.rarity}`).toContain(c.rarity);
+    }
   });
 
   test.each(classicIds)('%s packs have 7 commons, 3 uncommons and a rare', (setId) => {
@@ -181,4 +215,10 @@ describe('Scarlet & Violet 151 pack', () => {
       'Mega Hyper Rare': 0.02,
     });
   });
+});
+
+test('packSize is the number of cards a pack opens', () => {
+  expect(packSize('me01')).toBe(10);
+  expect(packSize('sv03.5')).toBe(10);
+  for (const p of PACKS) expect(openPack(p.setId, setCards(p.setId), 1).cards, p.setId).toHaveLength(packSize(p.setId));
 });

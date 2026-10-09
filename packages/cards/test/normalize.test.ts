@@ -98,3 +98,56 @@ test('a Basic Energy without an image borrows the Crown Zenith picture of its ty
   const withImage = normalizeTcgdexCard({ ...darkness, image: 'https://example.test/x' });
   expect(withImage.image).toBe('https://example.test/x');
 });
+
+describe('stages from the vintage eras', () => {
+  const pokemon = (stage?: string) =>
+    normalizeTcgdexCard({ id: 'ecard1-1', name: 'Pichu', category: 'Pokemon', hp: 30, types: ['Lightning'], stage });
+
+  test.each([
+    ['Baby', 'Basic'],
+    ['Restored', 'Basic'],
+    ['LEGEND', 'Basic'],
+    ['Level-Up', 'Stage1'],
+    ['BREAK', 'Stage2'],
+    [undefined, 'Basic'],
+  ])('%s is stored as %s', (stage, expected) => {
+    expect(pokemon(stage)).toMatchObject({ category: 'Pokemon', stage: expected });
+  });
+
+  test('a stage nobody knows still fails loudly', () => {
+    expect(() => pokemon('Mystery')).toThrow(/Unsupported stage/);
+  });
+});
+
+test.each([
+  ["Rocket's Secret Machine", 'Tool'],
+  ['Technical Machine', 'Tool'],
+])('the old Trainer sub-type %s is a %s', (trainerType, expected) => {
+  expect(
+    normalizeTcgdexCard({ id: 'ex7-80', name: 'Machine', category: 'Trainer', trainerType, rarity: 'Rare' }),
+  ).toMatchObject({ category: 'Trainer', trainerType: expected });
+});
+
+test('an Ability TCGdex gives only a type (old Pokémon Powers) is named after that type', () => {
+  const def = normalizeTcgdexCard({
+    id: 'neo2-49',
+    name: 'Unown [M]',
+    category: 'Pokemon',
+    hp: 40,
+    types: ['Psychic'],
+    abilities: [{ type: 'Pokemon Power' }],
+  });
+  expect(def).toMatchObject({ abilities: [{ name: 'Pokemon Power', text: '' }] });
+});
+
+test('an attack TCGdex has no name for is called "Attack"', () => {
+  const def = normalizeTcgdexCard({
+    id: 'neo4-113',
+    name: 'Shining Tyranitar',
+    category: 'Pokemon',
+    hp: 80,
+    types: ['Darkness'],
+    attacks: [{ cost: ['Darkness'], damage: 30 }],
+  });
+  expect(def).toMatchObject({ attacks: [{ name: 'Attack', damage: 30 }] });
+});

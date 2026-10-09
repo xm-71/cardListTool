@@ -1,3 +1,4 @@
+import { PACKS } from '@ptcg/economy';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
@@ -77,7 +78,7 @@ test('the menu works from the keyboard and Back returns to it', async () => {
   fireEvent.keyDown(menu, { key: 'ArrowDown' }); // Gym Challenge
   fireEvent.keyDown(menu, { key: 'ArrowDown' }); // Shop
   fireEvent.keyDown(menu, { key: 'Enter' });
-  expect(screen.getAllByRole('button', { name: 'Buy & open' })).toHaveLength(11);
+  expect(screen.getAllByRole('button', { name: 'Buy & open' })).toHaveLength(PACKS.length);
   fireEvent.click(screen.getByRole('button', { name: 'Back' }));
   expect(screen.getByRole('menu', { name: 'Main menu' })).toBeInTheDocument();
 });

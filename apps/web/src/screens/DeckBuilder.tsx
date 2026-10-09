@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import type { CardDef, DeckList } from '@ptcg/engine';
-import { SETS } from '@ptcg/cards';
+import { SETS, isCollectOnlyEra } from '@ptcg/cards';
 import { DECK_SIZE, deckFormat, isGymUsable, MAX_COPIES, validateGymDeck } from '@ptcg/economy';
-import { registry } from '../game/catalog.ts';
+import { eraLabel, registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import type { CustomDeck } from '../profile/types.ts';
@@ -14,8 +14,13 @@ const isBasicEnergy = (def: CardDef): boolean => def.category === 'Energy' && de
 const BASIC_ENERGY = Object.values(registry.defs)
   .filter((d) => isBasicEnergy(d) && d.id.startsWith('mee-'))
   .sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }));
-const CLASSIC_SETS = new Set(SETS.filter((s) => s.era === 'classic').map((s) => s.id));
-const isClassic = (id: string): boolean => CLASSIC_SETS.has(id.slice(0, id.lastIndexOf('-')));
+const SET_ERA = new Map(SETS.map((s) => [s.id, s.era]));
+/** The collect-only era a card belongs to (null for cards from the playable eras). */
+const vintageEra = (id: string) => {
+  const era = SET_ERA.get(id.slice(0, id.lastIndexOf('-')));
+  return era !== undefined && isCollectOnlyEra(era) ? era : null;
+};
+const isClassic = (id: string): boolean => vintageEra(id) !== null;
 const CATEGORY_ORDER = { Pokemon: 0, Trainer: 1, Energy: 2 } as const;
 const byCategoryThenId = (a: CardDef, b: CardDef): number =>
   CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category] ||
@@ -217,7 +222,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
                   </span>
                 ) : (
                   <span className="text-lg opacity-70">
-                    {isClassic(def.id) ? 'Classic: not playable yet' : "Isn't playable yet"}
+                    {vintageEra(def.id) ? `${eraLabel(vintageEra(def.id)!)}: not playable yet` : "Isn't playable yet"}
                   </span>
                 )}
                 <button
