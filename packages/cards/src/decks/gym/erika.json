@@ -2,9 +2,9 @@
   "name": "Erika's Garden Deck",
   "cards": [
     { "id": "me01-119", "count": 4 },
-    { "id": "me01-114", "count": 2 },
+    { "id": "me01-114", "count": 3 },
     { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 3 },
+    { "id": "me01-167", "count": 4 },
     { "id": "me01-130", "count": 2 },
     { "id": "me01-173", "count": 2 },
     { "id": "me01-125", "count": 3 },
@@ -15,6 +15,6 @@
     { "id": "sv03.5-102", "count": 3 },
     { "id": "sv03.5-103", "count": 2 },
     { "id": "sv03.5-114", "count": 3 },
-    { "id": "mee-001", "count": 20 }
+    { "id": "mee-001", "count": 18 }
   ]
 }
