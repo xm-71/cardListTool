@@ -3,6 +3,9 @@ import brock from './decks/gym/brock.json';
 import agatha from './decks/gym/agatha.json';
 import blaine from './decks/gym/blaine.json';
 import bruno from './decks/gym/bruno.json';
+import blueFire from './decks/gym/blue-fire.json';
+import blueGrass from './decks/gym/blue-grass.json';
+import blueWater from './decks/gym/blue-water.json';
 import erika from './decks/gym/erika.json';
 import giovanni from './decks/gym/giovanni.json';
 import koga from './decks/gym/koga.json';
@@ -29,6 +32,9 @@ export const GYM_DECKS = {
   bruno,
   agatha,
   lance,
+  'blue-fire': blueFire,
+  'blue-water': blueWater,
+  'blue-grass': blueGrass,
 } satisfies Record<string, DeckList>;
 
 export type GymDeckId = keyof typeof GYM_DECKS;

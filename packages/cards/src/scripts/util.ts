@@ -163,3 +163,19 @@ export function discardOpponentDeckTop(ctx: EffectCtx, n: number): void {
   if (milled.length > 0)
     ctx.log(`${milled.length} card(s) are discarded from the top of the opponent's deck`);
 }
+
+/** Discard `n` Energy of your choice from your Active Pokémon (fewer if it has fewer). */
+export function discardOwnEnergy(ctx: EffectCtx, n: number): void {
+  const ref = { player: ctx.me, zone: 'active' } as const;
+  const energy = ctx.slot(ref).energy;
+  const count = Math.min(n, energy.length);
+  if (count === 0) return;
+  const picks = ctx.chooseCards({
+    player: ctx.me,
+    from: [...energy],
+    min: count,
+    max: count,
+    message: `Discard ${count} Energy from this Pokémon`,
+  });
+  ctx.discardEnergy(ref, picks);
+}
