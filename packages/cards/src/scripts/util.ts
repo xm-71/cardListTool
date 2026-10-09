@@ -129,3 +129,28 @@ export function countHeads(ctx: EffectCtx, n: number): number {
   for (let i = 0; i < n; i++) if (ctx.flipCoin()) heads++;
   return heads;
 }
+
+/** "Look at the top `n` cards of your deck and attach any number of Basic Energy you find there to your Pokémon in any way you like." Shuffles the rest back. */
+export function attachBasicEnergyFromTop(ctx: EffectCtx, n: number): void {
+  const remaining = ctx.state.players[ctx.me].deck.slice(0, n).filter((uid) => isBasicEnergy(ctx.def(uid)));
+  while (remaining.length > 0) {
+    const [energy] = ctx.chooseCards({
+      player: ctx.me,
+      from: remaining,
+      min: 0,
+      max: 1,
+      message: 'Choose a Basic Energy to attach (or finish)',
+    });
+    if (!energy) break;
+    const [ref] = ctx.chooseSlot({
+      player: ctx.me,
+      among: inPlayRefs(ctx, ctx.me),
+      min: 1,
+      max: 1,
+      message: 'Attach it to which Pokémon?',
+    });
+    ctx.attachEnergy(energy, ref!);
+    remaining.splice(remaining.indexOf(energy), 1);
+  }
+  ctx.shuffleDeck(ctx.me);
+}
