@@ -85,6 +85,7 @@ export function playTrainer(ctx: EffectCtx, uid: string, target?: SlotRef): void
     }
     case 'Supporter':
       p.supporterTurn = s.turn;
+      p.supporterPlayed = { turn: s.turn, name: def.name };
       break;
     case 'Item':
       break;

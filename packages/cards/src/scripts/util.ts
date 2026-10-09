@@ -129,3 +129,53 @@ export function countHeads(ctx: EffectCtx, n: number): number {
   for (let i = 0; i < n; i++) if (ctx.flipCoin()) heads++;
   return heads;
 }
+
+/** "Look at the top `n` cards of your deck and attach any number of Basic Energy you find there to your Pokémon in any way you like." Shuffles the rest back. */
+export function attachBasicEnergyFromTop(ctx: EffectCtx, n: number): void {
+  const remaining = ctx.state.players[ctx.me].deck.slice(0, n).filter((uid) => isBasicEnergy(ctx.def(uid)));
+  while (remaining.length > 0) {
+    const [energy] = ctx.chooseCards({
+      player: ctx.me,
+      from: remaining,
+      min: 0,
+      max: 1,
+      message: 'Choose a Basic Energy to attach (or finish)',
+    });
+    if (!energy) break;
+    const [ref] = ctx.chooseSlot({
+      player: ctx.me,
+      among: inPlayRefs(ctx, ctx.me),
+      min: 1,
+      max: 1,
+      message: 'Attach it to which Pokémon?',
+    });
+    ctx.attachEnergy(energy, ref!);
+    remaining.splice(remaining.indexOf(energy), 1);
+  }
+  ctx.shuffleDeck(ctx.me);
+}
+
+/** Discard the top `n` cards of the opponent's deck (fewer if it is smaller). */
+export function discardOpponentDeckTop(ctx: EffectCtx, n: number): void {
+  const opp = ctx.state.players[ctx.opp];
+  const milled = opp.deck.splice(0, n);
+  opp.discard.push(...milled);
+  if (milled.length > 0)
+    ctx.log(`${milled.length} card(s) are discarded from the top of the opponent's deck`);
+}
+
+/** Discard `n` Energy of your choice from your Active Pokémon (fewer if it has fewer). */
+export function discardOwnEnergy(ctx: EffectCtx, n: number): void {
+  const ref = { player: ctx.me, zone: 'active' } as const;
+  const energy = ctx.slot(ref).energy;
+  const count = Math.min(n, energy.length);
+  if (count === 0) return;
+  const picks = ctx.chooseCards({
+    player: ctx.me,
+    from: [...energy],
+    min: count,
+    max: count,
+    message: `Discard ${count} Energy from this Pokémon`,
+  });
+  ctx.discardEnergy(ref, picks);
+}

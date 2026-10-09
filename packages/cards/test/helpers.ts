@@ -6,6 +6,9 @@ export const registry = buildRegistry();
 export const engine = createEngine(registry);
 export { act, attachFromDeck, benchFromHand, giveCard, has, swapActiveTo } from '@ptcg/engine/testing';
 
+/** A Scarlet & Violet 151 card id from its collector number. */
+export const sv = (n: string) => `sv03.5-${n}`;
+
 export const ID = {
   gastly: 'me02-054',
   haunter: 'me02-055',

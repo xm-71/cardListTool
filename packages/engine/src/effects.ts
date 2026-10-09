@@ -1,3 +1,4 @@
+import { followSwitch } from './combat.ts';
 import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
@@ -65,10 +66,21 @@ export class EffectCtx {
     this.slot(ref).attackLocks[attackName] = this.state.turn + 2;
   }
 
-  /** A timed effect on the Pokémon at `ref` that lasts through the opponent's next turn. */
-  addMarker(ref: SlotRef, kind: MarkerKind, amount = 0): void {
+  /**
+   * A timed effect on the Pokémon at `ref`. By default it lasts through the opponent's next turn;
+   * `turns = 2` makes it last through the owner's next turn ("during your next turn").
+   * Markers that have already expired are dropped.
+   */
+  addMarker(ref: SlotRef, kind: MarkerKind, amount = 0, turns = 1): void {
     const slot = this.slot(ref);
-    slot.markers = [...slot.markers, { kind, amount, untilTurn: this.state.turn + 1 }];
+    const live = slot.markers.filter((m) => m.untilTurn >= this.state.turn);
+    slot.markers = [...live, { kind, amount, untilTurn: this.state.turn + turns }];
+  }
+
+  /** Whether the acting player played the Supporter named `name` this turn. */
+  playedSupporterThisTurn(name: string): boolean {
+    const played = this.state.players[this.me].supporterPlayed;
+    return played?.turn === this.state.turn && played.name === name;
   }
 
   /** `player` can't play Stadium cards from their hand during their next turn. */
@@ -233,6 +245,21 @@ export class EffectCtx {
     this.slot(ref).damage += n * 10;
   }
 
+  /**
+   * Put the Pokémon at `ref` (with its evolution cards, Energy and Tool) in its owner's discard pile. No Prize
+   * is taken. The engine's Knock Out check after the action promotes a new Active Pokémon, or ends the game
+   * if the owner has none left.
+   */
+  discardSlot(ref: SlotRef): void {
+    const slot = this.slot(ref);
+    const p = this.state.players[ref.player];
+    const name = slotDef(this.env, this.state, slot).name;
+    p.discard.push(...slot.stack, ...slot.energy, ...(slot.tool ? [slot.tool] : []));
+    if (ref.zone === 'active') p.active = null;
+    else p.bench.splice(ref.index, 1);
+    this.log(`${name} is discarded`);
+  }
+
   /** Swap a player's Active Pokémon with one of their Benched Pokémon. */
   switchActive(player: PlayerId, benchIndex: number): void {
     const p = this.state.players[player];
@@ -242,6 +269,7 @@ export class EffectCtx {
     p.bench[benchIndex] = p.active;
     p.active = incoming;
     incoming.becameActiveTurn = this.state.turn;
+    followSwitch(this, player, benchIndex);
   }
 
   chooseSlot(o: {

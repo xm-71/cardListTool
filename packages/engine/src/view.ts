@@ -61,6 +61,7 @@ export interface PlayerView {
   you: SideView & {
     hand: CardInstance[];
     supporterTurn: number | null;
+    supporterPlayed: { turn: number; name: string } | null;
     energyTurn: number | null;
     retreatTurn: number | null;
     stadiumUsedTurn: number | null;
@@ -121,6 +122,7 @@ export function viewFor(state: GameState, player: PlayerId, env?: Env): PlayerVi
       ...side(player, false),
       hand: me.hand.map(card),
       supporterTurn: me.supporterTurn,
+      supporterPlayed: me.supporterPlayed ? { ...me.supporterPlayed } : null,
       energyTurn: me.energyTurn,
       retreatTurn: me.retreatTurn,
       stadiumUsedTurn: me.stadiumUsedTurn,

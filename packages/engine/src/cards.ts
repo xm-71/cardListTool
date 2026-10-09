@@ -65,7 +65,11 @@ export interface DamageQuery {
 
 export interface AttackScript {
   canUse?(ctx: EffectCtx): boolean;
-  damage?(ctx: EffectCtx): number | { amount: number; ignoreWR: boolean; ignoreDefenderEffects?: boolean };
+  damage?(
+    ctx: EffectCtx,
+  ):
+    | number
+    | { amount: number; ignoreWR: boolean; ignoreResistance?: boolean; ignoreDefenderEffects?: boolean };
   effect?(ctx: EffectCtx): void;
 }
 
@@ -109,7 +113,29 @@ export interface CardScript {
   }): EnergyType[];
   /** Applied from the Stadium in play and the Pokémon's own card and Tool. */
   modifyMaxHp?(q: { state: GameState; slot: SlotRef; hp: number; registry: CardRegistry }): number;
-  onEvolveFromHand?: { use(ctx: EffectCtx, slot: SlotRef): void };
+  onEvolveFromHand?: {
+    /** When true the Ability isn't optional: it runs without asking ("you must ..."). */
+    mandatory?: boolean;
+    use(ctx: EffectCtx, slot: SlotRef): void;
+  };
+  /**
+   * Called when damage from an attack would Knock this Pokémon Out (not Poison, Burn or damage it did to
+   * itself); return true to have it survive with 10 HP left.
+   */
+  survivesKnockout?(ctx: EffectCtx, holder: SlotRef): boolean;
+  /**
+   * After an attack Knocks a Pokémon Out, called for each Pokémon its owner has in play (the Knocked Out one
+   * included) while they are still in play, before Prizes are taken.
+   */
+  afterKnockout?(ctx: EffectCtx, e: { holder: SlotRef; knocked: SlotRef; attacker: SlotRef }): void;
+  /** Applied to every Pokémon in play of the holder's owner (e.g. Dragonite's "no Retreat Cost"). */
+  modifyAllRetreatCosts?(q: {
+    state: GameState;
+    holder: SlotRef;
+    slot: SlotRef;
+    cost: number;
+    registry: CardRegistry;
+  }): number;
 }
 
 export interface CardRegistry {

@@ -5,7 +5,7 @@ import type { Env } from './env.ts';
 import { sameSlot, scriptsInPlay } from './hooks.ts';
 import { activeMarkers, getSlot, isFirstTurnOf, log, maxHp, other, slotDef, slotRefs } from './state.ts';
 import { endTurn, setResult } from './turn.ts';
-import type { GameState, MarkerKind, PlayerId, PokemonSlot, SlotRef } from './types.ts';
+import type { EnergyType, GameState, MarkerKind, PlayerId, PokemonSlot, SlotRef } from './types.ts';
 
 /** Per-attack bookkeeping kept on the ctx while an attack resolves (never stored in state). */
 export interface AttackInfo {
@@ -16,6 +16,22 @@ export interface AttackInfo {
 
 const attackInfo = new WeakMap<EffectCtx, AttackInfo>();
 export const currentAttack = (ctx: EffectCtx): AttackInfo | undefined => attackInfo.get(ctx);
+
+/**
+ * The attack bookkeeping names board positions, so when an effect swaps a player's Active Pokémon with a
+ * Benched one (Mach Turn, Push Down) the positions of the two Pokémon are swapped with them.
+ */
+export function followSwitch(ctx: EffectCtx, player: PlayerId, benchIndex: number): void {
+  const info = attackInfo.get(ctx);
+  if (!info) return;
+  const move = (ref: SlotRef): SlotRef => {
+    if (ref.player !== player) return ref;
+    if (ref.zone === 'active') return { player, zone: 'bench', index: benchIndex };
+    return ref.index === benchIndex ? { player, zone: 'active' } : ref;
+  };
+  info.attacker = move(info.attacker);
+  info.damaged = info.damaged.map(move);
+}
 
 export function canUseAttack(
   env: Env,
@@ -37,6 +53,8 @@ export function canUseAttack(
   const costHook = env.registry.scripts[def.id]?.modifyAttackCost;
   if (costHook)
     cost = costHook({ state, holder: { player, zone: 'active' }, attackIndex, cost, registry: env.registry });
+  const extra = sumMarkers(state, active, 'attackCostMore');
+  if (extra > 0) cost = [...cost, ...Array<EnergyType>(extra).fill('Colorless')];
   if (!canPayCost(cost, active.energy, state, env.registry)) return false;
   const script = env.registry.scripts[def.id]?.attacks?.[attackIndex];
   if (script?.canUse) {
@@ -61,7 +79,11 @@ export function dealAttackDamage(
   ctx: EffectCtx,
   target: SlotRef,
   base: number,
-  opts: { ignoreWeaknessResistance?: boolean; ignoreDefenderEffects?: boolean } = {},
+  opts: {
+    ignoreWeaknessResistance?: boolean;
+    ignoreResistance?: boolean;
+    ignoreDefenderEffects?: boolean;
+  } = {},
 ): number {
   const s = ctx.state;
   const info = currentAttack(ctx);
@@ -98,13 +120,19 @@ export function dealAttackDamage(
       }
     }
     const attackerSlot = getSlot(s, info.attacker)!;
-    const reduceOutgoing = sumMarkers(s, attackerSlot, 'reduceOutgoing');
-    if (reduceOutgoing) amount = Math.max(0, amount - reduceOutgoing);
+    const markerChange =
+      sumMarkers(s, attackerSlot, 'increaseOutgoing') - sumMarkers(s, attackerSlot, 'reduceOutgoing');
+    if (markerChange) amount = Math.max(0, amount + markerChange);
     const attackerDef = slotDef(ctx.env, s, attackerSlot);
     const defenderDef = slotDef(ctx.env, s, targetSlot);
     if (!opts.ignoreWeaknessResistance) {
       if (amount > 0 && defenderDef.weakness && attackerDef.types.includes(defenderDef.weakness)) amount *= 2;
-      if (defenderDef.resistance && attackerDef.types.includes(defenderDef.resistance)) amount -= 30;
+      if (
+        !opts.ignoreResistance &&
+        defenderDef.resistance &&
+        attackerDef.types.includes(defenderDef.resistance)
+      )
+        amount -= 30;
     }
     for (const h of scriptsInPlay(ctx.env, s, target.player)) {
       if (opts.ignoreDefenderEffects && sameSlot(h.ref, target)) continue;
@@ -121,6 +149,7 @@ export function dealAttackDamage(
     }
     if (!opts.ignoreDefenderEffects) {
       amount -= sumMarkers(s, targetSlot, 'reduceIncoming');
+      if (activeMarkers(s, targetSlot).some((m) => m.kind === 'preventDamage')) amount = 0;
       if (
         attackerDef.stage === 'Basic' &&
         activeMarkers(s, targetSlot).some((m) => m.kind === 'preventFromBasic')
@@ -152,9 +181,14 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
     const base = typeof scripted === 'number' ? scripted : scripted.amount;
     const ignoreWeaknessResistance = typeof scripted === 'number' ? false : scripted.ignoreWR;
     const ignoreDefenderEffects = typeof scripted === 'number' ? false : !!scripted.ignoreDefenderEffects;
+    const ignoreResistance = typeof scripted === 'number' ? false : !!scripted.ignoreResistance;
     const defenderRef: SlotRef = { player: ctx.opp, zone: 'active' };
     if (base > 0 && getSlot(s, defenderRef))
-      dealAttackDamage(ctx, defenderRef, base, { ignoreWeaknessResistance, ignoreDefenderEffects });
+      dealAttackDamage(ctx, defenderRef, base, {
+        ignoreWeaknessResistance,
+        ignoreResistance,
+        ignoreDefenderEffects,
+      });
     script?.effect?.(ctx);
     afterDamaged(ctx);
   }
@@ -181,15 +215,46 @@ export function checkKnockouts(ctx: EffectCtx): void {
   const s = ctx.state;
   const env = ctx.env;
   if (s.result) return;
+  const info = currentAttack(ctx);
+  /** Whether `ref` was damaged by the attack now resolving (and that attack is an opponent's). */
+  const byAttack = (ref: SlotRef): boolean =>
+    !!info && ref.player !== info.attacker.player && info.damaged.some((d) => sameSlot(d, ref));
+  const topDefId = (ref: SlotRef): string => {
+    const slot = getSlot(s, ref)!;
+    return s.cards[slot.stack[slot.stack.length - 1]!]!.defId;
+  };
   const knocked: SlotRef[] = [];
   for (const player of [0, 1] as PlayerId[]) {
     for (const ref of slotRefs(s, player)) {
       const slot = getSlot(s, ref)!;
-      if (slot.damage >= maxHp(env, s, ref)) knocked.push(ref);
+      const hp = maxHp(env, s, ref);
+      if (slot.damage < hp) continue;
+      if (byAttack(ref) && env.registry.scripts[topDefId(ref)]?.survivesKnockout?.(ctx, ref)) {
+        slot.damage = Math.max(0, hp - 10);
+        continue;
+      }
+      knocked.push(ref);
     }
   }
-  if (knocked.length === 0) return;
-  const info = currentAttack(ctx);
+  if (info && knocked.some(byAttack)) {
+    // Reactions (Weezing, Raichu): the Knocked Out Pokémon's owner's Pokémon are all still in play.
+    for (const ref of knocked.filter(byAttack)) {
+      for (const h of scriptsInPlay(env, s, ref.player)) {
+        h.script.afterKnockout?.(ctx, { holder: h.ref, knocked: ref, attacker: info.attacker });
+      }
+    }
+    // A reaction can Knock more Pokémon Out (it isn't damage from an attack, so nothing survives it).
+    for (const player of [0, 1] as PlayerId[]) {
+      for (const ref of slotRefs(s, player)) {
+        if (knocked.some((k) => sameSlot(k, ref))) continue;
+        if (getSlot(s, ref)!.damage >= maxHp(env, s, ref)) knocked.push(ref);
+      }
+    }
+  }
+  // Nothing to do unless a Pokémon was Knocked Out or a player is missing an Active Pokémon
+  // (an Ability can discard one).
+  const missingActive = ([0, 1] as PlayerId[]).some((p) => !s.players[p].active && s.phase !== 'setup');
+  if (knocked.length === 0 && !missingActive) return;
   // Work out Prizes before anything leaves play (abilities like Shadowy Concealment must still be in play).
   const prizeAwards = knocked.map((ref) => {
     const def = slotDef(env, s, getSlot(s, ref)!);

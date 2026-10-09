@@ -9,5 +9,6 @@ export { default as megaAbomasnowDeck } from './decks/mega-abomasnow.json';
 export { default as megaManectricDeck } from './decks/mega-manectric.json';
 export { default as megaKangaskhanDeck } from './decks/mega-kangaskhan.json';
 export { default as megaLopunnyDeck } from './decks/mega-lopunny.json';
+export { GYM_DECKS, GYM_SET, type GymDeckId } from './gym.ts';
 export { isPlayable } from './playable.ts';
 export { SETS, setCards, type Era } from './sets.ts';

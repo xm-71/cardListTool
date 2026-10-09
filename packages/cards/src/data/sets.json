@@ -48,5 +48,10 @@
     "id": "neo1",
     "name": "Neo Genesis",
     "logo": "https://assets.tcgdex.net/en/neo/neo1/logo"
+  },
+  {
+    "id": "sv03.5",
+    "name": "151",
+    "logo": "https://assets.tcgdex.net/en/sv/sv03.5/logo"
   }
 ]

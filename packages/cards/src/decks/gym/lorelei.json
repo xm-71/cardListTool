@@ -1,0 +1,23 @@
+{
+  "name": "Lorelei's Frost Deck",
+  "cards": [
+    { "id": "me01-119", "count": 4 },
+    { "id": "sv09-149", "count": 2 },
+    { "id": "me01-114", "count": 2 },
+    { "id": "me01-131", "count": 4 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-121", "count": 2 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
+    { "id": "me01-132", "count": 2 },
+    { "id": "me01-166", "count": 2 },
+    { "id": "sv03.5-086", "count": 4 },
+    { "id": "sv03.5-087", "count": 3 },
+    { "id": "sv03.5-090", "count": 3 },
+    { "id": "sv03.5-091", "count": 3 },
+    { "id": "sv03.5-131", "count": 2 },
+    { "id": "sv03.5-124", "count": 2 },
+    { "id": "sv03.5-144", "count": 1 },
+    { "id": "mee-003", "count": 17 }
+  ]
+}

@@ -58,8 +58,9 @@ function BinderBody() {
   const [playableOnly, setPlayableOnly] = useState(false);
   const [details, setDetails] = useState<CardInstance | null>(null);
   const cards = useMemo(
-    // Classic cards (even their Basic Energy) are collect-only until a Classic ruleset exists.
-    () => setCards(setId).map((def) => ({ def, playable: era !== 'classic' && isDeckUsable(def, registry) })),
+    // Classic cards (even their Basic Energy) are collect-only until a Classic ruleset exists, and
+    // Scarlet & Violet cards are playable only in the Gym format, which has no deck builder yet.
+    () => setCards(setId).map((def) => ({ def, playable: era === 'mega' && isDeckUsable(def, registry) })),
     [setId, era],
   );
   const shown = cards.filter(

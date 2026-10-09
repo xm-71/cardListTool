@@ -1,5 +1,5 @@
 import type { CardDef, CardRegistry, DeckList } from '@ptcg/engine';
-import { isPlayable } from '@ptcg/cards';
+import { GYM_SET, isPlayable } from '@ptcg/cards';
 
 export const DECK_SIZE = 60;
 export const MAX_COPIES = 4;
@@ -18,11 +18,45 @@ export function isDeckUsable(def: CardDef, registry: CardRegistry): boolean {
   return isStandardLegal(def) && isPlayable(def, registry);
 }
 
+/** Legal in the Gym format: anything Standard-legal, plus every card of the Scarlet & Violet 151 set. */
+export function isGymLegal(def: CardDef): boolean {
+  return isStandardLegal(def) || def.id.startsWith(`${GYM_SET}-`);
+}
+
+/** 'gym' when some card is only legal in the Gym format; 'standard' otherwise. */
+export function deckFormat(deck: DeckList, registry: CardRegistry): 'standard' | 'gym' {
+  return deck.cards.some((c) => {
+    const def = registry.defs[c.id];
+    return def !== undefined && !isStandardLegal(def);
+  })
+    ? 'gym'
+    : 'standard';
+}
+
 /** Readable problems with a custom deck; `[]` means it is valid. */
 export function validateCustomDeck(
   deck: DeckList,
   registry: CardRegistry,
   collection: Readonly<Record<string, number>>,
+): string[] {
+  return validate(deck, registry, collection, isStandardLegal, 'Standard');
+}
+
+/** Like `validateCustomDeck`, for Gym Challenge decks (Standard cards plus the 151 set). */
+export function validateGymDeck(
+  deck: DeckList,
+  registry: CardRegistry,
+  collection: Readonly<Record<string, number>>,
+): string[] {
+  return validate(deck, registry, collection, isGymLegal, 'the Gym format');
+}
+
+function validate(
+  deck: DeckList,
+  registry: CardRegistry,
+  collection: Readonly<Record<string, number>>,
+  legal: (def: CardDef) => boolean,
+  formatName: string,
 ): string[] {
   const problems: string[] = [];
   const total = deck.cards.reduce((n, c) => n + c.count, 0);
@@ -41,8 +75,8 @@ export function validateCustomDeck(
     if (isBasicEnergy(def)) continue;
     byName.set(def.name, (byName.get(def.name) ?? 0) + count);
     if (def.category === 'Trainer' && def.isAceSpec) aceSpecs += count;
-    if (!isStandardLegal(def)) {
-      problems.push(`${def.name} (${def.regulationMark ?? 'no mark'}) is not legal in Standard`);
+    if (!legal(def)) {
+      problems.push(`${def.name} (${def.regulationMark ?? 'no mark'}) is not legal in ${formatName}`);
     }
     if (!isPlayable(def, registry)) problems.push(`${def.name} isn't playable yet`);
     const own = collection[id] ?? 0;

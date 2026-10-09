@@ -1,5 +1,5 @@
 import type { CardRegistry } from './cards.ts';
-import { getSlot } from './state.ts';
+import { activeMarkers, getSlot, slotRefs } from './state.ts';
 import type { EnergyType, GameState, SlotRef } from './types.ts';
 
 function provided(uid: string, state: GameState, registry: CardRegistry): EnergyType[] {
@@ -40,5 +40,14 @@ export function getRetreatCost(state: GameState, ref: SlotRef, registry: CardReg
     const hook = registry.scripts[id]?.modifyRetreatCost;
     if (hook) cost = hook({ state, slot: ref, cost, registry });
   }
+  for (const holder of slotRefs(state, ref.player)) {
+    const held = getSlot(state, holder)!;
+    const id = state.cards[held.stack[held.stack.length - 1]!]!.defId;
+    const hook = registry.scripts[id]?.modifyAllRetreatCosts;
+    if (hook) cost = hook({ state, holder, slot: ref, cost, registry });
+  }
+  cost += activeMarkers(state, slot)
+    .filter((m) => m.kind === 'retreatCostMore')
+    .reduce((n, m) => n + m.amount, 0);
   return Math.max(0, cost);
 }

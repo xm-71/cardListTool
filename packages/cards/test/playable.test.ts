@@ -93,6 +93,7 @@ test('every shop set has an era, classic sets included', () => {
     ['gym1', 'classic'],
     ['gym2', 'classic'],
     ['neo1', 'classic'],
+    ['sv03.5', 'sv'],
   ]);
   expect(setCards('base1')).toHaveLength(102);
   expect(setCards('neo1')).toHaveLength(111);

@@ -1,0 +1,22 @@
+{
+  "name": "Brock's Rock-Solid Deck",
+  "cards": [
+    { "id": "me01-119", "count": 4 },
+    { "id": "sv09-149", "count": 2 },
+    { "id": "me01-114", "count": 2 },
+    { "id": "me01-131", "count": 4 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-121", "count": 2 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
+    { "id": "me01-132", "count": 2 },
+    { "id": "me01-125", "count": 3 },
+    { "id": "sv03.5-074", "count": 4 },
+    { "id": "sv03.5-075", "count": 3 },
+    { "id": "sv03.5-076", "count": 2 },
+    { "id": "sv03.5-095", "count": 2 },
+    { "id": "sv03.5-111", "count": 4 },
+    { "id": "sv03.5-112", "count": 2 },
+    { "id": "mee-006", "count": 17 }
+  ]
+}

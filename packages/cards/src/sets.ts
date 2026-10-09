@@ -2,14 +2,17 @@ import type { CardDef } from '@ptcg/engine';
 import cards from './data/cards.json';
 import sets from './data/sets.json';
 
-export type Era = 'mega' | 'classic';
+export type Era = 'mega' | 'classic' | 'sv';
 
 /** WotC-era sets: collectible now, playable once a Classic ruleset exists. */
 const CLASSIC = new Set(['base1', 'base2', 'base3', 'base4', 'base5', 'gym1', 'gym2', 'neo1']);
 
+/** Scarlet & Violet sets: collectible, and playable only in the Gym format. */
+const SV = new Set(['sv03.5']);
+
 export const SETS: readonly { id: string; name: string; logo: string; era: Era }[] = sets.map((s) => ({
   ...s,
-  era: CLASSIC.has(s.id) ? 'classic' : 'mega',
+  era: CLASSIC.has(s.id) ? 'classic' : SV.has(s.id) ? 'sv' : 'mega',
 }));
 
 /** Every card of a set, in collector-number order. */
