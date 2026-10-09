@@ -1,0 +1,16 @@
+{
+  "name": "Pokémon Trading Card Game",
+  "short_name": "PTCG",
+  "description": "A private Pokémon Trading Card Game for the browser.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f0d0",
+  "theme_color": "#283040",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

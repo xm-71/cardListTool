@@ -3,11 +3,11 @@
   "cards": [
     { "id": "me01-119", "count": 4 },
     { "id": "sv09-149", "count": 2 },
-    { "id": "me01-114", "count": 3 },
+    { "id": "me01-114", "count": 2 },
     { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 4 },
-    { "id": "me01-130", "count": 3 },
-    { "id": "me01-173", "count": 3 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
     { "id": "me01-166", "count": 2 },
     { "id": "sv03.5-120", "count": 4 },
     { "id": "sv03.5-121", "count": 3 },
@@ -15,6 +15,6 @@
     { "id": "sv03.5-099", "count": 3 },
     { "id": "sv03.5-072", "count": 2 },
     { "id": "sv03.5-073", "count": 2 },
-    { "id": "mee-003", "count": 18 }
+    { "id": "mee-003", "count": 22 }
   ]
 }

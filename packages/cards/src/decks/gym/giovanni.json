@@ -2,11 +2,11 @@
   "name": "Giovanni's Team Deck",
   "cards": [
     { "id": "me01-119", "count": 4 },
-    { "id": "me01-114", "count": 3 },
+    { "id": "me01-114", "count": 2 },
     { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 4 },
-    { "id": "me01-130", "count": 3 },
-    { "id": "me01-173", "count": 3 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
     { "id": "me01-125", "count": 3 },
     { "id": "sv03.5-161", "count": 2 },
     { "id": "sv03.5-032", "count": 4 },
@@ -17,7 +17,7 @@
     { "id": "sv03.5-031", "count": 2 },
     { "id": "sv03.5-111", "count": 2 },
     { "id": "sv03.5-112", "count": 2 },
-    { "id": "mee-007", "count": 9 },
+    { "id": "mee-007", "count": 13 },
     { "id": "mee-006", "count": 4 }
   ]
 }
