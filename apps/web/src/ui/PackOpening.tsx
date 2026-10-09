@@ -20,7 +20,18 @@ function prefersReducedMotion(): boolean {
 }
 
 /** Shake → tear → flip one card at a time (effects scale with rarity) → all. The cards are already saved. */
-export function PackOpening({ setId, cards, onDone }: { setId: string; cards: string[]; onDone(): void }) {
+export function PackOpening({
+  setId,
+  cards,
+  onDone,
+  again,
+}: {
+  setId: string;
+  cards: string[];
+  onDone(): void;
+  /** Open another of the same pack without going back to the Shop (shown once the cards are revealed). */
+  again?: { label: string; disabled: boolean; onClick(): void };
+}) {
   const [reduced] = useState(prefersReducedMotion);
   const [phase, setPhase] = useState<Phase>(reduced ? 'stack' : 'shake');
   const [shown, setShown] = useState(0);
@@ -167,7 +178,16 @@ export function PackOpening({ setId, cards, onDone }: { setId: string; cards: st
               Reveal all
             </Button>
           )}
-          {phase === 'all' && <Button onClick={onDone}>Done</Button>}
+          {again && (phase === 'all' || (phase === 'stack' && shown >= cards.length)) && (
+            <Button disabled={again.disabled} onClick={again.onClick}>
+              {again.label}
+            </Button>
+          )}
+          {phase === 'all' && (
+            <Button variant={again ? 'plain' : 'primary'} onClick={onDone}>
+              Done
+            </Button>
+          )}
         </div>
       </div>
     </div>
