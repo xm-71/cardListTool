@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { PlayerId } from '@ptcg/engine';
-import { useGameAward } from './game/awards.ts';
+import { useGameAward, useGymResult } from './game/awards.ts';
 import { createWorkerBotClient, type BotClient } from './game/botClient.ts';
 import { actorOf, useGame } from './game/store.ts';
 import { useBotDriver } from './game/useBotDriver.ts';
 import { GameScreen } from './screens/GameScreen.tsx';
 import { useNav, type Route } from './nav/useNav.ts';
 import { Binder } from './screens/Binder.tsx';
+import { GymChallenge } from './screens/GymChallenge.tsx';
 import { DeckBuilder } from './screens/DeckBuilder.tsx';
 import { DuelSetup } from './screens/DuelSetup.tsx';
 import { Intro } from './screens/Intro.tsx';
@@ -17,6 +18,9 @@ import { Title } from './screens/Title.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
+import { GymGameOver } from './ui/GymGameOver.tsx';
+import { deckSources } from './game/catalog.ts';
+import { resolveDeck, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
 
 interface Props {
@@ -56,12 +60,14 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   const start = useGame((s) => s.start);
   const resetGame = useGame((s) => s.reset);
   const reset = () => {
+    const toGym = !!useGame.getState().config?.context;
     resetGame();
-    useNav.getState().go('menu');
+    useNav.getState().go(toGym ? 'gym' : 'menu');
   };
   // Hotseat: the seat that has confirmed it is looking at the screen.
   const [confirmed, setConfirmed] = useState<{ game: number; seat: PlayerId } | null>(null);
   const credits = useGameAward();
+  const gymPayout = useGymResult();
 
   if (error) return <ErrorScreen error={error} onHome={reset} />;
   if (!state || !config) return <Screens />;
@@ -78,7 +84,30 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   return (
     <>
       <GameScreen viewer={viewer} />
-      {state.result && (
+      {state.result && config.context && (
+        <GymGameOver
+          context={config.context}
+          result={state.result}
+          human={human}
+          payout={gymPayout}
+          onBack={reset}
+          onRematch={() => {
+            if (config.context?.kind !== 'gym') return;
+            const deck = resolveDeck(config.context.deck, deckSources(useProfile.getState().profile.decks));
+            if (deck) startGymMatch(config.context.leaderId, deck);
+          }}
+          onNext={() => {
+            const { run } = useProfile.getState().profile.gym;
+            if (!run) return reset();
+            const profile = useProfile.getState().profile;
+            const sources = deckSources(profile.decks);
+            const deck = resolveDeck(run.deck, sources);
+            if (!deck) return reset(); // the run's deck is gone: Gym Challenge lets the player pick another
+            startEliteMatch(run.stage, deck);
+          }}
+        />
+      )}
+      {state.result && !config.context && (
         <GameOver
           result={state.result}
           mode={config.mode}
@@ -97,6 +126,7 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
   intro: Intro,
   menu: MainMenu,
   duel: DuelSetup,
+  gym: GymChallenge,
   shop: Shop,
   binder: Binder,
   decks: DeckBuilder,
@@ -104,7 +134,7 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
 };
 
 /** Screens Collector mode hides; a route that lands on one goes back to the menu. */
-const BATTLE_ROUTES: readonly Route[] = ['duel', 'decks'];
+const BATTLE_ROUTES: readonly Route[] = ['duel', 'gym', 'decks'];
 
 function Screens() {
   const route = useNav((s) => s.route);

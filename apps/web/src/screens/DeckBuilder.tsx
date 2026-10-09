@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { CardDef, DeckList } from '@ptcg/engine';
 import { SETS } from '@ptcg/cards';
-import { DECK_SIZE, isDeckUsable, MAX_COPIES, validateCustomDeck } from '@ptcg/economy';
+import { DECK_SIZE, deckFormat, isGymUsable, MAX_COPIES, validateGymDeck } from '@ptcg/economy';
 import { registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
@@ -60,6 +60,7 @@ function DeckBuilderBody() {
             <li key={d.id} className="retro-box flex flex-wrap items-center gap-3 px-4 py-3">
               <span className="font-pixel text-[10px]">{d.name}</span>
               <span className="text-xl opacity-70">{d.cards.reduce((n, c) => n + c.count, 0)} cards</span>
+              <FormatBadge format={deckFormat(d, registry)} />
               <button
                 type="button"
                 aria-label={`Edit ${d.name}`}
@@ -84,6 +85,18 @@ function DeckBuilderBody() {
   );
 }
 
+/** "Standard" decks work in Duel and Gym Challenge; "Gym" decks (with 151 cards) only in Gym Challenge. */
+function FormatBadge({ format }: { format: 'standard' | 'gym' }) {
+  return (
+    <span
+      title={format === 'standard' ? 'Legal in Duel and Gym Challenge' : 'Has 151 cards: Gym Challenge only'}
+      className={`border-2 border-ink px-2 py-1 font-pixel text-[8px] uppercase ${format === 'standard' ? 'bg-paper' : 'bg-purple text-paper'}`}
+    >
+      {format === 'standard' ? 'Standard' : 'Gym only'}
+    </span>
+  );
+}
+
 function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) {
   const collection = useProfile((s) => s.profile.collection);
   const saveDeck = useProfile((s) => s.saveDeck);
@@ -97,7 +110,8 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
     .map(([id, count]) => ({ id, count }));
   const list: DeckList = { name, cards };
   const total = cards.reduce((n, c) => n + c.count, 0);
-  const problems = validateCustomDeck(list, registry, collection);
+  const problems = validateGymDeck(list, registry, collection);
+  const format = deckFormat(list, registry);
   const nameTotals = new Map<string, number>();
   for (const c of cards) {
     const def = registry.defs[c.id];
@@ -114,7 +128,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
           // Usable cards first; classic (collect-only) cards after them.
           .sort((a, b) => Number(isClassic(a.id)) - Number(isClassic(b.id)) || byCategoryThenId(a, b)),
         ...BASIC_ENERGY,
-      ].map((def) => ({ def, playable: isDeckUsable(def, registry) })),
+      ].map((def) => ({ def, playable: isGymUsable(def, registry) })),
     [collection],
   );
 
@@ -152,6 +166,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
         <span className={`font-pixel text-xs ${total === DECK_SIZE ? 'text-green' : 'text-red'}`}>
           {total} / {DECK_SIZE}
         </span>
+        <FormatBadge format={format} />
         <button
           type="button"
           disabled={problems.length > 0}

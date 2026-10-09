@@ -43,7 +43,7 @@ test('the main menu has keyboard focus when it appears', async () => {
   await launch({ introDone: true });
   await user.keyboard('{Enter}');
   await screen.findByRole('menu', { name: 'Main menu' });
-  await user.keyboard('{ArrowDown}{Enter}');
+  await user.keyboard('{ArrowDown}{ArrowDown}{Enter}'); // Duel, Gym Challenge, then Shop
   expect(useNav.getState().route).toBe('shop');
 });
 

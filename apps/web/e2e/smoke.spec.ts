@@ -17,8 +17,8 @@ async function playThroughSetup(page: Page) {
 }
 
 /** Title → skip the first-launch intro → main menu. */
-async function toMenu(page: Page) {
-  await page.goto('/');
+async function toMenu(page: Page, path = '/') {
+  await page.goto(path);
   await expect(page.getByRole('heading', { name: /Pokémon Trading Card Game/ })).toBeVisible();
   await expect(page.getByText('PRESS START')).toBeVisible();
   await page.screenshot({ path: 'test-results/title.png', fullPage: true });
@@ -303,4 +303,49 @@ test('My binders has no horizontal scrolling at phone width', async ({ page }) =
   expect(await fits(), 'book').toBe(true);
   await page.getByRole('button', { name: 'Empty slot 1' }).click();
   expect(await fits(), 'picker').toBe(true);
+});
+
+test('Gym Challenge: fight Brock with a starter deck, and check the screen at desktop and phone widths', async ({
+  page,
+}) => {
+  await toMenu(page);
+  await page.getByRole('menuitem', { name: 'Gym Challenge' }).click();
+  await expect(page.getByRole('list', { name: 'Badge case' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/gym-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 375, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= 375), 'badge case').toBe(true);
+  await page.screenshot({ path: 'test-results/gym-phone.png', fullPage: true });
+  await page.setViewportSize({ width: 1400, height: 950 });
+  await page.getByRole('button', { name: 'Challenge Brock' }).click();
+  await expect(page.getByText("Brock's Gym")).toBeVisible();
+  await page.screenshot({ path: 'test-results/gym-setup.png', fullPage: true });
+  await page.getByRole('button', { name: 'Battle!' }).click();
+  await playThroughSetup(page);
+  await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
+  await page.getByRole('button', { name: 'End turn' }).click();
+  await expect
+    .poll(
+      async () =>
+        (await page.getByRole('button', { name: 'End turn' }).isVisible()) ||
+        (await page.getByRole('dialog', { name: 'Game over' }).isVisible()),
+      { timeout: 60_000 },
+    )
+    .toBe(true);
+});
+
+test('with all 8 badges the Elite Four panel is ready', async ({ page }) => {
+  await toMenu(page, '/?e2e');
+  await page.evaluate(() => {
+    const store = (
+      window as unknown as { __profile: { setState(s: unknown): void; getState(): { profile: object } } }
+    ).__profile;
+    const ids = ['brock', 'misty', 'surge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni'];
+    store.setState({
+      profile: { ...store.getState().profile, gym: { badges: ids, run: null, hallOfFame: [] } },
+    });
+  });
+  await page.getByRole('menuitem', { name: 'Gym Challenge' }).click();
+  await expect(page.getByRole('button', { name: 'Start Elite Four' })).toBeEnabled();
+  await expect(page.getByText('Badges: 8 / 8')).toBeVisible();
+  await page.screenshot({ path: 'test-results/gym-elite.png', fullPage: true });
 });

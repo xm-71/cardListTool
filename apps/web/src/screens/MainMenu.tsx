@@ -9,6 +9,7 @@ import { DialogBox, Header, Menu } from '../ui/retro/index.ts';
 
 const ITEMS: { id: Route; label: string }[] = [
   { id: 'duel', label: 'Duel' },
+  { id: 'gym', label: 'Gym Challenge' },
   { id: 'shop', label: 'Shop' },
   { id: 'binder', label: 'Binder' },
   { id: 'decks', label: 'Decks' },

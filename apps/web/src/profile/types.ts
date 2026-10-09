@@ -1,4 +1,5 @@
 import { CREDITS } from '@ptcg/economy';
+import { emptyGym, normalizeGym, type GymProgress } from '../game/gym.ts';
 import { MAX_BINDERS, normalizeBinder } from './binders.ts';
 
 export interface CustomDeck {
@@ -47,6 +48,8 @@ export interface Profile {
   binders: CustomBinder[];
   /** Free packs; battling hidden. */
   collectorMode: boolean;
+  /** Kanto Gym Challenge progress. */
+  gym: GymProgress;
 }
 
 /** Where a profile lives. IndexedDB today; a server once accounts exist. */
@@ -67,6 +70,7 @@ export function newProfile(): Profile {
     introDone: false,
     binders: [],
     collectorMode: false,
+    gym: emptyGym(),
   };
 }
 
@@ -78,5 +82,11 @@ export function normalizeProfile(raw: Partial<Profile> & { version: 1 }): Profil
         .filter((b): b is CustomBinder => b !== null)
         .slice(0, MAX_BINDERS)
     : [];
-  return { ...newProfile(), ...raw, binders, collectorMode: raw.collectorMode === true };
+  return {
+    ...newProfile(),
+    ...raw,
+    binders,
+    collectorMode: raw.collectorMode === true,
+    gym: normalizeGym(raw.gym),
+  };
 }

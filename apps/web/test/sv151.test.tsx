@@ -41,13 +41,16 @@ test('buying a 151 pack opens 10 cards from sv03.5', async () => {
   expect(useProfile.getState().profile.credits).toBe(350);
 });
 
-test('the Binder lists 151 under Scarlet & Violet, with no Playable badges yet', async () => {
-  const owned = setCards('sv03.5').find((c) => c.name === 'Gyarados')!;
-  await withProfile({ collection: { [owned.id]: 1 } });
+test('the Binder lists 151 under Scarlet & Violet, with Playable badges on scripted cards only', async () => {
+  const gyarados = setCards('sv03.5').find((c) => c.name === 'Gyarados')!; // scripted for Lance's deck
+  const kabuto = setCards('sv03.5').find((c) => c.name === 'Kabuto')!; // needs rules the engine lacks
+  await withProfile({ collection: { [gyarados.id]: 1, [kabuto.id]: 1 } });
   render(<Binder />);
   const picker = screen.getByRole('group', { name: 'Sets' });
   expect(within(picker).getByText('Scarlet & Violet')).toBeInTheDocument();
   fireEvent.click(within(picker).getByRole('button', { name: '151' }));
-  expect(screen.getByRole('listitem', { name: `Gyarados #${owned.id.split('-')[1]}` })).toBeInTheDocument();
-  expect(screen.queryAllByText('Playable')).toHaveLength(0);
+  const item = (c: { id: string; name: string }) =>
+    screen.getByRole('listitem', { name: `${c.name} #${c.id.split('-')[1]}` });
+  expect(within(item(gyarados)).getByText('Playable')).toBeInTheDocument();
+  expect(within(item(kabuto)).queryByText('Playable')).toBeNull();
 });

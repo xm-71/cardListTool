@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { IllegalActionError, type Action, type DeckList, type GameState, type PlayerId } from '@ptcg/engine';
 import { usePreview } from '../ui/preview.ts';
+import type { DeckRef } from './gym.ts';
 import { engine } from './catalog.ts';
+
+/** What a game belongs to, so finishing it updates Gym Challenge progress instead of paying Duel credits. */
+export type GameContext =
+  | { kind: 'gym'; leaderId: string; deck: DeckRef }
+  | { kind: 'elite'; stage: number; deck: DeckRef; deckName: string; cover: string };
 
 export interface GameConfig {
   mode: 'bot' | 'hotseat';
@@ -12,6 +18,8 @@ export interface GameConfig {
   /** Seat 1's deck (the bot, or Player 2 in hotseat). */
   botDeck: DeckList;
   seed: number;
+  /** Set for Gym Challenge games. */
+  context?: GameContext;
 }
 
 export interface RecordedAction {

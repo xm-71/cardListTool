@@ -23,6 +23,11 @@ export function isGymLegal(def: CardDef): boolean {
   return isStandardLegal(def) || def.id.startsWith(`${GYM_SET}-`);
 }
 
+/** Can go in a Gym Challenge deck: Gym-legal and runnable by the engine. */
+export function isGymUsable(def: CardDef, registry: CardRegistry): boolean {
+  return isGymLegal(def) && isPlayable(def, registry);
+}
+
 /** 'gym' when some card is only legal in the Gym format; 'standard' otherwise. */
 export function deckFormat(deck: DeckList, registry: CardRegistry): 'standard' | 'gym' {
   return deck.cards.some((c) => {

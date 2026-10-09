@@ -74,7 +74,8 @@ test('the menu works from the keyboard and Back returns to it', async () => {
   await launch({ introDone: true });
   fireEvent.keyDown(window, { key: 'Enter' });
   const menu = screen.getByRole('menu', { name: 'Main menu' });
-  fireEvent.keyDown(menu, { key: 'ArrowDown' });
+  fireEvent.keyDown(menu, { key: 'ArrowDown' }); // Gym Challenge
+  fireEvent.keyDown(menu, { key: 'ArrowDown' }); // Shop
   fireEvent.keyDown(menu, { key: 'Enter' });
   expect(screen.getAllByRole('button', { name: 'Buy & open' })).toHaveLength(11);
   fireEvent.click(screen.getByRole('button', { name: 'Back' }));
