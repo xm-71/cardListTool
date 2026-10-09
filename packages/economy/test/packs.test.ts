@@ -222,3 +222,49 @@ test('packSize is the number of cards a pack opens', () => {
   expect(packSize('sv03.5')).toBe(10);
   for (const p of PACKS) expect(openPack(p.setId, setCards(p.setId), 1).cards, p.setId).toHaveLength(packSize(p.setId));
 });
+
+describe('e-Card and EX packs', () => {
+  const ids = [
+    ...['ecard1', 'ecard2', 'ecard3'],
+    ...Array.from({ length: 16 }, (_, i) => `ex${i + 1}`),
+  ];
+
+  test('all 19 sets are on sale in their own eras at their own prices', () => {
+    expect(PACKS.filter((p) => p.era === 'ecard').map((p) => p.setId)).toEqual(ids.slice(0, 3));
+    expect(PACKS.filter((p) => p.era === 'ex').map((p) => p.setId)).toEqual(ids.slice(3));
+    expect(packPrice('ecard2')).toBe(PACK_PRICES.ecard);
+    expect(packPrice('ex9')).toBe(PACK_PRICES.ex);
+    expect(PACKS.find((p) => p.setId === 'ex9')?.name).toBe('Emerald');
+  });
+
+  test.each(ids)('%s packs have 9 cards: 4 Common, 3 Uncommon, a reverse slot and a Rare or Holo Rare', (setId) => {
+    const cards = setCards(setId);
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    expect(packSize(setId)).toBe(9);
+    let rng = 11;
+    for (let i = 0; i < 100; i++) {
+      const pack = openPack(setId, cards, rng);
+      rng = pack.rng;
+      expect(pack.cards).toHaveLength(9);
+      for (const id of pack.cards) expect(rarity.has(id), id).toBe(true);
+      expect(pack.cards.slice(0, 4).map((id) => rarity.get(id))).toEqual(Array(4).fill('Common'));
+      expect(pack.cards.slice(4, 7).map((id) => rarity.get(id))).toEqual(Array(3).fill('Uncommon'));
+      expect(['Common', 'Uncommon', 'Rare']).toContain(rarity.get(pack.cards[7]!));
+      expect(['Rare', 'Holo Rare']).toContain(rarity.get(pack.cards[8]!));
+    }
+  });
+
+  test('Holo Rares show up in the rare slot of Ruby & Sapphire at about the configured rate', () => {
+    const cards = setCards('ex1');
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    const n = 5000;
+    let holo = 0;
+    let rng = 21;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('ex1', cards, rng);
+      rng = pack.rng;
+      if (rarity.get(pack.cards[8]!) === 'Holo Rare') holo++;
+    }
+    expect(Math.abs(holo / n - 0.33)).toBeLessThanOrEqual(0.03);
+  });
+});

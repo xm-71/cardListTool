@@ -20,6 +20,13 @@ const COLOURS: Record<string, [string, string]> = {
   lc: ['#c8a838', '#6a5410'],
 };
 
+/** A stable colour pair for sets without a hand-picked one, so neighbouring packs in the shop look different. */
+function hashColours(setId: string): [string, string] {
+  let h = 0;
+  for (const ch of setId) h = (h * 31 + ch.charCodeAt(0)) % 360;
+  return [`hsl(${h} 55% 50%)`, `hsl(${h} 55% 25%)`];
+}
+
 /** A CSS-drawn booster pack with its set logo; `torn` hides the top strip (pack opening). */
 export function PackArt({
   setId,
@@ -32,7 +39,7 @@ export function PackArt({
   className?: string;
   torn?: boolean;
 }) {
-  const [from, to] = COLOURS[setId] ?? ['var(--color-blue)', '#24488c'];
+  const [from, to] = COLOURS[setId] ?? hashColours(setId);
   const logo = SETS.find((s) => s.id === setId)?.logo;
   const [logoFailed, setLogoFailed] = useState(false);
   return (

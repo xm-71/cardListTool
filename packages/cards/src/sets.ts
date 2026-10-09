@@ -10,12 +10,23 @@ export const isCollectOnlyEra = (era: Era): boolean => era !== 'mega' && era !==
 /** WotC-era sets: collectible now, playable once a Classic ruleset exists. */
 const CLASSIC = new Set(['base1', 'base2', 'base3', 'base4', 'base5', 'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4', 'lc']);
 
+const ECARD = new Set(['ecard1', 'ecard2', 'ecard3']);
+const EX = new Set(Array.from({ length: 16 }, (_, i) => `ex${i + 1}`));
+
 /** Scarlet & Violet sets: collectible, and playable only in the Gym format. */
 const SV = new Set(['sv03.5']);
 
 export const SETS: readonly { id: string; name: string; logo: string; era: Era }[] = sets.map((s) => ({
   ...s,
-  era: CLASSIC.has(s.id) ? 'classic' : SV.has(s.id) ? 'sv' : 'mega',
+  era: CLASSIC.has(s.id)
+    ? 'classic'
+    : ECARD.has(s.id)
+      ? 'ecard'
+      : EX.has(s.id)
+        ? 'ex'
+        : SV.has(s.id)
+          ? 'sv'
+          : 'mega',
 }));
 
 /** Every card of a set, in collector-number order. */
