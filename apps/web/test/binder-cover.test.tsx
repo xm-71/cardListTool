@@ -95,3 +95,11 @@ test('in Collector mode the menu shows the most recently edited binder', async (
   await waitFor(() => expect(screen.getByText('Newest')).toBeInTheDocument());
   expect(screen.queryByText('Old one')).toBeNull();
 });
+
+test('patterns are dark on light colours and light on dark ones', () => {
+  const { unmount } = render(<BinderCover binder={binder({ coverColor: 'cream', background: 'stars' })} />);
+  expect(screen.getByTestId('binder-pattern').getAttribute('class')).toMatch(/text-ink/);
+  unmount();
+  render(<BinderCover binder={binder({ coverColor: 'ink', background: 'stars' })} />);
+  expect(screen.getByTestId('binder-pattern').getAttribute('class')).toMatch(/text-white/);
+});

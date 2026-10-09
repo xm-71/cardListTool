@@ -133,7 +133,7 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
               className={`retro-shadow relative w-full max-w-md overflow-hidden border-4 border-ink p-3 ${i === 1 ? 'hidden lg:block' : ''}`}
               style={{ background: COLOR_VAR[binder.pageColor] }}
             >
-              <Background kind={binder.background} />
+              <Background kind={binder.background} color={binder.pageColor} />
               <div className="relative grid grid-cols-3 gap-2">
                 {binder.pages[p]!.map((id, s) => {
                   const pos = { page: p, slot: s };

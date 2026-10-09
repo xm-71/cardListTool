@@ -74,12 +74,18 @@ const PATTERN: Record<Exclude<BinderBackground, 'plain'>, React.JSX.Element> = {
   ),
 };
 
-/** A faint repeating pattern that fills its (relatively positioned) parent. */
-export function Background({ kind }: { kind: BinderBackground }) {
+const LIGHT: ReadonlySet<BinderColor> = new Set(['cream', 'yellow', 'pink']);
+
+/** A faint repeating pattern that fills its (relatively positioned) parent; dark on light colours. */
+export function Background({ kind, color }: { kind: BinderBackground; color: BinderColor }) {
   const id = useId();
   if (kind === 'plain') return null;
   return (
-    <svg aria-hidden className="pointer-events-none absolute inset-0 h-full w-full text-white opacity-30">
+    <svg
+      aria-hidden
+      data-testid="binder-pattern"
+      className={`pointer-events-none absolute inset-0 h-full w-full ${LIGHT.has(color) ? 'text-ink opacity-15' : 'text-white opacity-30'}`}
+    >
       <defs>
         <pattern id={id} width="24" height="24" patternUnits="userSpaceOnUse">
           <g transform="scale(1.5)">{PATTERN[kind]}</g>

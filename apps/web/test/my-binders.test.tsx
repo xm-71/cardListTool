@@ -27,7 +27,11 @@ const pick = async (slot: string, card: string) => {
   const picker = await screen.findByRole('dialog', { name: 'Choose a card' });
   fireEvent.click(within(picker).getByRole('button', { name: card }));
 };
-const seeded = (pages: (string | null)[][]): CustomBinder => ({ ...newBinder('b1', 1), name: 'Seeded', pages });
+const seeded = (pages: (string | null)[][]): CustomBinder => ({
+  ...newBinder('b1', 1),
+  name: 'Seeded',
+  pages,
+});
 const row = (...ids: (string | null)[]) => [...ids, ...Array<null>(9 - ids.length).fill(null)];
 
 beforeEach(() => useSettings.getState().setSound(false));
@@ -44,7 +48,9 @@ test('All cards stays the default tab', async () => {
 test('New binder → Save puts a cover on the shelf; opening it shows one empty page', async () => {
   await open();
   fireEvent.click(screen.getByRole('button', { name: 'New binder' }));
-  fireEvent.click(within(screen.getByRole('dialog', { name: 'Edit binder' })).getByRole('button', { name: 'Save' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Edit binder' })).getByRole('button', { name: 'Save' }),
+  );
   await waitFor(() => expect(screen.getAllByTestId('binder-cover')).toHaveLength(1));
   openFirst();
   expect(screen.getByText('Page 1 / 1')).toBeInTheDocument();
@@ -81,12 +87,16 @@ test('a card can be moved to another slot and removed', async () => {
   await open({ binders: [seeded([row(BALL)])] });
   openFirst();
   fireEvent.click(screen.getByRole('button', { name: 'Slot 1: Ultra Ball' }));
-  fireEvent.click(within(screen.getByRole('dialog', { name: 'Slot 1' })).getByRole('button', { name: 'Move' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Slot 1' })).getByRole('button', { name: 'Move' }),
+  );
   fireEvent.click(screen.getByRole('button', { name: 'Move here: Empty slot 5' }));
   expect(await screen.findByRole('button', { name: 'Slot 5: Ultra Ball' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Empty slot 1' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Slot 5: Ultra Ball' }));
-  fireEvent.click(within(screen.getByRole('dialog', { name: 'Slot 5' })).getByRole('button', { name: 'Remove' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Slot 5' })).getByRole('button', { name: 'Remove' }),
+  );
   await waitFor(async () => expect((await stored()).pages[0]!.every((id) => id === null)).toBe(true));
 });
 
@@ -94,7 +104,9 @@ test('Escape cancels a move', async () => {
   await open({ binders: [seeded([row(BALL)])] });
   openFirst();
   fireEvent.click(screen.getByRole('button', { name: 'Slot 1: Ultra Ball' }));
-  fireEvent.click(within(screen.getByRole('dialog', { name: 'Slot 1' })).getByRole('button', { name: 'Move' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Slot 1' })).getByRole('button', { name: 'Move' }),
+  );
   act(() => void fireEvent.keyDown(window, { key: 'Escape' }));
   expect(screen.getByRole('button', { name: 'Empty slot 5' })).toBeInTheDocument();
 });

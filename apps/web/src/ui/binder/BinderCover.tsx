@@ -21,7 +21,7 @@ export function BinderCover({ binder, size = 'sm' }: { binder: CustomBinder; siz
       className={`retro-shadow relative flex aspect-[3/4] flex-col items-center justify-center overflow-hidden rounded-r-lg border-4 border-ink ${big ? 'w-56' : 'w-36'}`}
       style={{ background: COLOR_VAR[binder.coverColor] }}
     >
-      <Background kind={binder.background} />
+      <Background kind={binder.background} color={binder.coverColor} />
       <div aria-hidden className="absolute inset-y-0 left-0 w-3 border-r-4 border-ink bg-ink/40" />
       {Object.entries(binder.stickers).map(([spot, id]) => (
         <span key={spot} className={`absolute ${SPOT_CLASS[spot as StickerSpot]}`}>
