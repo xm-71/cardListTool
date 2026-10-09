@@ -103,11 +103,19 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
   options: Options,
 };
 
+/** Screens Collector mode hides; a route that lands on one goes back to the menu. */
+const BATTLE_ROUTES: readonly Route[] = ['duel', 'decks'];
+
 function Screens() {
   const route = useNav((s) => s.route);
   const persistent = useProfile((s) => s.persistent);
   const ready = useProfile((s) => s.ready);
-  const Screen = SCREENS[route];
+  const collector = useProfile((s) => s.profile.collectorMode);
+  const blocked = collector && BATTLE_ROUTES.includes(route);
+  useEffect(() => {
+    if (blocked) useNav.getState().go('menu');
+  }, [blocked]);
+  const Screen = blocked ? MainMenu : SCREENS[route];
   return (
     <div className="flex min-h-full flex-col">
       {route !== 'title' && ready && !persistent && (

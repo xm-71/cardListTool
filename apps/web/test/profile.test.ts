@@ -4,6 +4,7 @@ import { CREDITS } from '@ptcg/economy';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { openIndexedDbStore } from '../src/profile/indexedDbStore.ts';
 import { connectProfileStore, useProfile } from '../src/profile/useProfile.ts';
+import { MAX_BINDERS, addPage, newBinder, placeCard } from '../src/profile/binders.ts';
 import { newProfile, type Profile, type ProfileStore } from '../src/profile/types.ts';
 
 const total = (c: Record<string, number>): number => Object.values(c).reduce((a, b) => a + b, 0);
@@ -34,6 +35,8 @@ test('a new profile starts with 500 credits and nothing else', () => {
     playerName: null,
     starterDeck: null,
     introDone: false,
+    binders: [],
+    collectorMode: false,
   });
 });
 
@@ -177,7 +180,14 @@ describe('intro fields', () => {
     });
     db.close();
     const loaded = await (await openIndexedDbStore(dbName)).load();
-    expect(loaded).toEqual({ ...m4, playerName: null, starterDeck: null, introDone: false });
+    expect(loaded).toEqual({
+      ...m4,
+      playerName: null,
+      starterDeck: null,
+      introDone: false,
+      binders: [],
+      collectorMode: false,
+    });
   });
 
   test('the memory store fills missing fields too', async () => {
@@ -221,5 +231,108 @@ describe('intro fields', () => {
       credits: 777,
       playerName: 'Sam',
     });
+  });
+});
+
+describe('binders', () => {
+  const binder = (id: string) => ({ ...newBinder(id, 0), name: id.toUpperCase() });
+
+  test('saveBinder adds a binder and replaces it on a second save with the same id', async () => {
+    const store = spyStore();
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().saveBinder(binder('a'));
+    await useProfile.getState().saveBinder({ ...binder('a'), name: 'RENAMED' });
+    const saved = await store.load();
+    expect(saved.binders.map((b) => b.name)).toEqual(['RENAMED']);
+    expect(saved.binders[0]!.updatedAt).toBeGreaterThan(0);
+  });
+
+  test('a binder saved in another tab is kept when this tab saves a different one', async () => {
+    const shared = createMemoryStore();
+    await useProfile.getState().init(shared, true);
+    await shared.save({ ...(await shared.load()), binders: [binder('b')] }); // the other tab
+    await useProfile.getState().saveBinder(binder('a'));
+    expect((await shared.load()).binders.map((b) => b.id).sort()).toEqual(['a', 'b']);
+  });
+
+  test(`no more than ${MAX_BINDERS} binders`, async () => {
+    const full = Array.from({ length: MAX_BINDERS }, (_, i) => binder(`b${i}`));
+    const store = spyStore({ ...newProfile(), binders: full });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().saveBinder(binder('extra'));
+    expect((await store.load()).binders).toHaveLength(MAX_BINDERS);
+  });
+
+  test('deleteBinder removes it', async () => {
+    const store = spyStore({ ...newProfile(), binders: [binder('a'), binder('b')] });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().deleteBinder('a');
+    expect((await store.load()).binders.map((b) => b.id)).toEqual(['b']);
+  });
+});
+
+describe('collector mode', () => {
+  test('packs are free: buying with 0 credits works and leaves credits alone', async () => {
+    const store = spyStore({ ...newProfile(), credits: 0 });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().setCollectorMode(true);
+    const cards = await useProfile.getState().buyPack('me01');
+    const saved = await store.load();
+    expect(saved.collectorMode).toBe(true);
+    expect(saved.credits).toBe(0);
+    expect(total(saved.collection)).toBe(cards.length);
+  });
+
+  test('turning it off keeps the credits as they were', async () => {
+    const store = spyStore({ ...newProfile(), credits: 275 });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().setCollectorMode(true);
+    await useProfile.getState().buyPack('me02');
+    await useProfile.getState().setCollectorMode(false);
+    const saved = await store.load();
+    expect(saved).toMatchObject({ collectorMode: false, credits: 275 });
+  });
+});
+
+describe('updateBinder', () => {
+  const BALL = 'me01-131';
+  const LUCARIO = 'me01-077';
+  const owned = { [BALL]: 1, [LUCARIO]: 1 };
+
+  test('edits the stored binder, keeping another tab’s change to the same binder', async () => {
+    const shared = createMemoryStore({ ...newProfile(), collection: owned, binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    const other = await shared.load(); // the other tab fills slot 9
+    await shared.save({ ...other, binders: [placeCard(other.binders[0]!, 0, 8, BALL, owned)] });
+    await useProfile.getState().updateBinder('x', (b, collection) => placeCard(b, 0, 0, LUCARIO, collection));
+    expect((await shared.load()).binders[0]!.pages[0]).toEqual([
+      LUCARIO,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      BALL,
+    ]);
+  });
+
+  test('does nothing when the binder was deleted elsewhere', async () => {
+    const shared = createMemoryStore({ ...newProfile(), binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    await shared.save({ ...(await shared.load()), binders: [] });
+    await useProfile.getState().updateBinder('x', addPage);
+    expect((await shared.load()).binders).toEqual([]);
+  });
+
+  test('two quick edits both land', async () => {
+    const shared = createMemoryStore({ ...newProfile(), binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    await Promise.all([
+      useProfile.getState().updateBinder('x', addPage),
+      useProfile.getState().updateBinder('x', addPage),
+    ]);
+    expect((await shared.load()).binders[0]!.pages).toHaveLength(3);
   });
 });

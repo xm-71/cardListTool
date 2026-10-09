@@ -240,3 +240,70 @@ test('in a short window with a Stadium in play and a crowded board, the hand sta
     expect(hand!.height, 'hand not squashed').toBeGreaterThan(60);
   }
 });
+
+test('collector mode: a free pack goes into a new binder, kept after a reload', async ({ page }) => {
+  await toMenu(page);
+  await page.getByRole('menuitem', { name: 'Options' }).click();
+  // The switch flips once the profile is saved, so click and wait rather than check().
+  const collector = page.getByRole('checkbox', { name: 'Collector mode' });
+  await collector.click();
+  await expect(collector).toBeChecked();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('menuitem', { name: 'Duel' })).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/collector-menu.png', fullPage: true });
+
+  await page.getByRole('menuitem', { name: 'Shop' }).click();
+  const pack = page.getByRole('group', { name: 'Mega Evolution' });
+  await expect(pack.getByText('FREE')).toBeVisible();
+  await pack.getByRole('button', { name: 'Buy & open' }).click();
+  const opening = page.getByRole('dialog', { name: 'Pack opening' });
+  await opening.getByRole('button', { name: 'Reveal all' }).click();
+  await opening.getByRole('button', { name: 'Done' }).click();
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  await page.getByRole('menuitem', { name: 'Binder' }).click();
+  await page.getByRole('tab', { name: 'My binders' }).click();
+  await page.getByRole('button', { name: 'New binder' }).click();
+  const editor = page.getByRole('dialog', { name: 'Edit binder' });
+  await editor.getByLabel('Binder name').fill('Best pulls');
+  await editor.getByRole('radiogroup', { name: 'Cover colour' }).getByRole('radio', { name: 'blue' }).click();
+  await editor.getByRole('radio', { name: 'stars' }).click();
+  await editor.getByLabel('Top left sticker').selectOption('crown');
+  await editor.getByLabel('Bottom right sticker').selectOption('heart');
+  await page.screenshot({ path: 'test-results/binder-editor.png', fullPage: true });
+  await editor.getByRole('button', { name: 'Save' }).click();
+  await page.screenshot({ path: 'test-results/binder-shelf.png', fullPage: true });
+
+  await page.getByRole('button', { name: 'Open Best pulls' }).click();
+  await page.getByRole('button', { name: 'Empty slot 1' }).click();
+  const picker = page.getByRole('dialog', { name: 'Choose a card' });
+  await picker.locator('li button:not([disabled])').first().click();
+  await expect(page.getByRole('button', { name: /^Slot 1: / })).toBeVisible();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: 'test-results/binder-book.png', fullPage: true });
+
+  await page.reload();
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('menuitem', { name: 'Binder' }).click();
+  await page.getByRole('tab', { name: 'My binders' }).click();
+  await expect(page.getByRole('button', { name: 'Open Best pulls' })).toContainText('1 card');
+});
+
+test('My binders has no horizontal scrolling at phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  const fits = () => page.evaluate(() => document.documentElement.scrollWidth <= 375);
+  await toMenu(page);
+  await page.getByRole('menuitem', { name: 'Binder' }).click();
+  await page.getByRole('tab', { name: 'My binders' }).click();
+  await page.getByRole('button', { name: 'New binder' }).click();
+  expect(await fits(), 'editor').toBe(true);
+  await page.getByRole('dialog', { name: 'Edit binder' }).getByRole('button', { name: 'Save' }).click();
+  expect(await fits(), 'shelf').toBe(true);
+  await page.getByRole('button', { name: /^Open / }).click();
+  await page.getByRole('button', { name: 'Add page' }).click();
+  await page.screenshot({ path: 'test-results/phone-binder-book.png', fullPage: true });
+  expect(await fits(), 'book').toBe(true);
+  await page.getByRole('button', { name: 'Empty slot 1' }).click();
+  expect(await fits(), 'picker').toBe(true);
+});
