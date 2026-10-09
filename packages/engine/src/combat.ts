@@ -39,26 +39,34 @@ export function canUseAttack(
   player: PlayerId,
   attackIndex: number,
   ctx: EffectCtx,
+  /** The Benched Pokémon using an attack that "can be used even if this Pokémon is on the Bench". */
+  benchIndex?: number,
 ): boolean {
-  const active = state.players[player].active;
-  if (!active) return false;
+  const ref: SlotRef =
+    benchIndex === undefined ? { player, zone: 'active' } : { player, zone: 'bench', index: benchIndex };
+  const slot = getSlot(state, ref);
+  if (!slot) return false;
   if (isFirstTurnOf(state, player) && player === state.first && !env.ruleset.firstPlayerCanAttackTurn1)
     return false;
-  if (active.conditions.rotation === 'asleep' || active.conditions.rotation === 'paralyzed') return false;
-  if (active.cantAttackOnTurn === state.turn) return false;
-  const def = slotDef(env, state, active);
+  if (
+    ref.zone === 'active' &&
+    (slot.conditions.rotation === 'asleep' || slot.conditions.rotation === 'paralyzed')
+  )
+    return false;
+  if (slot.cantAttackOnTurn === state.turn) return false;
+  const def = slotDef(env, state, slot);
   const attack = def.attacks[attackIndex];
-  if (!attack || active.attackLocks?.[attack.name] === state.turn) return false;
+  if (!attack || slot.attackLocks?.[attack.name] === state.turn) return false;
+  const script = env.registry.scripts[def.id]?.attacks?.[attackIndex];
+  if (ref.zone === 'bench' && !script?.fromBench) return false;
   let cost = attack.cost;
   const costHook = env.registry.scripts[def.id]?.modifyAttackCost;
-  if (costHook)
-    cost = costHook({ state, holder: { player, zone: 'active' }, attackIndex, cost, registry: env.registry });
-  const extra = sumMarkers(state, active, 'attackCostMore');
+  if (costHook) cost = costHook({ state, holder: ref, attackIndex, cost, registry: env.registry });
+  const extra = sumMarkers(state, slot, 'attackCostMore');
   if (extra > 0) cost = [...cost, ...Array<EnergyType>(extra).fill('Colorless')];
-  if (!canPayCost(cost, active.energy, state, env.registry)) return false;
-  const script = env.registry.scripts[def.id]?.attacks?.[attackIndex];
+  if (!canPayCost(cost, slot.energy, state, env.registry)) return false;
   if (script?.canUse) {
-    ctx.source = { kind: 'attack', slot: { player, zone: 'active' }, attackIndex };
+    ctx.source = { kind: 'attack', slot: ref, attackIndex };
     return script.canUse(ctx);
   }
   return true;
@@ -164,10 +172,13 @@ export function dealAttackDamage(
   return amount;
 }
 
-export function attack(ctx: EffectCtx, attackIndex: number): void {
+export function attack(ctx: EffectCtx, attackIndex: number, benchIndex?: number): void {
   const s = ctx.state;
   const me = ctx.me;
-  const attackerRef: SlotRef = { player: me, zone: 'active' };
+  const attackerRef: SlotRef =
+    benchIndex === undefined
+      ? { player: me, zone: 'active' }
+      : { player: me, zone: 'bench', index: benchIndex };
   const attacker = getSlot(s, attackerRef)!;
   const def = slotDef(ctx.env, s, attacker);
   const atk = def.attacks[attackIndex]!;
@@ -176,7 +187,7 @@ export function attack(ctx: EffectCtx, attackIndex: number): void {
   attackInfo.set(ctx, { attacker: attackerRef, attackerIsEx: def.isEx, damaged: [] });
   log(s, 'attack', `${def.name} uses ${atk.name}`, { player: me });
 
-  if (resolveConfusion(ctx)) {
+  if (benchIndex !== undefined || resolveConfusion(ctx)) {
     const scripted = script?.damage ? script.damage(ctx) : atk.damage;
     const base = typeof scripted === 'number' ? scripted : scripted.amount;
     const ignoreWeaknessResistance = typeof scripted === 'number' ? false : scripted.ignoreWR;

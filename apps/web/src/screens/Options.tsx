@@ -4,6 +4,7 @@ import { useNav } from '../nav/useNav.ts';
 import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
 import { useSettings } from '../settings/useSettings.ts';
 import { Box, Button } from '../ui/retro/index.ts';
+import { OfflineSettings } from './OfflineSettings.tsx';
 
 export function Options() {
   const sound = useSettings((s) => s.sound);
@@ -75,6 +76,7 @@ export function Options() {
           >
             Replay intro
           </Button>
+          <OfflineSettings />
         </div>
       </Box>
     </ScreenFrame>

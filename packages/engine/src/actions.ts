@@ -41,7 +41,7 @@ function baseHandler(origin: Origin): EffectFn {
     case 'retreat':
       return (ctx) => retreat(ctx, origin.benchIndex);
     case 'attack':
-      return (ctx) => attack(ctx, origin.attackIndex);
+      return (ctx) => attack(ctx, origin.attackIndex, origin.benchIndex);
     case 'playTrainer':
       return (ctx) => playTrainer(ctx, origin.uid, origin.target);
     case 'useStadium':
@@ -204,6 +204,13 @@ function mainPhaseActions(env: Env, state: GameState, player: PlayerId): Action[
       if (canUseAttack(env, state, player, attackIndex, probe)) out.push({ type: 'attack', attackIndex });
     });
   }
+  const probeBench = new EffectCtx(state, env, player, []);
+  p.bench.forEach((slot, benchIndex) => {
+    slotDef(env, state, slot).attacks.forEach((_, attackIndex) => {
+      if (canUseAttack(env, state, player, attackIndex, probeBench, benchIndex))
+        out.push({ type: 'attack', attackIndex, benchIndex });
+    });
+  });
   out.push({ type: 'endTurn' }, { type: 'concede' });
   return out;
 }

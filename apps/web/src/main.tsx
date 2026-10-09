@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
 import { unlockAudio } from './audio/sfx.ts';
 import { useGame } from './game/store.ts';
+import { registerServiceWorker } from './offline/register.ts';
 import '@fontsource/press-start-2p/400.css';
 import '@fontsource/vt323/400.css';
 import './index.css';
@@ -16,6 +17,8 @@ for (const type of ['pointerdown', 'keydown'] as const) {
 if (new URLSearchParams(location.search).has('e2e')) {
   (window as unknown as { __game: typeof useGame }).__game = useGame;
 }
+
+registerServiceWorker();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

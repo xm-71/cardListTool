@@ -89,6 +89,25 @@ describe('Alakazam ex', () => {
     expect(s.players[opp].active!.damage).toBe(-400 + 150);
   });
 
+  test('Dimensional Hand can be used from the Bench, and only by Alakazam ex', () => {
+    const { s: s0, me, opp } = game(ALL, ALL);
+    swapActiveTo(s0, me, SLOWPOKE);
+    buffer(s0, opp);
+    benchFromHand(s0, me, giveCard(s0, me, ALAKAZAM));
+    const bench = s0.players[me].bench.length - 1;
+    for (let i = 0; i < 2; i++) {
+      const uid = giveCard(s0, me, P);
+      s0.players[me].hand.splice(s0.players[me].hand.indexOf(uid), 1);
+      s0.players[me].bench[bench]!.energy.push(uid);
+    }
+    const legal = engine.getLegalActions(s0, me).filter((a) => a.type === 'attack');
+    expect(legal).toContainEqual({ type: 'attack', attackIndex: 1, benchIndex: bench });
+    expect(legal.filter((a) => a.type === 'attack' && a.benchIndex === bench)).toHaveLength(1); // not Mind Jack
+    const s = act(engine, s0, { type: 'attack', attackIndex: 1, benchIndex: bench });
+    expect(s.players[opp].active!.damage).toBe(-400 + 120);
+    expect(s.players[me].active!.stack[0]).toBe(s0.players[me].active!.stack[0]); // still the same Active
+  });
+
   test('Dimensional Hand does 120 from the Active Spot', () => {
     const { s: s0, me, opp } = game(ALL, ALL);
     swapActiveTo(s0, me, ALAKAZAM);

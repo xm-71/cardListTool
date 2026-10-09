@@ -10,7 +10,7 @@ export const script: CardScript = {
         const slot = ctx.slot({ player: ctx.opp, zone: 'active' });
         if (slot.conditions.rotation !== 'asleep') return;
         ctx.log('Heart-Stopping Kiss Knocks the Defending Pokémon Out');
-        slot.damage = Math.max(slot.damage, 9999);
+        ctx.knockOut({ player: ctx.opp, zone: 'active' });
       },
     },
     // Icy Wind

@@ -188,7 +188,7 @@ export type Action =
   | { type: 'useAbility'; slot: SlotRef; ability: string }
   | { type: 'useStadium' }
   | { type: 'retreat'; benchIndex: number }
-  | { type: 'attack'; attackIndex: number }
+  | { type: 'attack'; attackIndex: number; benchIndex?: number }
   | { type: 'endTurn' }
   | { type: 'answer'; optionId: string }
   | { type: 'concede' };
