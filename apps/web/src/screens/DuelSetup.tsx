@@ -36,13 +36,15 @@ export function DuelSetup() {
   const [theirs, setTheirs] = useState('mega-diancie');
   const hotseat = opponent === 'hotseat';
   const listOf = (id: string) => (decks.find((d) => d.id === id) ?? decks[0]!).list;
+  // Bots play a random starter or theme deck (every deck the game ships, never a custom one).
+  const botPool = decks.filter((d) => d.kind !== 'custom');
   const play = () => {
     sfx('confirm');
     start({
       mode: hotseat ? 'hotseat' : 'bot',
       difficulty: hotseat ? undefined : opponent,
       humanDeck: listOf(mine),
-      botDeck: listOf(theirs),
+      botDeck: hotseat ? listOf(theirs) : botPool[Math.floor(Math.random() * botPool.length)]!.list,
       seed: (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) >>> 0,
     });
   };
@@ -72,13 +74,19 @@ export function DuelSetup() {
         value={mine}
         onChange={setMine}
       />
-      <DeckChoice
-        label={hotseat ? "Player 2's deck" : "Opponent's deck"}
-        group="Opponent's deck"
-        decks={decks}
-        value={theirs}
-        onChange={setTheirs}
-      />
+      {hotseat ? (
+        <DeckChoice
+          label="Player 2's deck"
+          group="Opponent's deck"
+          decks={decks}
+          value={theirs}
+          onChange={setTheirs}
+        />
+      ) : (
+        <Box title="Opponent's deck">
+          <p className="text-xl">Random: the bot plays a surprise starter or theme deck.</p>
+        </Box>
+      )}
       <Button onClick={play} className="self-center px-10 py-4 text-sm">
         Play
       </Button>

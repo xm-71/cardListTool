@@ -13,6 +13,7 @@ beforeEach(() => useGame.getState().reset());
 describe('Home deck picker', () => {
   test('groups decks into Starter decks (3) and Theme decks (6), with no Custom section when there are none', () => {
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
+    fireEvent.click(screen.getByLabelText(/Hotseat/)); // the second deck is only chosen by a second player
     for (const side of ['Your deck', "Opponent's deck"]) {
       const g = screen.getByRole('group', { name: side });
       expect(
@@ -27,6 +28,7 @@ describe('Home deck picker', () => {
 
   test('a theme deck can be picked for both sides', () => {
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
+    fireEvent.click(screen.getByLabelText(/Hotseat/));
     fireEvent.click(
       within(screen.getByRole('group', { name: 'Your deck' })).getByRole('button', {
         name: /Mega Venusaur ex/,
@@ -50,6 +52,7 @@ describe('Home deck picker', () => {
 
   test('allows a starter-deck mirror match', () => {
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
+    fireEvent.click(screen.getByLabelText(/Hotseat/));
     const yours = screen.getByRole('group', { name: 'Your deck' });
     const theirs = screen.getByRole('group', { name: "Opponent's deck" });
     fireEvent.click(within(yours).getByRole('button', { name: /Mega Lucario ex/ }));
