@@ -124,3 +124,68 @@ test('Back returns from an open binder to the shelf', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Back to binders' }));
   expect(screen.getByRole('button', { name: 'New binder' })).toBeInTheDocument();
 });
+
+test('an edit in the open binder keeps a change another tab made to it', async () => {
+  await open({ binders: [seeded([row()])] });
+  openFirst();
+  const other = await store.load(); // another tab puts Mega Lucario ex in slot 9
+  await store.save({
+    ...other,
+    binders: [
+      { ...other.binders[0]!, pages: [row(null, null, null, null, null, null, null, null, LUCARIO)] },
+    ],
+  });
+  await pick('Empty slot 1', 'Ultra Ball');
+  await waitFor(async () => expect((await stored()).pages[0]![0]).toBe(BALL));
+  expect((await stored()).pages[0]![8]).toBe(LUCARIO);
+});
+
+test('saving the cover does not overwrite pages', async () => {
+  await open({ binders: [seeded([row()])] });
+  openFirst();
+  fireEvent.click(screen.getByRole('button', { name: 'Edit cover' }));
+  const other = await store.load(); // another tab fills slot 1 while the editor is open
+  await store.save({ ...other, binders: [{ ...other.binders[0]!, pages: [row(BALL)] }] });
+  const editor = screen.getByRole('dialog', { name: 'Edit binder' });
+  fireEvent.change(within(editor).getByLabelText('Binder name'), { target: { value: 'Renamed' } });
+  fireEvent.click(within(editor).getByRole('button', { name: 'Save' }));
+  await waitFor(async () => expect((await stored()).name).toBe('Renamed'));
+  expect((await stored()).pages[0]![0]).toBe(BALL);
+});
+
+test('the card picker takes focus, closes on Escape and gives focus back to the slot', async () => {
+  await open({ binders: [seeded([row()])] });
+  openFirst();
+  const slot = screen.getByRole('button', { name: 'Empty slot 3' });
+  slot.focus();
+  fireEvent.click(slot);
+  const picker = await screen.findByRole('dialog', { name: 'Choose a card' });
+  expect(picker.contains(document.activeElement)).toBe(true);
+  fireEvent.keyDown(document.body, { key: 'Escape' });
+  expect(screen.queryByRole('dialog', { name: 'Choose a card' })).toBeNull();
+  expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Empty slot 3' }));
+});
+
+test('Tab stays inside an open dialog', async () => {
+  await open({ binders: [seeded([row(BALL)])] });
+  openFirst();
+  fireEvent.click(screen.getByRole('button', { name: 'Slot 1: Ultra Ball' }));
+  const menu = screen.getByRole('dialog', { name: 'Slot 1' });
+  const buttons = within(menu).getAllByRole('button');
+  buttons.at(-1)!.focus();
+  fireEvent.keyDown(document.activeElement!, { key: 'Tab' });
+  expect(document.activeElement).toBe(buttons[0]);
+  buttons[0]!.focus();
+  fireEvent.keyDown(document.activeElement!, { key: 'Tab', shiftKey: true });
+  expect(document.activeElement).toBe(buttons.at(-1));
+});
+
+test('pages cannot be removed while a card is being moved', async () => {
+  await open({ binders: [seeded([row(BALL), row()])] });
+  openFirst();
+  fireEvent.click(screen.getByRole('button', { name: 'Slot 1: Ultra Ball' }));
+  fireEvent.click(
+    within(screen.getByRole('dialog', { name: 'Slot 1' })).getByRole('button', { name: 'Move' }),
+  );
+  expect(screen.getByRole('button', { name: 'Remove page' })).toBeDisabled();
+});

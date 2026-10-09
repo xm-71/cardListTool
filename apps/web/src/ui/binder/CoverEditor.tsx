@@ -13,6 +13,7 @@ import {
 import { Button } from '../retro/index.ts';
 import { COLOR_VAR } from './art.tsx';
 import { BinderCover } from './BinderCover.tsx';
+import { useDialog } from './useDialog.ts';
 
 const SPOT_LABEL: Record<StickerSpot, string> = {
   topLeft: 'Top left',
@@ -33,7 +34,9 @@ interface Props {
 export function CoverEditor({ binder, onSave, onDelete, onClose }: Props) {
   const [draft, setDraft] = useState(binder);
   const nameRef = useRef<HTMLInputElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => nameRef.current?.focus(), []);
+  useDialog(dialog, onClose);
   const set = (patch: Partial<CustomBinder>) => setDraft((d) => ({ ...d, ...patch }));
   const setSticker = (spot: StickerSpot, id: string) =>
     setDraft((d) => {
@@ -49,7 +52,7 @@ export function CoverEditor({ binder, onSave, onDelete, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label="Edit binder"
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+        ref={dialog}
         className="retro-box flex max-h-full w-full max-w-2xl flex-col gap-4 overflow-y-auto p-4"
       >
         <h2 className="font-pixel text-xs uppercase">Edit binder</h2>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CardInstance } from '@ptcg/engine';
 import { registry } from '../../game/catalog.ts';
 import {
@@ -19,6 +19,7 @@ import { Button } from '../retro/index.ts';
 import { Background, COLOR_VAR } from './art.tsx';
 import { CardPicker } from './CardPicker.tsx';
 import { CoverEditor } from './CoverEditor.tsx';
+import { useDialog } from './useDialog.ts';
 
 const slotNumber = (pos: SlotPos) => pos.page * SLOTS_PER_PAGE + pos.slot + 1;
 
@@ -26,7 +27,7 @@ const slotNumber = (pos: SlotPos) => pos.page * SLOTS_PER_PAGE + pos.slot + 1;
 export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): void }) {
   const binder = useProfile((s) => s.profile.binders.find((b) => b.id === binderId));
   const collection = useProfile((s) => s.profile.collection);
-  const saveBinder = useProfile((s) => s.saveBinder);
+  const updateBinder = useProfile((s) => s.updateBinder);
   const deleteBinder = useProfile((s) => s.deleteBinder);
   const [page, setPage] = useState(0);
   const [moving, setMoving] = useState<SlotPos | null>(null);
@@ -56,11 +57,14 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
   }, [dialogOpen, pages]);
 
   if (!binder) return null;
-  const save = (b: CustomBinder) => void saveBinder(b);
+  /** Every edit is applied to the stored binder, so changes made in another tab are kept. */
+  const edit = (fn: (b: CustomBinder, collection: Readonly<Record<string, number>>) => CustomBinder) =>
+    void updateBinder(binder.id, fn);
   const cardAt = (pos: SlotPos) => binder.pages[pos.page]?.[pos.slot] ?? null;
   const onSlot = (pos: SlotPos) => {
     if (moving) {
-      save(moveCard(binder, moving, pos));
+      const from = moving;
+      edit((b) => moveCard(b, from, pos));
       setMoving(null);
     } else if (cardAt(pos)) setMenu(pos);
     else setPicking(pos);
@@ -97,21 +101,17 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
         >
           ▶
         </Button>
-        <Button
-          variant="plain"
-          disabled={pages >= MAX_PAGES}
-          onClick={() => {
-            save(addPage(binder));
-          }}
-        >
+        <Button variant="plain" disabled={pages >= MAX_PAGES} onClick={() => edit(addPage)}>
           Add page
         </Button>
         {pages > 1 && (
           <Button
             variant="plain"
+            disabled={moving !== null}
             onClick={() => {
-              if (confirm(`Remove page ${page + 1}? Its cards stay in your collection.`))
-                save(removePage(binder, page));
+              const at = page;
+              if (confirm(`Remove page ${at + 1}? Its cards stay in your collection.`))
+                edit((b) => removePage(b, at));
             }}
           >
             Remove page
@@ -180,7 +180,8 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
             setMenu(null);
           }}
           onRemove={() => {
-            save(removeCard(binder, menu.page, menu.slot));
+            const at = menu;
+            edit((b) => removeCard(b, at.page, at.slot));
             setMenu(null);
           }}
           onClose={() => setMenu(null)}
@@ -192,7 +193,8 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
           current={cardAt(picking)}
           onClose={() => setPicking(null)}
           onPick={(id) => {
-            save(placeCard(binder, picking.page, picking.slot, id, collection));
+            const at = picking;
+            edit((b, owned) => placeCard(b, at.page, at.slot, id, owned));
             setPicking(null);
           }}
         />
@@ -201,9 +203,11 @@ export function BinderBook({ binderId, onBack }: { binderId: string; onBack(): v
         <CoverEditor
           binder={binder}
           onClose={() => setEditing(false)}
-          onSave={(b) => {
+          onSave={(cover) => {
             setEditing(false);
-            save(b);
+            // Only the cover: pages may have changed elsewhere while the editor was open.
+            const { name, coverColor, pageColor, background, stickers } = cover;
+            edit((b) => ({ ...b, name, coverColor, pageColor, background, stickers }));
           }}
           onDelete={() => {
             setEditing(false);
@@ -230,6 +234,8 @@ function SlotMenu({
   onRemove(): void;
   onClose(): void;
 }) {
+  const dialog = useRef<HTMLDivElement>(null);
+  useDialog(dialog, onClose);
   return (
     <div
       className="fixed inset-0 z-30 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
@@ -239,8 +245,8 @@ function SlotMenu({
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        ref={dialog}
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
         className="retro-box flex w-full max-w-xs flex-col gap-2 p-4"
       >
         <div className="font-pixel text-[10px] uppercase">{title}</div>

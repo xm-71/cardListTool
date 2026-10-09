@@ -4,7 +4,7 @@ import { CREDITS } from '@ptcg/economy';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { openIndexedDbStore } from '../src/profile/indexedDbStore.ts';
 import { connectProfileStore, useProfile } from '../src/profile/useProfile.ts';
-import { MAX_BINDERS, newBinder } from '../src/profile/binders.ts';
+import { MAX_BINDERS, addPage, newBinder, placeCard } from '../src/profile/binders.ts';
 import { newProfile, type Profile, type ProfileStore } from '../src/profile/types.ts';
 
 const total = (c: Record<string, number>): number => Object.values(c).reduce((a, b) => a + b, 0);
@@ -291,5 +291,48 @@ describe('collector mode', () => {
     await useProfile.getState().setCollectorMode(false);
     const saved = await store.load();
     expect(saved).toMatchObject({ collectorMode: false, credits: 275 });
+  });
+});
+
+describe('updateBinder', () => {
+  const BALL = 'me01-131';
+  const LUCARIO = 'me01-077';
+  const owned = { [BALL]: 1, [LUCARIO]: 1 };
+
+  test('edits the stored binder, keeping another tab’s change to the same binder', async () => {
+    const shared = createMemoryStore({ ...newProfile(), collection: owned, binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    const other = await shared.load(); // the other tab fills slot 9
+    await shared.save({ ...other, binders: [placeCard(other.binders[0]!, 0, 8, BALL, owned)] });
+    await useProfile.getState().updateBinder('x', (b, collection) => placeCard(b, 0, 0, LUCARIO, collection));
+    expect((await shared.load()).binders[0]!.pages[0]).toEqual([
+      LUCARIO,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      BALL,
+    ]);
+  });
+
+  test('does nothing when the binder was deleted elsewhere', async () => {
+    const shared = createMemoryStore({ ...newProfile(), binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    await shared.save({ ...(await shared.load()), binders: [] });
+    await useProfile.getState().updateBinder('x', addPage);
+    expect((await shared.load()).binders).toEqual([]);
+  });
+
+  test('two quick edits both land', async () => {
+    const shared = createMemoryStore({ ...newProfile(), binders: [newBinder('x', 0)] });
+    await useProfile.getState().init(shared, true);
+    await Promise.all([
+      useProfile.getState().updateBinder('x', addPage),
+      useProfile.getState().updateBinder('x', addPage),
+    ]);
+    expect((await shared.load()).binders[0]!.pages).toHaveLength(3);
   });
 });

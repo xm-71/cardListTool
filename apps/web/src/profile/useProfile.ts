@@ -50,6 +50,14 @@ interface ProfileState {
   setName(name: string): Promise<void>;
   /** Adds or replaces a binder by id (stamping updatedAt); a new one is refused at MAX_BINDERS. */
   saveBinder(b: CustomBinder): Promise<void>;
+  /**
+   * Applies an edit to the stored copy of a binder (so edits made in another tab are kept);
+   * does nothing if the binder no longer exists or the edit changes nothing.
+   */
+  updateBinder(
+    id: string,
+    edit: (b: CustomBinder, collection: Readonly<Record<string, number>>) => CustomBinder,
+  ): Promise<void>;
   deleteBinder(id: string): Promise<void>;
   /** Collector mode: packs are free and battling is hidden. Credits are kept as they are. */
   setCollectorMode(on: boolean): Promise<void>;
@@ -150,6 +158,19 @@ export const useProfile = create<ProfileState>()((set, get) => {
           ? p.binders.map((b) => (b.id === binder.id ? saved : b))
           : [...p.binders, saved];
         return { next: { ...p, binders }, result: undefined };
+      });
+    },
+    async updateBinder(id, edit) {
+      await change((p) => {
+        const current = p.binders.find((b) => b.id === id);
+        if (!current) return null;
+        const next = edit(current, p.collection);
+        if (next === current) return null;
+        const saved = { ...next, id, updatedAt: Date.now() };
+        return {
+          next: { ...p, binders: p.binders.map((b) => (b.id === id ? saved : b)) },
+          result: undefined,
+        };
       });
     },
     async deleteBinder(id) {

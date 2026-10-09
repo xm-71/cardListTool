@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { SETS } from '@ptcg/cards';
 import { registry } from '../../game/catalog.ts';
 import { placementsLeft } from '../../profile/binders.ts';
 import type { CustomBinder } from '../../profile/types.ts';
 import { useProfile } from '../../profile/useProfile.ts';
 import { Button } from '../retro/index.ts';
+import { useDialog } from './useDialog.ts';
 
 const setOf = (id: string) => id.slice(0, id.lastIndexOf('-'));
 const SET_ORDER = new Map(SETS.map((s, i) => [s.id, i]));
@@ -25,6 +26,8 @@ export function CardPicker({
   const collection = useProfile((s) => s.profile.collection);
   const [query, setQuery] = useState('');
   const [setId, setSetId] = useState('');
+  const dialog = useRef<HTMLDivElement>(null);
+  useDialog(dialog, onClose);
   const owned = useMemo(
     () =>
       Object.keys(collection)
@@ -48,14 +51,15 @@ export function CardPicker({
         role="dialog"
         aria-modal="true"
         aria-label="Choose a card"
+        ref={dialog}
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
         className="retro-box flex max-h-full w-full max-w-3xl flex-col gap-3 p-4"
       >
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="font-pixel text-xs uppercase">Choose a card</h2>
           <input
             aria-label="Search cards"
+            autoFocus
             placeholder="Search…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
