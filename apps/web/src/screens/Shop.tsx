@@ -21,19 +21,31 @@ function ShopBody() {
   const ready = useProfile((s) => s.ready);
   const collector = useProfile((s) => s.profile.collectorMode);
   const [busy, setBusy] = useState(false);
-  const [opened, setOpened] = useState<{ setId: string; cards: string[] } | null>(null);
+  const [opened, setOpened] = useState<{ setId: string; cards: string[]; n: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const buy = async (setId: string) => {
     setBusy(true);
     setError(null);
     try {
-      setOpened({ setId, cards: await buyPack(setId) });
+      const cards = await buyPack(setId);
+      setOpened((prev) => ({ setId, cards, n: (prev?.n ?? 0) + 1 }));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
+  };
+
+  /** "Open another" for the pack just opened: always in Collector mode, otherwise when the player can afford it. */
+  const againFor = (setId: string) => {
+    const pack = PACKS.find((p) => p.setId === setId);
+    if (!pack) return undefined;
+    return {
+      label: collector ? `Open another ${pack.name}` : `Open another ${pack.name} (${pack.price} credits)`,
+      disabled: !ready || busy || (!collector && credits < pack.price),
+      onClick: () => void buy(setId),
+    };
   };
 
   return (
@@ -75,7 +87,15 @@ function ShopBody() {
           {error}
         </p>
       )}
-      {opened && <PackOpening setId={opened.setId} cards={opened.cards} onDone={() => setOpened(null)} />}
+      {opened && (
+        <PackOpening
+          key={opened.n}
+          setId={opened.setId}
+          cards={opened.cards}
+          onDone={() => setOpened(null)}
+          again={againFor(opened.setId)}
+        />
+      )}
     </section>
   );
 }
