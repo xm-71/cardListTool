@@ -108,6 +108,7 @@ describe('stages from the vintage eras', () => {
     ['Restored', 'Basic'],
     ['LEGEND', 'Basic'],
     ['Level-Up', 'Stage1'],
+    ['LEVEL-UP', 'Stage1'],
     ['BREAK', 'Stage2'],
     [undefined, 'Basic'],
   ])('%s is stored as %s', (stage, expected) => {

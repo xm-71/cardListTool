@@ -8,10 +8,27 @@ export type Era = 'mega' | 'classic' | 'ecard' | 'ex' | 'dp' | 'pt' | 'hgss' | '
 export const isCollectOnlyEra = (era: Era): boolean => era !== 'mega' && era !== 'sv';
 
 /** WotC-era sets: collectible now, playable once a Classic ruleset exists. */
-const CLASSIC = new Set(['base1', 'base2', 'base3', 'base4', 'base5', 'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4', 'lc']);
+const CLASSIC = new Set([
+  'base1',
+  'base2',
+  'base3',
+  'base4',
+  'base5',
+  'gym1',
+  'gym2',
+  'neo1',
+  'neo2',
+  'neo3',
+  'neo4',
+  'lc',
+]);
 
 const ECARD = new Set(['ecard1', 'ecard2', 'ecard3']);
 const EX = new Set(Array.from({ length: 16 }, (_, i) => `ex${i + 1}`));
+
+const DP = new Set(Array.from({ length: 7 }, (_, i) => `dp${i + 1}`));
+const PT = new Set(Array.from({ length: 4 }, (_, i) => `pl${i + 1}`));
+const HGSS = new Set(['hgss1', 'hgss2', 'hgss3', 'hgss4', 'col1']);
 
 /** Scarlet & Violet sets: collectible, and playable only in the Gym format. */
 const SV = new Set(['sv03.5']);
@@ -24,9 +41,15 @@ export const SETS: readonly { id: string; name: string; logo: string; era: Era }
       ? 'ecard'
       : EX.has(s.id)
         ? 'ex'
-        : SV.has(s.id)
-          ? 'sv'
-          : 'mega',
+        : DP.has(s.id)
+          ? 'dp'
+          : PT.has(s.id)
+            ? 'pt'
+            : HGSS.has(s.id)
+              ? 'hgss'
+              : SV.has(s.id)
+                ? 'sv'
+                : 'mega',
 }));
 
 /** Every card of a set, in collector-number order. */
