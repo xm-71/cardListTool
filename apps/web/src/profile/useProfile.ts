@@ -3,7 +3,8 @@ import { setCards } from '@ptcg/cards';
 import { CREDITS, openPack } from '@ptcg/economy';
 import { openIndexedDbStore } from './indexedDbStore.ts';
 import { createMemoryStore } from './memoryStore.ts';
-import { newProfile, type CustomDeck, type Profile, type ProfileStore } from './types.ts';
+import { MAX_BINDERS } from './binders.ts';
+import { newProfile, type CustomBinder, type CustomDeck, type Profile, type ProfileStore } from './types.ts';
 
 /** How many awarded game seeds to remember. */
 const AWARD_HISTORY = 200;
@@ -47,6 +48,11 @@ interface ProfileState {
   /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
   finishIntro(name: string, deck: string | null): Promise<void>;
   setName(name: string): Promise<void>;
+  /** Adds or replaces a binder by id (stamping updatedAt); a new one is refused at MAX_BINDERS. */
+  saveBinder(b: CustomBinder): Promise<void>;
+  deleteBinder(id: string): Promise<void>;
+  /** Collector mode: packs are free and battling is hidden. Credits are kept as they are. */
+  setCollectorMode(on: boolean): Promise<void>;
   replayIntro(): Promise<void>;
   reset(): void;
 }
@@ -105,11 +111,12 @@ export const useProfile = create<ProfileState>()((set, get) => {
     },
     async buyPack(setId) {
       const cards = await change((p) => {
-        if (p.credits < CREDITS.packPrice) throw new Error('Not enough credits');
+        const price = p.collectorMode ? 0 : CREDITS.packPrice;
+        if (p.credits < price) throw new Error('Not enough credits');
         const { cards } = openPack(setId, setCards(setId), randomSeed());
         const collection = { ...p.collection };
         for (const id of cards) collection[id] = (collection[id] ?? 0) + 1;
-        return { next: { ...p, credits: p.credits - CREDITS.packPrice, collection }, result: cards };
+        return { next: { ...p, credits: p.credits - price, collection }, result: cards };
       });
       return cards!;
     },
@@ -133,6 +140,26 @@ export const useProfile = create<ProfileState>()((set, get) => {
         },
         result: undefined,
       }));
+    },
+    async saveBinder(binder) {
+      await change((p) => {
+        const exists = p.binders.some((b) => b.id === binder.id);
+        if (!exists && p.binders.length >= MAX_BINDERS) return null;
+        const saved = { ...binder, updatedAt: Date.now() };
+        const binders = exists
+          ? p.binders.map((b) => (b.id === binder.id ? saved : b))
+          : [...p.binders, saved];
+        return { next: { ...p, binders }, result: undefined };
+      });
+    },
+    async deleteBinder(id) {
+      await change((p) => ({
+        next: { ...p, binders: p.binders.filter((b) => b.id !== id) },
+        result: undefined,
+      }));
+    },
+    async setCollectorMode(on) {
+      await change((p) => ({ next: { ...p, collectorMode: on }, result: undefined }));
     },
     async setName(name) {
       await change((p) => ({ next: { ...p, playerName: cleanName(name) }, result: undefined }));

@@ -4,6 +4,7 @@ import { CREDITS } from '@ptcg/economy';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { openIndexedDbStore } from '../src/profile/indexedDbStore.ts';
 import { connectProfileStore, useProfile } from '../src/profile/useProfile.ts';
+import { MAX_BINDERS, newBinder } from '../src/profile/binders.ts';
 import { newProfile, type Profile, type ProfileStore } from '../src/profile/types.ts';
 
 const total = (c: Record<string, number>): number => Object.values(c).reduce((a, b) => a + b, 0);
@@ -230,5 +231,65 @@ describe('intro fields', () => {
       credits: 777,
       playerName: 'Sam',
     });
+  });
+});
+
+describe('binders', () => {
+  const binder = (id: string) => ({ ...newBinder(id, 0), name: id.toUpperCase() });
+
+  test('saveBinder adds a binder and replaces it on a second save with the same id', async () => {
+    const store = spyStore();
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().saveBinder(binder('a'));
+    await useProfile.getState().saveBinder({ ...binder('a'), name: 'RENAMED' });
+    const saved = await store.load();
+    expect(saved.binders.map((b) => b.name)).toEqual(['RENAMED']);
+    expect(saved.binders[0]!.updatedAt).toBeGreaterThan(0);
+  });
+
+  test('a binder saved in another tab is kept when this tab saves a different one', async () => {
+    const shared = createMemoryStore();
+    await useProfile.getState().init(shared, true);
+    await shared.save({ ...(await shared.load()), binders: [binder('b')] }); // the other tab
+    await useProfile.getState().saveBinder(binder('a'));
+    expect((await shared.load()).binders.map((b) => b.id).sort()).toEqual(['a', 'b']);
+  });
+
+  test(`no more than ${MAX_BINDERS} binders`, async () => {
+    const full = Array.from({ length: MAX_BINDERS }, (_, i) => binder(`b${i}`));
+    const store = spyStore({ ...newProfile(), binders: full });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().saveBinder(binder('extra'));
+    expect((await store.load()).binders).toHaveLength(MAX_BINDERS);
+  });
+
+  test('deleteBinder removes it', async () => {
+    const store = spyStore({ ...newProfile(), binders: [binder('a'), binder('b')] });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().deleteBinder('a');
+    expect((await store.load()).binders.map((b) => b.id)).toEqual(['b']);
+  });
+});
+
+describe('collector mode', () => {
+  test('packs are free: buying with 0 credits works and leaves credits alone', async () => {
+    const store = spyStore({ ...newProfile(), credits: 0 });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().setCollectorMode(true);
+    const cards = await useProfile.getState().buyPack('me01');
+    const saved = await store.load();
+    expect(saved.collectorMode).toBe(true);
+    expect(saved.credits).toBe(0);
+    expect(total(saved.collection)).toBe(cards.length);
+  });
+
+  test('turning it off keeps the credits as they were', async () => {
+    const store = spyStore({ ...newProfile(), credits: 275 });
+    await useProfile.getState().init(store, true);
+    await useProfile.getState().setCollectorMode(true);
+    await useProfile.getState().buyPack('me02');
+    await useProfile.getState().setCollectorMode(false);
+    const saved = await store.load();
+    expect(saved).toMatchObject({ collectorMode: false, credits: 275 });
   });
 });
