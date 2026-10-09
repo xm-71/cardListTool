@@ -41,7 +41,7 @@ test('with Collector mode on, the menu shows only Shop, Binder and Options', asy
 test('turning Collector mode off brings Duel and Decks back', async () => {
   await launch('menu', { collectorMode: true });
   await act(() => useProfile.getState().setCollectorMode(false));
-  expect(menuItems()).toEqual(['Duel', 'Shop', 'Binder', 'Decks', 'Options']);
+  expect(menuItems()).toEqual(['Duel', 'Gym Challenge', 'Shop', 'Binder', 'Decks', 'Options']);
 });
 
 test('the Shop gives free packs and hides credits in Collector mode', async () => {

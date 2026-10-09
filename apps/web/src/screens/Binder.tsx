@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { CardInstance } from '@ptcg/engine';
 import { SETS, setCards } from '@ptcg/cards';
-import { isDeckUsable } from '@ptcg/economy';
+import { isDeckUsable, isGymUsable } from '@ptcg/economy';
 import { registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
@@ -59,8 +59,12 @@ function BinderBody() {
   const [details, setDetails] = useState<CardInstance | null>(null);
   const cards = useMemo(
     // Classic cards (even their Basic Energy) are collect-only until a Classic ruleset exists, and
-    // Scarlet & Violet cards are playable only in the Gym format, which has no deck builder yet.
-    () => setCards(setId).map((def) => ({ def, playable: era === 'mega' && isDeckUsable(def, registry) })),
+    // Scarlet & Violet cards are playable only in the Gym format (Gym Challenge).
+    () =>
+      setCards(setId).map((def) => ({
+        def,
+        playable: era === 'mega' ? isDeckUsable(def, registry) : era === 'sv' && isGymUsable(def, registry),
+      })),
     [setId, era],
   );
   const shown = cards.filter(
