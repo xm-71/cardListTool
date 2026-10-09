@@ -1,13 +1,39 @@
 import { GYM_DECKS } from '@ptcg/cards';
 import { registry, type DeckSource } from './catalog.ts';
-import { CHAMPION_STAGE, ELITE, LEADERS, championDeckFor, mainEnergyType, type DeckRef } from './gym.ts';
+import {
+  CHAMPION_STAGE,
+  ELITE,
+  LEADERS,
+  championDeckFor,
+  mainEnergyType,
+  type DeckRef,
+  type RunDeck,
+} from './gym.ts';
+import { useProfile } from '../profile/useProfile.ts';
 import { useGame } from './store.ts';
 
 export const refOf = (d: DeckSource): DeckRef => ({ kind: d.kind, id: d.id });
 
-/** The player's deck for a run, or undefined when it no longer exists (a deleted or invalid custom deck). */
+/** The deck a ref points to (for a gym rematch), or undefined when it no longer exists. */
 export const resolveDeck = (ref: DeckRef, sources: readonly DeckSource[]): DeckSource | undefined =>
   sources.find((d) => d.id === ref.id);
+
+/** A copy of the deck's contents for a run to be locked to. */
+export const snapshotOf = (d: DeckSource): RunDeck => ({
+  ...refOf(d),
+  name: d.name,
+  cover: d.cover,
+  cards: d.list.cards.map((c) => ({ id: c.id, count: c.count })),
+});
+
+/** The locked run deck as a deck the game can play. */
+export const runDeckSource = (r: RunDeck): DeckSource => ({
+  id: r.id,
+  name: r.name,
+  cover: r.cover,
+  kind: r.kind,
+  list: { name: r.name, cards: r.cards },
+});
 
 const randomSeed = (): number => (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) >>> 0;
 
@@ -25,7 +51,9 @@ export function startGymMatch(leaderId: string, deck: DeckSource): void {
 }
 
 /** Starts the Elite Four or Champion match for `stage` with the run's locked deck. */
-export function startEliteMatch(stage: number, deck: DeckSource): void {
+export async function startEliteMatch(stage: number, deck: DeckSource): Promise<void> {
+  // Saved first, so quitting or reloading from here on counts as a loss.
+  await useProfile.getState().beginEliteMatch(stage);
   const opponent = ELITE[stage]!;
   // Blue picks the ace that counters the challenger's main Energy.
   const botDeck =
@@ -38,6 +66,6 @@ export function startEliteMatch(stage: number, deck: DeckSource): void {
     humanDeck: deck.list,
     botDeck,
     seed: randomSeed(),
-    context: { kind: 'elite', stage, deck: refOf(deck), deckName: deck.name, cover: deck.cover },
+    context: { kind: 'elite', stage, deckName: deck.name, cover: deck.cover },
   });
 }

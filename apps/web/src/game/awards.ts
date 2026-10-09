@@ -57,7 +57,7 @@ export function useGymResult(): GymPayout | undefined {
             cover: context.cover,
           });
     saved
-      .then((payout) => setPaid({ seed, payout }))
+      .then((payout) => setPaid((prev) => (prev?.seed === seed && prev.payout ? prev : { seed, payout })))
       .catch((e: unknown) => console.error('Could not save Gym Challenge progress', e));
     // One save per finished game.
   }, [result !== null, seed]);

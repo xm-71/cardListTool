@@ -3,7 +3,15 @@ import { GYM_SET, setCards } from '@ptcg/cards';
 import { CREDITS, openPack } from '@ptcg/economy';
 import { openIndexedDbStore } from './indexedDbStore.ts';
 import { createMemoryStore } from './memoryStore.ts';
-import { applyEliteResult, applyGymResult, startRun, type DeckRef, type Payout } from '../game/gym.ts';
+import {
+  abandonUnfinishedRun,
+  applyEliteResult,
+  applyGymResult,
+  beginMatch,
+  startRun,
+  type Payout,
+  type RunDeck,
+} from '../game/gym.ts';
 import { MAX_BINDERS } from './binders.ts';
 import { newProfile, type CustomBinder, type CustomDeck, type Profile, type ProfileStore } from './types.ts';
 
@@ -93,9 +101,11 @@ interface ProfileState {
     cover: string;
   }): Promise<GymPayout | undefined>;
   /** Starts an Elite Four run with a locked deck (needs all 8 badges). */
-  startEliteRun(deck: DeckRef): Promise<void>;
-  /** Picks a new deck for a run whose old deck is gone, keeping its stage. */
-  changeRunDeck(deck: DeckRef): Promise<void>;
+  startEliteRun(deck: RunDeck): Promise<void>;
+  /** An Elite Four or Champion match is starting: leaving it before it ends will count as a loss. */
+  beginEliteMatch(stage: number): Promise<void>;
+  /** Ends a run whose match was started but never finished (the player quit or reloaded). */
+  abandonUnfinishedRun(): Promise<void>;
   saveDeck(deck: CustomDeck): Promise<void>;
   deleteDeck(id: string): Promise<void>;
   /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
@@ -233,12 +243,17 @@ export const useProfile = create<ProfileState>()((set, get) => {
         return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
       });
     },
-    async changeRunDeck(deck) {
-      await change((p) =>
-        p.gym.run
-          ? { next: { ...p, gym: { ...p.gym, run: { ...p.gym.run, deck } } }, result: undefined }
-          : null,
-      );
+    async beginEliteMatch(stage) {
+      await change((p) => {
+        const gym = beginMatch(p.gym, stage);
+        return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
+      });
+    },
+    async abandonUnfinishedRun() {
+      await change((p) => {
+        const gym = abandonUnfinishedRun(p.gym);
+        return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
+      });
     },
     async saveDeck(deck) {
       await change((p) => {

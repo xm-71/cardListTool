@@ -17,14 +17,23 @@ import {
   nextGymIndex,
   normalizeGym,
   startRun,
+  beginMatch,
+  abandonUnfinishedRun,
   type GymProgress,
+  type RunDeck,
 } from '../src/game/gym.ts';
 import { registry } from '../src/game/catalog.ts';
 
 const all = LEADERS.map((l) => l.id);
 const withBadges = (n: number): GymProgress => ({ ...emptyGym(), badges: all.slice(0, n) });
 const entry = { date: '2026-10-09', playerName: 'ASH', deckName: 'Mega Gengar ex', cover: 'me02-056' };
-const deck = { kind: 'starter', id: 'mega-gengar' } as const;
+const deck: RunDeck = {
+  kind: 'starter',
+  id: 'mega-gengar',
+  name: 'Mega Gengar ex',
+  cover: 'me02-056',
+  cards: [{ id: 'me02-056', count: 4 }],
+};
 
 describe('data', () => {
   test('8 gyms then 5 elite stages, every deck exists and the Medium bot starts at Koga', () => {
@@ -88,7 +97,7 @@ describe('the Elite Four run', () => {
     expect(startRun(withBadges(7), deck).run).toBeNull();
     const started = startRun(withBadges(8), deck);
     expect(started.run).toEqual({ stage: 0, deck });
-    expect(startRun(run(2), { kind: 'theme', id: 'x' }).run).toEqual({ stage: 2, deck });
+    expect(startRun(run(2), { ...deck, kind: 'theme', id: 'x' }).run).toEqual({ stage: 2, deck });
   });
   test('a win moves to the next stage with no reward', () => {
     expect(applyEliteResult(run(0), 0, true, entry)).toEqual({ next: run(1), reward: null });
@@ -111,6 +120,15 @@ describe('the Elite Four run', () => {
     );
     expect(again.reward).toEqual({ credits: 300, packs: 1 });
     expect(again.next.hallOfFame.map((e) => e.date)).toEqual(['2026-10-10', '2026-10-09']);
+  });
+  test('quitting or reloading mid-match is a loss: a started match marks the run, and an unfinished one ends it', () => {
+    const marked = beginMatch(run(2), 2);
+    expect(marked.run).toMatchObject({ stage: 2, inMatch: true });
+    expect(beginMatch(run(2), 3)).toEqual(run(2)); // a different stage is not this match
+    expect(abandonUnfinishedRun(marked).run).toBeNull();
+    expect(abandonUnfinishedRun(run(2))).toEqual(run(2)); // nothing was started
+    // finishing the match with a win clears the mark
+    expect(applyEliteResult(marked, 2, true, entry).next.run).toEqual({ stage: 3, deck });
   });
   test('a result for the wrong stage, or with no run, changes nothing', () => {
     expect(applyEliteResult(run(1), 0, true, entry).next).toEqual(run(1));
@@ -160,6 +178,13 @@ describe('normalizeGym', () => {
   });
   test('a valid run is kept', () => {
     expect(normalizeGym({ badges: all, run: { stage: 2, deck } }).run).toEqual({ stage: 2, deck });
+    expect(normalizeGym({ badges: all, run: { stage: 2, deck, inMatch: true } }).run).toMatchObject({
+      inMatch: true,
+    });
+    // an old-style run that only names a deck is dropped: it has no saved copy of the deck
+    expect(
+      normalizeGym({ badges: all, run: { stage: 2, deck: { kind: 'starter', id: 'x' } } }).run,
+    ).toBeNull();
     expect(normalizeGym({ badges: all, run: { stage: 9, deck } }).run).toBeNull();
   });
 });

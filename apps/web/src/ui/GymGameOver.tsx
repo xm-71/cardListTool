@@ -84,7 +84,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
               {won ? 'Rematch' : 'Try again'}
             </Button>
           )}
-          <Button variant="plain" onClick={onBack}>
+          <Button variant="plain" disabled={payout === undefined} onClick={onBack}>
             Gym Challenge
           </Button>
         </div>

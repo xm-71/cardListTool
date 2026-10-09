@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { validateGymDeck } from '@ptcg/economy';
 import { sfx } from '../audio/sfx.ts';
 import { deckSources, registry, type DeckSource } from '../game/catalog.ts';
@@ -12,7 +12,7 @@ import {
   gymStatus,
   type Opponent,
 } from '../game/gym.ts';
-import { refOf, resolveDeck, startEliteMatch, startGymMatch } from '../game/gymMatch.ts';
+import { runDeckSource, snapshotOf, startEliteMatch, startGymMatch } from '../game/gymMatch.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { DeckChoice } from '../ui/DeckChoice.tsx';
@@ -25,6 +25,11 @@ const art = (cover: string) => `${registry.defs[cover]!.image}/low.webp`;
 /** The badge case, the Elite Four run and the Hall of Fame. */
 export function GymChallenge() {
   const gym = useProfile((s) => s.profile.gym);
+  const abandonUnfinishedRun = useProfile((s) => s.abandonUnfinishedRun);
+  // No game is running here, so a run whose match never finished (quit or reload) is over.
+  useEffect(() => {
+    void abandonUnfinishedRun();
+  }, [abandonUnfinishedRun]);
   const [setup, setSetup] = useState<Setup | null>(null);
   const earned = gym.badges.length;
 
@@ -59,7 +64,11 @@ export function GymChallenge() {
               )}
               <Button
                 disabled={!canChallenge(gym.badges, leader.id)}
-                aria-label={`${status === 'beaten' ? 'Rematch' : 'Challenge'} ${leader.name}`}
+                aria-label={
+                  status === 'locked'
+                    ? undefined
+                    : `${status === 'beaten' ? 'Rematch' : 'Challenge'} ${leader.name}`
+                }
                 onClick={() => setSetup({ kind: 'gym', leader })}
               >
                 {status === 'beaten' ? 'Rematch' : status === 'next' ? 'Challenge' : 'Locked'}
@@ -140,7 +149,6 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
   const collection = useProfile((s) => s.profile.collection);
   const gym = useProfile((s) => s.profile.gym);
   const startEliteRun = useProfile((s) => s.startEliteRun);
-  const changeRunDeck = useProfile((s) => s.changeRunDeck);
   const starter = useProfile((s) => s.profile.starterDeck);
   // Custom decks that are not Gym-legal (or no longer owned) are left out.
   const decks = useMemo(
@@ -153,7 +161,7 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     [customDecks, collection],
   );
   const run = setup.kind === 'elite' ? gym.run : null;
-  const locked = run ? resolveDeck(run.deck, decks) : undefined;
+  const locked = run ? runDeckSource(run.deck) : undefined;
   const [picked, setPicked] = useState(starter ?? 'mega-gengar');
   const opponent = setup.kind === 'gym' ? setup.leader : ELITE[run?.stage ?? 0]!;
   const choosing = !locked;
@@ -163,10 +171,10 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     if (!deck) return;
     sfx('confirm');
     if (setup.kind === 'gym') return startGymMatch(setup.leader.id, deck);
-    if (!run) await startEliteRun(refOf(deck));
-    else if (!locked) await changeRunDeck(refOf(deck));
-    const stage = useProfile.getState().profile.gym.run?.stage ?? 0;
-    startEliteMatch(stage, deck);
+    if (!run) await startEliteRun(snapshotOf(deck));
+    // The run's saved copy of the deck is what plays, so a deck changed since the run started doesn't matter.
+    const current = useProfile.getState().profile.gym.run;
+    await startEliteMatch(current?.stage ?? 0, current ? runDeckSource(current.deck) : deck);
   };
 
   return (

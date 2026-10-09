@@ -1,11 +1,17 @@
 import { beforeEach, expect, test } from 'vitest';
-import { LEADERS, type DeckRef } from '../src/game/gym.ts';
+import { LEADERS, type RunDeck } from '../src/game/gym.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { newProfile, normalizeProfile, type Profile } from '../src/profile/types.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
 
 const ids = LEADERS.map((l) => l.id);
-const deck: DeckRef = { kind: 'starter', id: 'mega-gengar' };
+const deck: RunDeck = {
+  kind: 'starter',
+  id: 'mega-gengar',
+  name: 'Mega Gengar ex',
+  cover: 'me02-056',
+  cards: [{ id: 'me02-056', count: 4 }],
+};
 const total = (c: Record<string, number>) => Object.values(c).reduce((a, b) => a + b, 0);
 
 async function init(p: Partial<Profile> = {}) {
@@ -113,8 +119,21 @@ test('beating the Champion pays 1,000 credits and 3 packs once, then 300 and 1, 
   expect(total(profile().collection)).toBe(40);
 });
 
-test('changeRunDeck keeps the stage', async () => {
-  await init({ gym: { badges: ids, run: { stage: 2, deck }, hallOfFame: [] } });
-  await useProfile.getState().changeRunDeck({ kind: 'theme', id: 'mega-venusaur' });
-  expect(profile().gym.run).toEqual({ stage: 2, deck: { kind: 'theme', id: 'mega-venusaur' } });
+test('beginEliteMatch marks the run, and abandonUnfinishedRun ends a run whose match never finished', async () => {
+  await init({ gym: { badges: ids, run: { stage: 1, deck }, hallOfFame: [] } });
+  await useProfile.getState().abandonUnfinishedRun();
+  expect(profile().gym.run).toEqual({ stage: 1, deck }); // no match was started: nothing to abandon
+  await useProfile.getState().beginEliteMatch(1);
+  expect(profile().gym.run?.inMatch).toBe(true);
+  await useProfile.getState().abandonUnfinishedRun();
+  expect(profile().gym.run).toBeNull();
+});
+
+test('a finished match clears the mark and advances the run', async () => {
+  await init({ gym: { badges: ids, run: { stage: 0, deck }, hallOfFame: [] } });
+  await useProfile.getState().beginEliteMatch(0);
+  await useProfile.getState().recordElite({ seed: 5, stage: 0, won: true, deckName: 'D', cover: 'c' });
+  expect(profile().gym.run).toEqual({ stage: 1, deck });
+  await useProfile.getState().abandonUnfinishedRun();
+  expect(profile().gym.run?.stage).toBe(1);
 });

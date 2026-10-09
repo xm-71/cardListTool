@@ -5,6 +5,14 @@ import type { GymDeckId } from '@ptcg/cards';
 
 export type DeckRef = { kind: 'starter' | 'theme' | 'custom'; id: string };
 
+/** The deck a run is locked to: a copy of its contents, so editing or deleting the deck later changes nothing. */
+export interface RunDeck extends DeckRef {
+  name: string;
+  /** Card id shown as the deck's picture. */
+  cover: string;
+  cards: { id: string; count: number }[];
+}
+
 export interface HallOfFameEntry {
   /** ISO date (YYYY-MM-DD). */
   date: string;
@@ -18,7 +26,9 @@ export interface EliteRun {
   /** Next opponent: 0 Lorelei, 1 Bruno, 2 Agatha, 3 Lance, 4 Champion Blue. */
   stage: number;
   /** The player's deck, locked for the whole run. */
-  deck: DeckRef;
+  deck: RunDeck;
+  /** A match of this run has started and not finished: leaving it (quitting, reloading) counts as a loss. */
+  inMatch?: boolean;
 }
 
 export interface GymProgress {
@@ -298,7 +308,7 @@ export function applyGymResult(
 }
 
 /** Starts an Elite Four run with a locked deck (needs all 8 badges); an unfinished run is kept as it is. */
-export function startRun(g: GymProgress, deck: DeckRef): GymProgress {
+export function startRun(g: GymProgress, deck: RunDeck): GymProgress {
   if (!canStartElite(g.badges) || g.run) return g;
   return { ...g, run: { stage: 0, deck } };
 }
@@ -315,9 +325,21 @@ export function applyEliteResult(
 ): { next: GymProgress; reward: Payout | null } {
   if (!g.run || g.run.stage !== stage) return { next: g, reward: null };
   if (!won) return { next: { ...g, run: null }, reward: null };
-  if (stage < CHAMPION_STAGE) return { next: { ...g, run: { ...g.run, stage: stage + 1 } }, reward: null };
+  if (stage < CHAMPION_STAGE) {
+    return { next: { ...g, run: { deck: g.run.deck, stage: stage + 1 } }, reward: null };
+  }
   const first = g.hallOfFame.length === 0;
   return { next: { ...g, run: null, hallOfFame: [entry, ...g.hallOfFame] }, reward: championReward(first) };
+}
+
+/** Marks the run's match for `stage` as started (see `EliteRun.inMatch`). */
+export function beginMatch(g: GymProgress, stage: number): GymProgress {
+  return g.run && g.run.stage === stage && !g.run.inMatch ? { ...g, run: { ...g.run, inMatch: true } } : g;
+}
+
+/** A match that was started but never finished (the player quit or reloaded) is a loss: the run ends. */
+export function abandonUnfinishedRun(g: GymProgress): GymProgress {
+  return g.run?.inMatch ? { ...g, run: null } : g;
 }
 
 const isString = (x: unknown): x is string => typeof x === 'string';
@@ -331,17 +353,30 @@ export function normalizeGym(raw: unknown): GymProgress {
     : [];
   const r = g.run as Partial<EliteRun> | null | undefined;
   const kinds = ['starter', 'theme', 'custom'];
+  const d = r?.deck as Partial<RunDeck> | undefined;
+  const cards =
+    Array.isArray(d?.cards) &&
+    d.cards.every((c) => !!c && isString(c.id) && Number.isInteger(c.count) && c.count > 0)
+      ? d.cards.map((c) => ({ id: c.id, count: c.count }))
+      : null;
   const run =
     r &&
     typeof r.stage === 'number' &&
     Number.isInteger(r.stage) &&
     r.stage >= 0 &&
     r.stage <= CHAMPION_STAGE &&
-    r.deck &&
-    kinds.includes(r.deck.kind) &&
-    isString(r.deck.id) &&
+    d &&
+    kinds.includes(d.kind as string) &&
+    isString(d.id) &&
+    isString(d.name) &&
+    isString(d.cover) &&
+    cards &&
     canStartElite(badges)
-      ? { stage: r.stage, deck: { kind: r.deck.kind, id: r.deck.id } }
+      ? {
+          stage: r.stage,
+          deck: { kind: d.kind as RunDeck['kind'], id: d.id, name: d.name, cover: d.cover, cards },
+          ...(r.inMatch === true ? { inMatch: true } : {}),
+        }
       : null;
   const hallOfFame = Array.isArray(g.hallOfFame)
     ? g.hallOfFame

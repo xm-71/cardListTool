@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import { GYM_DECKS } from '@ptcg/cards';
 import { App } from '../src/App.tsx';
-import { LEADERS, type GymProgress } from '../src/game/gym.ts';
+import { LEADERS, type GymProgress, type RunDeck } from '../src/game/gym.ts';
+import { DECKS } from '../src/game/catalog.ts';
 import { useGame } from '../src/game/store.ts';
 import { useNav, type Route } from '../src/nav/useNav.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
@@ -10,6 +11,12 @@ import { newProfile, type Profile } from '../src/profile/types.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
 import { useSettings } from '../src/settings/useSettings.ts';
 import { GymGameOver } from '../src/ui/GymGameOver.tsx';
+
+/** A run deck copied from a starter or theme deck. */
+const runDeck = (id: string): RunDeck => {
+  const d = DECKS.find((x) => x.id === id)!;
+  return { kind: d.kind, id: d.id, name: d.name, cover: d.cover, cards: d.list.cards.map((c) => ({ ...c })) };
+};
 
 const never = { choose: () => new Promise<never>(() => {}) };
 const ids = LEADERS.map((l) => l.id);
@@ -58,7 +65,7 @@ test('Collector mode hides Gym Challenge and sends the route back to the menu', 
 test('a new player can only challenge Brock', async () => {
   await launch('gym');
   expect(within(tile('Brock')).getByRole('button', { name: 'Challenge Brock' })).toBeEnabled();
-  expect(within(tile('Misty')).getByRole('button', { name: /Misty/ })).toBeDisabled();
+  expect(within(tile('Misty')).getByRole('button', { name: 'Locked' })).toBeDisabled();
   expect(within(tile('Giovanni')).getByText('Locked')).toBeInTheDocument();
   expect(screen.getByText(/Badges: 0 \/ 8/)).toBeInTheDocument();
   expect(within(tile('Brock')).getByText(/100 credits \+ a 151 pack/)).toBeInTheDocument();
@@ -69,7 +76,7 @@ test('beaten gyms show their badge and can be rematched; the next gym unlocks', 
   expect(within(tile('Brock')).getByText('★ Boulder Badge')).toBeInTheDocument();
   expect(within(tile('Brock')).getByRole('button', { name: 'Rematch Brock' })).toBeEnabled();
   expect(within(tile('Lt. Surge')).getByRole('button', { name: 'Challenge Lt. Surge' })).toBeEnabled();
-  expect(within(tile('Erika')).getByRole('button', { name: /Erika/ })).toBeDisabled();
+  expect(within(tile('Erika')).getByRole('button', { name: 'Locked' })).toBeDisabled();
   expect(screen.getByText(/Badges: 2 \/ 8/)).toBeInTheDocument();
 });
 
@@ -85,7 +92,7 @@ test('with 8 badges the Elite Four can be started', async () => {
 });
 
 test('a run in progress shows the stage and can be continued', async () => {
-  await launch('gym', { gym: gymOf(8, { run: { stage: 2, deck: { kind: 'starter', id: 'mega-gengar' } } }) });
+  await launch('gym', { gym: gymOf(8, { run: { stage: 2, deck: runDeck('mega-gengar') } }) });
   expect(screen.getByText(/next up is Agatha \(match 3 of 5\)/)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Continue run' })).toBeEnabled();
   const order = screen.getByRole('list', { name: 'Elite Four order' });
@@ -157,13 +164,18 @@ test('Start Elite Four locks the chosen deck and starts with Lorelei', async () 
   fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
   await waitFor(() => expect(useGame.getState().config?.context).toMatchObject({ kind: 'elite', stage: 0 }));
   expect(useGame.getState().config?.botDeck).toBe(GYM_DECKS.lorelei);
-  expect(useProfile.getState().profile.gym.run).toMatchObject({ stage: 0, deck: { id: 'mega-lucario' } });
+  expect(useProfile.getState().profile.gym.run).toMatchObject({
+    stage: 0,
+    inMatch: true,
+    deck: { id: 'mega-lucario', name: 'Mega Lucario ex' },
+  });
+  expect(useProfile.getState().profile.gym.run?.deck.cards.length).toBeGreaterThan(0);
 });
 
 test('the Champion’s ace counters the main Energy of the run deck', async () => {
   // Mega Charizard X ex is a Fire deck: Blue answers with the Blastoise ex list.
   await launch('gym', {
-    gym: gymOf(8, { run: { stage: 4, deck: { kind: 'theme', id: 'mega-charizard-x' } } }),
+    gym: gymOf(8, { run: { stage: 4, deck: runDeck('mega-charizard-x') } }),
   });
   fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
   expect(screen.getByText(/locked for this run/)).toBeInTheDocument();
@@ -252,4 +264,37 @@ test('GymGameOver: beating the Champion shows the Champion title and 3 packs', (
   expect(screen.getByText('+1000 credits')).toBeInTheDocument();
   expect(screen.getByText('You won 3 Scarlet & Violet 151 packs!')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /Next:/ })).toBeNull();
+});
+
+test('the run keeps playing its saved copy of the deck, even if the deck is edited or deleted', async () => {
+  const saved = runDeck('mega-lucario');
+  await launch('gym', {
+    gym: gymOf(8, { run: { stage: 1, deck: saved } }),
+    decks: [{ id: 'mega-lucario', name: 'Edited', cards: [{ id: 'mee-006', count: 60 }] }],
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
+  expect(screen.getByText(/Mega Lucario ex \(locked for this run\)/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await waitFor(() => expect(useGame.getState().config?.context).toMatchObject({ kind: 'elite', stage: 1 }));
+  expect(useGame.getState().config?.humanDeck.cards).toEqual(saved.cards);
+});
+
+test('quitting an Elite Four match counts as a loss and ends the run', async () => {
+  await launch('gym', { gym: gymOf(8, { run: { stage: 1, deck: runDeck('mega-gengar') } }) });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await waitFor(() => expect(useGame.getState().config?.context).toMatchObject({ kind: 'elite', stage: 1 }));
+  vi.spyOn(window, 'confirm').mockReturnValue(true);
+  fireEvent.click(await screen.findByRole('button', { name: 'Quit to home' }));
+  const over = await screen.findByRole('dialog', { name: 'Game over' });
+  expect(within(over).getByText(/You lose/)).toBeInTheDocument();
+  await waitFor(() => expect(useProfile.getState().profile.gym.run).toBeNull());
+});
+
+test('a run whose match never finished (the page was reloaded) ends when Gym Challenge opens', async () => {
+  await launch('gym', {
+    gym: gymOf(8, { run: { stage: 2, deck: runDeck('mega-gengar'), inMatch: true } }),
+  });
+  await waitFor(() => expect(useProfile.getState().profile.gym.run).toBeNull());
+  expect(screen.getByRole('button', { name: 'Start Elite Four' })).toBeEnabled();
 });

@@ -20,7 +20,7 @@ import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
 import { GymGameOver } from './ui/GymGameOver.tsx';
 import { deckSources } from './game/catalog.ts';
-import { resolveDeck, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
+import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
 
 interface Props {
@@ -99,11 +99,7 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
           onNext={() => {
             const { run } = useProfile.getState().profile.gym;
             if (!run) return reset();
-            const profile = useProfile.getState().profile;
-            const sources = deckSources(profile.decks);
-            const deck = resolveDeck(run.deck, sources);
-            if (!deck) return reset(); // the run's deck is gone: Gym Challenge lets the player pick another
-            startEliteMatch(run.stage, deck);
+            void startEliteMatch(run.stage, runDeckSource(run.deck));
           }}
         />
       )}

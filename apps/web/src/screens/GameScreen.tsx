@@ -131,6 +131,11 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           type="button"
           onClick={() => {
             if (!view.result && !confirm('Leave this game?')) return;
+            // Quitting a Gym Challenge match counts as a loss, like conceding: the result screen follows.
+            if (!view.result && useGame.getState().config?.context) {
+              act({ type: 'concede' });
+              return;
+            }
             reset();
             useNav.getState().go('menu');
           }}
