@@ -77,6 +77,11 @@ function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {
   ctx.evolve(target, uid);
   const hook = ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onEvolveFromHand;
   if (!hook) return;
+  if (hook.mandatory) {
+    ctx.source = { kind: 'evolve', slot: target };
+    hook.use(ctx, target);
+    return;
+  }
   const name = ctx.def(uid).name;
   const choice = ctx.chooseOption({
     player: ctx.me,

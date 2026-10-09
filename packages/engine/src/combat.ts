@@ -199,15 +199,46 @@ export function checkKnockouts(ctx: EffectCtx): void {
   const s = ctx.state;
   const env = ctx.env;
   if (s.result) return;
+  const info = currentAttack(ctx);
+  /** Whether `ref` was damaged by the attack now resolving (and that attack is an opponent's). */
+  const byAttack = (ref: SlotRef): boolean =>
+    !!info && ref.player !== info.attacker.player && info.damaged.some((d) => sameSlot(d, ref));
+  const topDefId = (ref: SlotRef): string => {
+    const slot = getSlot(s, ref)!;
+    return s.cards[slot.stack[slot.stack.length - 1]!]!.defId;
+  };
   const knocked: SlotRef[] = [];
   for (const player of [0, 1] as PlayerId[]) {
     for (const ref of slotRefs(s, player)) {
       const slot = getSlot(s, ref)!;
-      if (slot.damage >= maxHp(env, s, ref)) knocked.push(ref);
+      const hp = maxHp(env, s, ref);
+      if (slot.damage < hp) continue;
+      if (byAttack(ref) && env.registry.scripts[topDefId(ref)]?.survivesKnockout?.(ctx, ref)) {
+        slot.damage = Math.max(0, hp - 10);
+        continue;
+      }
+      knocked.push(ref);
     }
   }
-  if (knocked.length === 0) return;
-  const info = currentAttack(ctx);
+  if (info && knocked.some(byAttack)) {
+    // Reactions (Weezing, Raichu): the Knocked Out Pokémon's owner's Pokémon are all still in play.
+    for (const ref of knocked.filter(byAttack)) {
+      for (const h of scriptsInPlay(env, s, ref.player)) {
+        h.script.afterKnockout?.(ctx, { holder: h.ref, knocked: ref, attacker: info.attacker });
+      }
+    }
+    // A reaction can Knock more Pokémon Out (it isn't damage from an attack, so nothing survives it).
+    for (const player of [0, 1] as PlayerId[]) {
+      for (const ref of slotRefs(s, player)) {
+        if (knocked.some((k) => sameSlot(k, ref))) continue;
+        if (getSlot(s, ref)!.damage >= maxHp(env, s, ref)) knocked.push(ref);
+      }
+    }
+  }
+  // Nothing to do unless a Pokémon was Knocked Out or a player is missing an Active Pokémon
+  // (an Ability can discard one).
+  const missingActive = ([0, 1] as PlayerId[]).some((p) => !s.players[p].active && s.phase !== 'setup');
+  if (knocked.length === 0 && !missingActive) return;
   // Work out Prizes before anything leaves play (abilities like Shadowy Concealment must still be in play).
   const prizeAwards = knocked.map((ref) => {
     const def = slotDef(env, s, getSlot(s, ref)!);

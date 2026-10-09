@@ -244,6 +244,21 @@ export class EffectCtx {
     this.slot(ref).damage += n * 10;
   }
 
+  /**
+   * Put the Pokémon at `ref` (with its evolution cards, Energy and Tool) in its owner's discard pile. No Prize
+   * is taken. The engine's Knock Out check after the action promotes a new Active Pokémon, or ends the game
+   * if the owner has none left.
+   */
+  discardSlot(ref: SlotRef): void {
+    const slot = this.slot(ref);
+    const p = this.state.players[ref.player];
+    const name = slotDef(this.env, this.state, slot).name;
+    p.discard.push(...slot.stack, ...slot.energy, ...(slot.tool ? [slot.tool] : []));
+    if (ref.zone === 'active') p.active = null;
+    else p.bench.splice(ref.index, 1);
+    this.log(`${name} is discarded`);
+  }
+
   /** Swap a player's Active Pokémon with one of their Benched Pokémon. */
   switchActive(player: PlayerId, benchIndex: number): void {
     const p = this.state.players[player];
