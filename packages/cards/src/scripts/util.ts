@@ -154,3 +154,12 @@ export function attachBasicEnergyFromTop(ctx: EffectCtx, n: number): void {
   }
   ctx.shuffleDeck(ctx.me);
 }
+
+/** Discard the top `n` cards of the opponent's deck (fewer if it is smaller). */
+export function discardOpponentDeckTop(ctx: EffectCtx, n: number): void {
+  const opp = ctx.state.players[ctx.opp];
+  const milled = opp.deck.splice(0, n);
+  opp.discard.push(...milled);
+  if (milled.length > 0)
+    ctx.log(`${milled.length} card(s) are discarded from the top of the opponent's deck`);
+}
