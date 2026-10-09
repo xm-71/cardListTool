@@ -5,6 +5,7 @@ import { useProfile } from '../profile/useProfile.ts';
 import { ERAS } from '../game/catalog.ts';
 import { PackOpening } from '../ui/PackOpening.tsx';
 import { PackArt } from '../ui/pack/PackArt.tsx';
+import { EraFilter, matchesQuery } from '../ui/EraFilter.tsx';
 import { Box, Button } from '../ui/retro/index.ts';
 
 export function Shop() {
@@ -23,6 +24,9 @@ function ShopBody() {
   const [busy, setBusy] = useState(false);
   const [opened, setOpened] = useState<{ setId: string; cards: string[]; n: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [era, setEra] = useState<(typeof ERAS)[number]['id'] | 'all'>('all');
+  const [query, setQuery] = useState('');
+  const shown = PACKS.filter((p) => (era === 'all' || p.era === era) && matchesQuery(p.name, query));
 
   const buy = async (setId: string) => {
     setBusy(true);
@@ -57,11 +61,22 @@ function ShopBody() {
             : 'Win games against the bots to earn credits, then spend them here.'}
         </p>
       </Box>
-      {ERAS.map((era) => (
-        <section key={era.id} aria-label={era.label} className="flex flex-col gap-4">
-          <h2 className="font-pixel text-xs uppercase">{era.label}</h2>
+      <div role="group" aria-label="Filter packs" className="retro-box p-4">
+        <EraFilter
+          eras={[...new Set(PACKS.map((p) => p.era))]}
+          era={era}
+          onEra={setEra}
+          query={query}
+          onQuery={setQuery}
+          searchLabel="Search packs"
+        />
+      </div>
+      {shown.length === 0 && <p className="text-xl">No packs match.</p>}
+      {ERAS.filter((e) => shown.some((p) => p.era === e.id)).map((eraGroup) => (
+        <section key={eraGroup.id} aria-label={eraGroup.label} className="flex flex-col gap-4">
+          <h2 className="font-pixel text-xs uppercase">{eraGroup.label}</h2>
           <div className="flex flex-wrap justify-center gap-6">
-            {PACKS.filter((p) => p.era === era.id).map((p) => (
+            {shown.filter((p) => p.era === eraGroup.id).map((p) => (
               <div
                 key={p.setId}
                 role="group"

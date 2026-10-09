@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { ART_CACHE, artUrls, cachedArtCount, clearArt, downloadArt } from '../src/offline/art.ts';
+import { SETS, setCards } from '@ptcg/cards';
+import { eraArt } from '../src/offline/eraArt.ts';
 import { OfflineSettings } from '../src/screens/OfflineSettings.tsx';
 
 /** A tiny in-memory CacheStorage, enough for the art cache. */
@@ -88,3 +90,26 @@ test('without the Cache API the section says art saving is unavailable', async (
   render(<OfflineSettings />);
   expect(await screen.findByText(/not available in this browser/)).toBeInTheDocument();
 });
+
+test('eraArt groups the art of each era by its sets', () => {
+  const groups = eraArt();
+  const classic = groups.find((g) => g.id === 'classic')!;
+  const classicIds = SETS.filter((s) => s.era === 'classic').map((s) => s.id);
+  expect(classic.label).toBe('Classic');
+  expect(classic.urls).toEqual(artUrls(classicIds.flatMap((id) => setCards(id))));
+  expect(groups.map((g) => g.id)).not.toContain('hgss');
+  expect(new Set(groups.map((g) => g.id)).size).toBe(groups.length);
+});
+
+test('an era can be downloaded on its own', async () => {
+  render(<OfflineSettings />);
+  const classic = eraArt().find((g) => g.id === 'classic')!;
+  expect(await screen.findByText(`Classic: 0 of ${classic.urls.length} images saved`)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Download Classic art' }));
+  await waitFor(
+    () => expect(screen.getByText(`Classic: ${classic.urls.length} of ${classic.urls.length} images saved`)).toBeInTheDocument(),
+    { timeout: 20000 },
+  );
+  expect(fetch).toHaveBeenCalledTimes(classic.urls.length);
+  expect(screen.getByRole('button', { name: 'Download Classic art' })).toBeDisabled();
+}, 30000);

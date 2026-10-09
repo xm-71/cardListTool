@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import type { CardInstance } from '@ptcg/engine';
-import { SETS, setCards } from '@ptcg/cards';
+import { SETS, isCollectOnlyEra, setCards } from '@ptcg/cards';
 import { isDeckUsable, isGymUsable } from '@ptcg/economy';
-import { registry } from '../game/catalog.ts';
+import { eraLabel, registry } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardView } from '../ui/CardView.tsx';
 import { ERAS } from '../game/catalog.ts';
+import { EraFilter, matchesQuery } from '../ui/EraFilter.tsx';
 import { BinderBook } from '../ui/binder/BinderBook.tsx';
 import { BinderShelf } from '../ui/binder/BinderShelf.tsx';
 
@@ -54,6 +55,8 @@ function BinderBody() {
   const collection = useProfile((s) => s.profile.collection);
   const [setId, setSetId] = useState(SETS[0]!.id);
   const era = SETS.find((s) => s.id === setId)?.era;
+  const [eraFilter, setEraFilter] = useState<(typeof ERAS)[number]['id'] | 'all'>('all');
+  const [query, setQuery] = useState('');
   const [ownedOnly, setOwnedOnly] = useState(false);
   const [playableOnly, setPlayableOnly] = useState(false);
   const [details, setDetails] = useState<CardInstance | null>(null);
@@ -75,10 +78,17 @@ function BinderBody() {
   return (
     <section className="flex flex-col gap-4">
       <div role="group" aria-label="Sets" className="retro-box flex flex-col gap-3 p-4">
-        {ERAS.map((era) => (
-          <div key={era.id} className="flex flex-wrap items-center gap-2">
-            <span className="w-full font-pixel text-[8px] uppercase opacity-70 sm:w-36">{era.label}</span>
-            {SETS.filter((s) => s.era === era.id).map((s) => (
+        <EraFilter
+          eras={[...new Set(SETS.map((s) => s.era))]}
+          era={eraFilter}
+          onEra={setEraFilter}
+          query={query}
+          onQuery={setQuery}
+          searchLabel="Search sets"
+        />
+        <div className="flex flex-wrap gap-2">
+          {SETS.filter((s) => (eraFilter === 'all' || s.era === eraFilter) && matchesQuery(s.name, query)).map(
+            (s) => (
               <button
                 key={s.id}
                 type="button"
@@ -88,9 +98,9 @@ function BinderBody() {
               >
                 {s.name}
               </button>
-            ))}
-          </div>
-        ))}
+            ),
+          )}
+        </div>
       </div>
       <div className="retro-box flex flex-wrap items-center gap-3 p-4">
         <span className="text-xl">
@@ -108,7 +118,7 @@ function BinderBody() {
       <ul aria-label="Cards" className="grid grid-cols-[repeat(auto-fill,minmax(6.5rem,1fr))] gap-3">
         {shown.map(({ def, playable }) => {
           const count = collection[def.id] ?? 0;
-          const classic = era === 'classic';
+          const collectOnly = era !== undefined && isCollectOnlyEra(era);
           const card = { uid: `binder-${def.id}`, defId: def.id, owner: 0 as const };
           return (
             <li
@@ -125,8 +135,10 @@ function BinderBody() {
                 ) : (
                   <span className="sr-only">Not owned</span>
                 )}
-                {classic && (
-                  <span className="border-2 border-ink bg-paper px-1 font-pixel text-[7px]">Classic</span>
+                {collectOnly && (
+                  <span className="border-2 border-ink bg-paper px-1 font-pixel text-[7px]">
+                    {eraLabel(era)}
+                  </span>
                 )}
                 {playable && (
                   <span className="border-2 border-ink bg-green px-1 font-pixel text-[7px] text-paper">

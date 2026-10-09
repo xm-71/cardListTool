@@ -1,21 +1,72 @@
 import { nextRandom, type CardDef } from '@ptcg/engine';
 import { CREDITS } from './config.ts';
 
+export type PackEra = 'mega' | 'sv' | 'classic' | 'ecard' | 'ex' | 'dp' | 'pt' | 'hgss';
+
 export interface PackDef {
   setId: string;
   name: string;
   price: number;
   /**
    * 'mega': 10-card modern slots. 'sv': the same 10 slots with Scarlet & Violet rarities.
-   * 'classic': 11-card WotC slots (7 common, 3 uncommon, 1 rare).
+   * The older eras open the slots of their LAYOUTS entry.
    */
-  era: 'mega' | 'classic' | 'sv';
+  era: PackEra;
 }
 
-const pack = (setId: string, name: string, era: PackDef['era']): PackDef => ({
+/** Credits per pack: the older the set, the cheaper the pack. */
+export const PACK_PRICES: Readonly<Record<PackEra, number>> = {
+  mega: CREDITS.packPrice,
+  sv: CREDITS.packPrice,
+  classic: 100,
+  ecard: 110,
+  ex: 120,
+  dp: 130,
+  pt: 130,
+  hgss: 140,
+};
+
+/** Cards drawn uniformly from the set's cards of these rarities. */
+interface FixedSlot {
+  count: number;
+  rarities: readonly string[];
+}
+
+/** One card whose rarity is rolled from `weights` (cumulative over the entries in order), then drawn uniformly. */
+interface WeightedSlot {
+  weights: Readonly<Record<string, number>>;
+}
+
+type Slot = FixedSlot | WeightedSlot;
+
+/** Pack contents per older era, one table row each. Pure data: the opener below just walks the slots. */
+const LAYOUTS: Partial<Record<PackEra, readonly Slot[]>> = {
+  // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
+  classic: [
+    { count: 7, rarities: ['Common'] },
+    { count: 3, rarities: ['Uncommon'] },
+    { count: 1, rarities: ['Rare', 'Holo Rare'] },
+  ],
+};
+
+/** Every rarity some slot of the era can produce (a card of any other rarity could never be pulled). */
+export function layoutRarities(era: PackEra): string[] {
+  const out = new Set<string>();
+  const slots = LAYOUTS[era];
+  if (!slots) {
+    const rates = era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
+    for (const r of [...REVERSE_RARITIES, 'Illustration rare', 'Common', 'Uncommon', ...Object.keys(rates)]) out.add(r);
+  }
+  for (const slot of slots ?? []) {
+    for (const r of 'rarities' in slot ? slot.rarities : Object.keys(slot.weights)) out.add(r);
+  }
+  return [...out];
+}
+
+const pack = (setId: string, name: string, era: PackEra): PackDef => ({
   setId,
   name,
-  price: CREDITS.packPrice,
+  price: PACK_PRICES[era],
   era,
 });
 
@@ -30,8 +81,23 @@ export const PACKS: readonly PackDef[] = [
   pack('gym1', 'Gym Heroes', 'classic'),
   pack('gym2', 'Gym Challenge', 'classic'),
   pack('neo1', 'Neo Genesis', 'classic'),
+  pack('neo2', 'Neo Discovery', 'classic'),
+  pack('neo3', 'Neo Revelation', 'classic'),
+  pack('neo4', 'Neo Destiny', 'classic'),
+  pack('lc', 'Legendary Collection', 'classic'),
   pack('sv03.5', 'Scarlet & Violet 151', 'sv'),
 ];
+
+/** How many cards a pack of `setId` opens. */
+export function packSize(setId: string): number {
+  const layout = LAYOUTS[PACKS.find((p) => p.setId === setId)?.era ?? 'mega'];
+  return layout?.reduce((n, slot) => n + ('count' in slot ? slot.count : 1), 0) ?? 10;
+}
+
+/** The price of one pack of `setId` (the modern price for a set that is not on sale). */
+export function packPrice(setId: string): number {
+  return PACKS.find((p) => p.setId === setId)?.price ?? CREDITS.packPrice;
+}
 
 /** Slot-10 (rare or better) rates. Approximations, not official. */
 export const SLOT10_RATES: Readonly<Record<string, number>> = {
@@ -88,11 +154,26 @@ export function openPack(
   };
 
   const out: string[] = [];
-  if (PACKS.find((p) => p.setId === setId)?.era === 'classic') {
-    // WotC boosters: 7 commons, 3 uncommons, 1 rare (any Rare or Holo Rare card, uniformly).
-    for (let i = 0; i < 7; i++) out.push(pick(byRarity('Common')));
-    for (let i = 0; i < 3; i++) out.push(pick(byRarity('Uncommon')));
-    out.push(pick(byRarity('Rare', 'Holo Rare')));
+  const layout = LAYOUTS[PACKS.find((p) => p.setId === setId)?.era ?? 'mega'];
+  if (layout) {
+    for (const slot of layout) {
+      if ('rarities' in slot) {
+        for (let i = 0; i < slot.count; i++) out.push(pick(byRarity(...slot.rarities)));
+        continue;
+      }
+      let roll = random();
+      let chosen = Object.keys(slot.weights).at(-1)!;
+      for (const [rarity, weight] of Object.entries(slot.weights)) {
+        if (roll < weight) {
+          chosen = rarity;
+          break;
+        }
+        roll -= weight;
+      }
+      // A rarity the set lacks falls back to its plain Rare cards.
+      const pool = byRarity(chosen);
+      out.push(pick(pool.length > 0 ? pool : byRarity('Rare')));
+    }
     return { cards: out, rng: r };
   }
   for (let i = 0; i < 4; i++) out.push(pick(byRarity('Common')));

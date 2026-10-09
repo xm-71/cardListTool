@@ -150,5 +150,13 @@ export function deckSources(
 export const ERAS = [
   { id: 'mega', label: 'Mega Evolution era' },
   { id: 'classic', label: 'Classic' },
+  { id: 'ecard', label: 'e-Card' },
+  { id: 'ex', label: 'EX' },
+  { id: 'dp', label: 'Diamond & Pearl' },
+  { id: 'pt', label: 'Platinum' },
+  { id: 'hgss', label: 'HeartGold SoulSilver' },
   { id: 'sv', label: 'Scarlet & Violet' },
 ] as const;
+
+/** The display name of an era (its id if unknown). */
+export const eraLabel = (id: string): string => ERAS.find((e) => e.id === id)?.label ?? id;

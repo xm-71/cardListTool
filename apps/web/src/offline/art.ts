@@ -13,14 +13,17 @@ export function artUrls(defs: Iterable<{ image?: string | null }>): string[] {
 
 export const artCacheSupported = (): boolean => typeof caches !== 'undefined';
 
+/** Every image URL already stored. */
+export async function cachedArtUrls(): Promise<Set<string>> {
+  if (!artCacheSupported()) return new Set();
+  const cache = await caches.open(ART_CACHE);
+  return new Set((await cache.keys()).map((request) => request.url));
+}
+
 /** How many of `urls` are already stored. */
 export async function cachedArtCount(urls: readonly string[]): Promise<number> {
-  if (!artCacheSupported()) return 0;
-  const wanted = new Set(urls);
-  const cache = await caches.open(ART_CACHE);
-  let n = 0;
-  for (const request of await cache.keys()) if (wanted.has(request.url)) n++;
-  return n;
+  const stored = await cachedArtUrls();
+  return urls.filter((u) => stored.has(u)).length;
 }
 
 export interface DownloadResult {

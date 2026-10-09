@@ -1,7 +1,7 @@
 import { ENERGY_TYPES, type AttackDef, type CardDef, type EnergyType } from '@ptcg/engine';
 
 interface RawAttack {
-  name: string;
+  name?: string;
   cost?: string[];
   damage?: number | string;
   effect?: string;
@@ -18,7 +18,7 @@ interface RawCard {
   types?: string[];
   evolveFrom?: string;
   stage?: string;
-  abilities?: { name: string; effect?: string }[];
+  abilities?: { name?: string; type?: string; effect?: string }[];
   attacks?: RawAttack[];
   weaknesses?: { type: string }[];
   resistances?: { type: string }[];
@@ -55,6 +55,28 @@ const BASIC_ENERGY_ART: Partial<Record<EnergyType, string>> = {
   Metal: '159',
 };
 
+/** TCGdex stage names from the vintage eras, mapped onto the three the engine has (these cards are collect-only). */
+const VINTAGE_STAGES: Record<string, 'Basic' | 'Stage1' | 'Stage2'> = {
+  Basic: 'Basic',
+  Stage1: 'Stage1',
+  Stage2: 'Stage2',
+  Baby: 'Basic',
+  Restored: 'Basic',
+  LEGEND: 'Basic',
+  'Level-Up': 'Stage1',
+  BREAK: 'Stage2',
+};
+
+/** TCGdex Trainer sub-types, including the ones only older sets use (collect-only, so they are never played). */
+const TRAINER_TYPES: Record<string, 'Item' | 'Supporter' | 'Stadium' | 'Tool'> = {
+  Item: 'Item',
+  Supporter: 'Supporter',
+  Stadium: 'Stadium',
+  Tool: 'Tool',
+  "Rocket's Secret Machine": 'Tool',
+  'Technical Machine': 'Tool',
+};
+
 export function normalizeTcgdexCard(input: unknown): CardDef {
   const raw = input as RawCard;
   const base = {
@@ -67,10 +89,8 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
   switch (raw.category) {
     case 'Pokemon': {
       const isEx = raw.name.endsWith(' ex');
-      const stage = raw.stage ?? 'Basic';
-      if (stage !== 'Basic' && stage !== 'Stage1' && stage !== 'Stage2') {
-        throw new Error(`Unsupported stage ${stage} on ${raw.id}`);
-      }
+      const stage = VINTAGE_STAGES[raw.stage ?? 'Basic'];
+      if (!stage) throw new Error(`Unsupported stage ${raw.stage} on ${raw.id}`);
       return {
         ...base,
         category: 'Pokemon',
@@ -82,22 +102,20 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
         resistance: raw.resistances?.[0] ? energyType(raw.resistances[0].type) : null,
         retreat: raw.retreat ?? 0,
         attacks: (raw.attacks ?? []).map((a) => ({
-          name: a.name,
+          name: a.name ?? 'Attack',
           cost: (a.cost ?? []).map(energyType),
           ...parseDamage(a.damage),
           text: a.effect ?? '',
         })),
-        abilities: (raw.abilities ?? []).map((a) => ({ name: a.name, text: a.effect ?? '' })),
+        abilities: (raw.abilities ?? []).map((a) => ({ name: a.name ?? a.type ?? 'Ability', text: a.effect ?? '' })),
         isEx,
         isMega: isEx && raw.name.startsWith('Mega '),
       };
     }
     case 'Trainer': {
       // Classic (WotC-era) Trainers have no sub-type: they behave like Items.
-      const t = raw.trainerType ?? 'Item';
-      if (t !== 'Item' && t !== 'Supporter' && t !== 'Stadium' && t !== 'Tool') {
-        throw new Error(`Unsupported trainer type ${t} on ${raw.id}`);
-      }
+      const t = TRAINER_TYPES[raw.trainerType ?? 'Item'];
+      if (!t) throw new Error(`Unsupported trainer type ${raw.trainerType} on ${raw.id}`);
       return {
         ...base,
         category: 'Trainer',
