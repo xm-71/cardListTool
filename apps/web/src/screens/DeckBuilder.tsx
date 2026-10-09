@@ -7,6 +7,7 @@ import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import type { CustomDeck } from '../profile/types.ts';
 import { cardNumber } from './Binder.tsx';
+import { CardThumb } from '../ui/CardThumb.tsx';
 
 const isBasicEnergy = (def: CardDef): boolean => def.category === 'Energy' && def.energyKind === 'Basic';
 // One of each type, from the modern Mega Evolution Energy set.
@@ -204,6 +205,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
                 key={def.id}
                 className={`flex items-center gap-2 border-b-2 border-ink/20 px-1 py-1 text-xl ${playable ? '' : 'opacity-50'}`}
               >
+                <CardThumb def={def} />
                 <span className="flex-1">
                   {def.name} <span className="opacity-50">#{cardNumber(def.id)}</span>
                 </span>
@@ -240,6 +242,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
               .map(({ id, count, def }) => (
                 <li key={id} className="flex items-center gap-2 border-b-2 border-ink/20 px-1 py-1 text-xl">
                   <span className="w-10">{count}×</span>
+                  <CardThumb def={def} />
                   <span className="flex-1">{def.name}</span>
                   <button
                     type="button"

@@ -18,6 +18,7 @@ import { Title } from './screens/Title.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
+import { CardZoom } from './ui/CardZoom.tsx';
 import { GymGameOver } from './ui/GymGameOver.tsx';
 import { deckSources } from './game/catalog.ts';
 import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
@@ -70,7 +71,13 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   const gymPayout = useGymResult();
 
   if (error) return <ErrorScreen error={error} onHome={reset} />;
-  if (!state || !config) return <Screens />;
+  if (!state || !config)
+    return (
+      <>
+        <Screens />
+        <CardZoom />
+      </>
+    );
 
   let viewer: PlayerId = human;
   if (config.mode === 'hotseat') {
@@ -84,6 +91,7 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   return (
     <>
       <GameScreen viewer={viewer} />
+      <CardZoom />
       {state.result && config.context && (
         <GymGameOver
           context={config.context}
