@@ -35,36 +35,37 @@ The leaders play modern, type-themed decks built around their famous Pokémon. T
 
 ### 2.1 Gyms (fixed order)
 
-| #   | Leader    | Badge   | Deck type | Bot    | Signature Pokémon (151 unless noted)                                                                                                     |
-| --- | --------- | ------- | --------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Brock     | Boulder | Fighting  | Easy   | Onix, Geodude → Graveler → Golem ex, Rhyhorn → Rhydon, Kabuto → Kabutops                                                                 |
-| 2   | Misty     | Cascade | Water     | Easy   | Staryu → Starmie, Psyduck → Golduck, Horsea → Seadra, Goldeen → Seaking                                                                  |
-| 3   | Lt. Surge | Thunder | Lightning | Easy   | Pikachu → Raichu, Voltorb → Electrode, Magnemite → Magneton, Electabuzz                                                                  |
-| 4   | Erika     | Rainbow | Grass     | Easy   | Oddish → Gloom → Vileplume, Bellsprout → Weepinbell → Victreebel, Tangela, Erika's Invitation                                            |
-| 5   | Koga      | Soul    | Darkness  | Medium | Koffing → Weezing, Grimer → Muk, Ekans → Arbok ex, Zubat → Golbat, Venonat → Venomoth                                                    |
-| 6   | Sabrina   | Marsh   | Psychic   | Medium | Abra → Kadabra → Alakazam ex, Mr. Mime, Drowzee → Hypno, Slowpoke → Slowbro                                                              |
-| 7   | Blaine    | Volcano | Fire      | Medium | Growlithe → Arcanine, Ponyta → Rapidash, Vulpix → Ninetales ex, Magmar                                                                   |
-| 8   | Giovanni  | Earth   | Fighting  | Medium | Nidoran♂ → Nidorino → Nidoking, Nidoran♀ → Nidorina → Nidoqueen, Rhyhorn → Rhydon, Diglett → Dugtrio, Kangaskhan ex, Giovanni's Charisma |
+| #   | Leader    | Badge   | Deck type           | Bot    | Signature Pokémon (151 unless noted)                                                                   |
+| --- | --------- | ------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| 1   | Brock     | Boulder | Fighting            | Easy   | Geodude → Graveler → Golem ex, Onix, Rhyhorn → Rhydon                                                  |
+| 2   | Misty     | Cascade | Water               | Easy   | Staryu → Starmie, Krabby → Kingler, Tentacool → Tentacruel                                             |
+| 3   | Lt. Surge | Thunder | Lightning           | Easy   | Pikachu → Raichu, Voltorb → Electrode, Magnemite → Magneton                                            |
+| 4   | Erika     | Rainbow | Grass               | Easy   | Oddish → Gloom → Vileplume, Exeggcute → Exeggutor, Tangela, Erika's Invitation                         |
+| 5   | Koga      | Soul    | Darkness            | Medium | Koffing → Weezing, Grimer → Muk, Ekans → Arbok ex                                                      |
+| 6   | Sabrina   | Marsh   | Psychic             | Medium | Abra → Kadabra → Alakazam ex, Mr. Mime, Slowpoke → Slowbro                                             |
+| 7   | Blaine    | Volcano | Fire                | Medium | Growlithe → Arcanine, Ponyta → Rapidash, Vulpix → Ninetales ex                                         |
+| 8   | Giovanni  | Earth   | Darkness + Fighting | Medium | Nidoran♂ → Nidorino → Nidoking, Nidoran♀ → Nidorina → Nidoqueen, Rhyhorn → Rhydon, Giovanni's Charisma |
 
 ### 2.2 Elite Four and Champion (one run, all Medium bot)
 
-| Stage | Opponent      | Deck type        | Signature Pokémon                                                                                                    |
-| ----- | ------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 1     | Lorelei       | Water            | Seel → Dewgong, Shellder → Cloyster, Slowbro, Jynx ex, Lapras, Articuno                                              |
-| 2     | Bruno         | Fighting         | Machop → Machoke → Machamp, Hitmonlee, Hitmonchan, Onix, Mankey → Primeape                                           |
-| 3     | Agatha        | Psychic/Darkness | Gastly → Haunter → Gengar, Golbat, Arbok ex, Mega Gengar ex (me02)                                                   |
-| 4     | Lance         | Dragon/Colorless | Dratini → Dragonair → Dragonite, Magikarp → Gyarados, Aerodactyl                                                     |
-| 5     | Champion Blue | Mixed            | Pidgey → Pidgeotto → Pidgeot, Alakazam ex, Rhydon, Gyarados, Exeggutor, plus an ace chosen against your deck (below) |
+| Stage | Opponent      | Deck type                          | Signature Pokémon                                                |
+| ----- | ------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| 1     | Lorelei       | Water                              | Seel → Dewgong, Shellder → Cloyster, Lapras, Jynx ex, Articuno   |
+| 2     | Bruno         | Fighting                           | Machop → Machoke → Machamp, Hitmonlee, Hitmonchan, Onix          |
+| 3     | Agatha        | Psychic + Darkness                 | Gastly → Haunter → Gengar, Zubat → Golbat, Mega Gengar ex (me02) |
+| 4     | Lance         | Water + Lightning (Dragon Pokémon) | Dratini → Dragonair → Dragonite, Magikarp → Gyarados             |
+| 5     | Champion Blue | Psychic + an ace type              | Abra → Kadabra → Alakazam ex, plus one ace line (below)          |
 
 - **Blue's ace:** decided at the start of the Champion match from the main Energy type of the challenger's deck:
-  - Fire: Blastoise ex;
-  - Grass: Charizard ex;
-  - Water: Venusaur ex;
-  - any other type: Charizard ex.
+  - Fire: Blastoise ex line;
+  - Grass: Charizard ex line;
+  - Water: Venusaur ex line;
+  - any other type: Charizard ex line.
 
-  So there are 3 Champion lists, which differ only in the ace line.
+  So there are 3 Champion lists, which differ only in the ace line (Charmander → Charmeleon → Charizard ex, Squirtle → Wartortle → Blastoise ex, or Bulbasaur → Ivysaur → Venusaur ex).
 
-- **Signature lists are a starting point.** Each leader deck is 60 cards: those Pokémon, the leader's type Energy, and a Trainer core (the theme decks' core, adjusted per deck). A Pokémon may be cut or added to make the deck playable and balanced (§6), keeping the leader's theme.
+- **Changes from the first draft:** the first draft also listed Kabuto/Kabutops (Brock), Aerodactyl (Lance), Pidgeot (Blue), Seaking, Seadra and Psyduck (Misty), Victreebel (Erika), Kangaskhan ex (Giovanni) and more. The Pokémon that evolve from Fossils, or that prevent effects, change coin-flip rules or deal end-of-turn damage, need rules the engine lacks, so they are left out for now. The rest were trimmed to keep each deck coherent. Each deck is 60 cards: those Pokémon, the leader's Energy and a Trainer core, with the exact lists in the implementation plan.
+- **Dimensional Hand** (Alakazam ex): "can be used even if this Pokémon is on the Bench" is implemented as a normal attack from the Active Spot.
 
 ### 2.3 Rules of the run
 
@@ -109,7 +110,7 @@ The leaders play modern, type-themed decks built around their famous Pokémon. T
 - **Import:** add `sv03.5` to the card importer and data. Card images follow the existing TCGdex URL pattern.
 - **Scripts:** write card scripts **only for the 151 cards used in the leader decks**: their attacks, Abilities, and the Trainers Erika's Invitation and Giovanni's Charisma.
   - Other 151 cards are collect-only until scripted, like any unscripted card.
-  - Expected count: about 50–70 scripts. The exact list comes from the final decklists.
+  - Expected count: about 80 card names (the exact list is the set of cards in the 15 decklists).
 - **151 pack:** a Shop pack, priced like the Mega-era packs, in a new "Scarlet & Violet" era section.
   - It uses the same 10-card pack layout as the Mega-era packs, with 151's rarities: Common, Uncommon, Rare, Double Rare, Illustration Rare, Special Illustration Rare, Ultra Rare, Hyper Rare.
   - Any rarity name the pack generator or the rarity effects don't yet know is added and covered by tests.
