@@ -65,7 +65,11 @@ export interface DamageQuery {
 
 export interface AttackScript {
   canUse?(ctx: EffectCtx): boolean;
-  damage?(ctx: EffectCtx): number | { amount: number; ignoreWR: boolean; ignoreDefenderEffects?: boolean };
+  damage?(
+    ctx: EffectCtx,
+  ):
+    | number
+    | { amount: number; ignoreWR: boolean; ignoreResistance?: boolean; ignoreDefenderEffects?: boolean };
   effect?(ctx: EffectCtx): void;
 }
 

@@ -47,7 +47,19 @@ export interface Conditions {
 }
 
 /** Timed effects on a Pokémon that last through the opponent's next turn (see EffectCtx.addMarker). */
-export type MarkerKind = 'reduceIncoming' | 'preventFromBasic' | 'reduceOutgoing' | 'cantRetreat';
+export type MarkerKind =
+  | 'reduceIncoming'
+  | 'preventFromBasic'
+  | 'reduceOutgoing'
+  | 'cantRetreat'
+  /** The Pokémon's attacks do `amount` more damage (before Weakness and Resistance). */
+  | 'increaseOutgoing'
+  /** Prevent all damage done to the Pokémon by attacks. */
+  | 'preventDamage'
+  /** The Pokémon's attacks cost `amount` more {C}. */
+  | 'attackCostMore'
+  /** The Pokémon's Retreat Cost is `amount` more. */
+  | 'retreatCostMore';
 
 export interface Marker {
   kind: MarkerKind;
@@ -86,6 +98,8 @@ export interface PlayerState {
   active: PokemonSlot | null;
   bench: PokemonSlot[];
   supporterTurn: number | null;
+  /** The Supporter played this turn, by name (for cards that care which one). */
+  supporterPlayed?: { turn: number; name: string } | null;
   energyTurn: number | null;
   retreatTurn: number | null;
   stadiumUsedTurn: number | null;

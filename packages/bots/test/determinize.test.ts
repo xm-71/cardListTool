@@ -95,4 +95,22 @@ describe('determinize', () => {
     const norm = (acts: unknown[]) => acts.map((a) => JSON.stringify(a)).sort();
     expect(norm(engine.getLegalActions(state, me))).toEqual(norm(engine.getLegalActions(real, me)));
   });
+
+  test('carries the newer timed markers and Supporter memory into the simulated state', () => {
+    const real = midGame(60);
+    const me = real.current;
+    real.players[me].active!.markers.push(
+      { kind: 'increaseOutgoing', amount: 120, untilTurn: real.turn + 2 },
+      { kind: 'preventDamage', amount: 0, untilTurn: real.turn + 1 },
+      { kind: 'attackCostMore', amount: 1, untilTurn: real.turn + 1 },
+      { kind: 'retreatCostMore', amount: 1, untilTurn: real.turn + 1 },
+    );
+    real.players[me].supporterPlayed = { turn: real.turn, name: "Giovanni's Charisma" };
+    const view = engine.viewFor(real, me);
+    expect(view.you.supporterPlayed).toEqual({ turn: real.turn, name: "Giovanni's Charisma" });
+    const { state } = determinize(view, decks, registry, 42);
+    const again = engine.viewFor(state, me);
+    expect(again.you.active!.markers).toEqual(view.you.active!.markers);
+    expect(again.you.supporterPlayed).toEqual(view.you.supporterPlayed);
+  });
 });

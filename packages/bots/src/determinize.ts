@@ -97,6 +97,7 @@ export function determinize(
       active: side.active ? toSlot(side.active) : null,
       bench: side.bench.map(toSlot),
       supporterTurn: mine?.supporterTurn ?? null,
+      supporterPlayed: mine?.supporterPlayed ? { ...mine.supporterPlayed } : null,
       energyTurn: mine?.energyTurn ?? null,
       retreatTurn: mine?.retreatTurn ?? null,
       stadiumUsedTurn: mine?.stadiumUsedTurn ?? null,
