@@ -7,6 +7,7 @@ import erika from './decks/gym/erika.json';
 import giovanni from './decks/gym/giovanni.json';
 import koga from './decks/gym/koga.json';
 import lorelei from './decks/gym/lorelei.json';
+import lance from './decks/gym/lance.json';
 import misty from './decks/gym/misty.json';
 import sabrina from './decks/gym/sabrina.json';
 import surge from './decks/gym/surge.json';
@@ -27,6 +28,7 @@ export const GYM_DECKS = {
   lorelei,
   bruno,
   agatha,
+  lance,
 } satisfies Record<string, DeckList>;
 
 export type GymDeckId = keyof typeof GYM_DECKS;

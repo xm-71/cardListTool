@@ -1,0 +1,22 @@
+{
+  "name": "Lance's Dragon Deck",
+  "cards": [
+    { "id": "me01-119", "count": 4 },
+    { "id": "sv09-149", "count": 2 },
+    { "id": "me01-114", "count": 2 },
+    { "id": "me01-131", "count": 4 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-121", "count": 2 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
+    { "id": "me01-132", "count": 2 },
+    { "id": "me01-125", "count": 3 },
+    { "id": "sv03.5-147", "count": 4 },
+    { "id": "sv03.5-148", "count": 3 },
+    { "id": "sv03.5-149", "count": 3 },
+    { "id": "sv03.5-129", "count": 3 },
+    { "id": "sv03.5-130", "count": 3 },
+    { "id": "mee-003", "count": 9 },
+    { "id": "mee-004", "count": 9 }
+  ]
+}
