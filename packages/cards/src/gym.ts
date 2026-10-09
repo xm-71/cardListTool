@@ -2,6 +2,7 @@ import type { DeckList } from '@ptcg/engine';
 import brock from './decks/gym/brock.json';
 import blaine from './decks/gym/blaine.json';
 import erika from './decks/gym/erika.json';
+import giovanni from './decks/gym/giovanni.json';
 import koga from './decks/gym/koga.json';
 import misty from './decks/gym/misty.json';
 import sabrina from './decks/gym/sabrina.json';
@@ -19,6 +20,7 @@ export const GYM_DECKS = {
   koga,
   sabrina,
   blaine,
+  giovanni,
 } satisfies Record<string, DeckList>;
 
 export type GymDeckId = keyof typeof GYM_DECKS;
