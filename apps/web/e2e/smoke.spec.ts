@@ -349,3 +349,38 @@ test('with all 8 badges the Elite Four panel is ready', async ({ page }) => {
   await expect(page.getByText('Badges: 8 / 8')).toBeVisible();
   await page.screenshot({ path: 'test-results/gym-elite.png', fullPage: true });
 });
+
+test('on a phone the battle log can be hidden, and a long press opens a card full size', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  await page.goto('/');
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('menuitem', { name: 'Duel' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await playThroughSetup(page);
+
+  // The log starts hidden on a phone and a button shows it.
+  const log = page.getByRole('region', { name: 'Game log' });
+  await expect(log).toBeHidden();
+  await page.getByRole('button', { name: 'Show log' }).click();
+  await expect(log).toBeVisible();
+  await page.getByRole('button', { name: 'Hide log' }).click();
+  await expect(log).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= 375), 'no sideways scroll').toBe(
+    true,
+  );
+
+  // Press and hold one of your cards (about 0.7 s) to see it large.
+  const card = page.getByRole('region', { name: 'You', exact: true }).locator('[data-uid]').first();
+  const box = (await card.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+  const view = page.getByRole('dialog', { name: 'Card view' });
+  await expect(view).toBeVisible();
+  await page.screenshot({ path: 'test-results/card-view-phone.png' });
+  await view.getByRole('button', { name: 'Close' }).click();
+  await expect(view).toBeHidden();
+});

@@ -10,6 +10,7 @@ import { CardDetails } from '../ui/CardDetails.tsx';
 import { CardPreview } from '../ui/CardPreview.tsx';
 import { CardView } from '../ui/CardView.tsx';
 import { GameLog } from '../ui/GameLog.tsx';
+import { useLogOpen } from '../ui/useLogOpen.ts';
 import { Hand } from '../ui/Hand.tsx';
 import { PromptPanel } from '../ui/PromptPanel.tsx';
 import { Side } from '../ui/Side.tsx';
@@ -27,6 +28,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
   const [details, setDetails] = useState<CardInstance | null>(null);
   const [menu, setMenu] = useState<{ title: string; actions: Action[]; card: CardInstance } | null>(null);
   const viewer = viewerProp ?? human;
+  const [logOpen, toggleLog] = useLogOpen();
 
   const view = useMemo(() => (state ? engine.viewFor(state, viewer) : null), [state, viewer]);
   const legal = useMemo(
@@ -126,7 +128,18 @@ export function GameScreen({ viewer: viewerProp }: Props) {
               </button>
             ))}
         </div>
-        <GameLog log={view.log} me={viewer} />
+        <button
+          type="button"
+          aria-expanded={logOpen}
+          onClick={toggleLog}
+          className="border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase text-ink hover:bg-cream lg:hidden"
+        >
+          {logOpen ? 'Hide log' : 'Show log'}
+        </button>
+        {/* On wide screens the log is always shown; on a phone the player can hide it to give the board room. */}
+        <div className={logOpen ? 'contents' : 'hidden lg:contents'}>
+          <GameLog log={view.log} me={viewer} />
+        </div>
         <button
           type="button"
           onClick={() => {

@@ -1,7 +1,6 @@
 import type { SlotView as SlotViewData } from '@ptcg/engine';
 import { defOf, topCard, topDef } from '../game/view.ts';
 import { CardView, type CardSize } from './CardView.tsx';
-import { EnergyDot } from './energy.tsx';
 import { HpBar } from './retro/index.ts';
 
 const ROTATION_LABEL = { asleep: 'Asleep', confused: 'Confused', paralyzed: 'Paralyzed' } as const;
@@ -49,12 +48,14 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
       {/* On desktop widths Energy and Tool sit over the card's lower edge so the board keeps a fixed height. */}
       <div className="flex flex-col items-center gap-0.5 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0.5">
         <div className="flex min-h-4 flex-wrap justify-center gap-0.5 lg:min-h-0">
-          {slot.energy.map((e) => {
-            const d = defOf(e);
-            return d.category === 'Energy' ? (
-              <EnergyDot key={e.uid} type={d.provides[0] ?? 'Colorless'} title={d.name} />
-            ) : null;
-          })}
+          {slot.energy.map((e) =>
+            defOf(e).category === 'Energy' ? (
+              // The container ignores the pointer on desktop (it sits over the card), the Energy cards don't.
+              <span key={e.uid} className="pointer-events-auto" title={defOf(e).name}>
+                <CardView card={e} size="chip" />
+              </span>
+            ) : null,
+          )}
         </div>
         {slot.tool && (
           <span

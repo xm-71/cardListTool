@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { CardDef, CardInstance } from '@ptcg/engine';
 import { defOf } from '../game/view.ts';
 import { EnergyDot } from './energy.tsx';
+import { useLongPress } from './longPress.ts';
 import { usePreview } from './preview.ts';
 
 const SIZES = {
@@ -14,6 +15,8 @@ const SIZES = {
   active: 'w-24 lg:w-[min(6rem,8.5vh)]',
   hand: 'w-16 lg:w-[min(5rem,8vh)]',
   pile: 'w-12 lg:w-[min(3.5rem,6vh)]',
+  /** Attached Energy under a Pokémon. */
+  chip: 'w-6 lg:w-[min(1.5rem,3.2vh)]',
   zoom: 'w-64 lg:w-[min(16rem,32vh)]',
 } as const;
 export type CardSize = keyof typeof SIZES;
@@ -31,8 +34,14 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
   const def = defOf(card);
   const [failed, setFailed] = useState(false);
   const show = usePreview((s) => s.show);
+  const zoom = usePreview((s) => s.zoom);
+  const press = useLongPress(() => zoom(card));
   const quality = size === 'lg' || size === 'zoom' ? 'high' : 'low';
   const ring = highlighted ? 'ring-4 ring-red' : onClick ? 'hover:ring-4 hover:ring-yellow' : '';
+  // A tiny Energy card that can't load is shown as its coloured dot.
+  if (failed && size === 'chip' && def.category === 'Energy') {
+    return <EnergyDot type={def.provides[0] ?? 'Colorless'} title={def.name} />;
+  }
   const body = failed ? (
     <TextCard def={def} compact={size !== 'lg' && size !== 'zoom'} />
   ) : (
@@ -45,14 +54,22 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
       className="h-full w-full rounded-[6%] object-cover"
     />
   );
-  const className = `${SIZES[size]} aspect-[63/88] shrink-0 rounded-[6%] ${ring} ${onClick ? 'cursor-pointer' : ''}`;
-  const hover = noPreview ? {} : { onMouseEnter: () => show(card) };
+  // Press and hold a card to look at it full size (no hover on a phone).
+  const hold = noPreview ? '' : ' select-none [-webkit-touch-callout:none]';
+  const className = `${SIZES[size]} aspect-[63/88] shrink-0 rounded-[6%] ${ring} ${onClick ? 'cursor-pointer' : ''}${hold}`;
+  const hover = noPreview ? {} : { onMouseEnter: () => show(card), ...press.handlers };
+  const click = onClick
+    ? () => {
+        if (!noPreview && press.consumeClick()) return;
+        onClick();
+      }
+    : undefined;
   return onClick ? (
-    <button type="button" className={className} onClick={onClick} data-uid={card.uid} {...hover}>
+    <button type="button" className={className} onClick={click} data-uid={card.uid} {...hover}>
       {body}
     </button>
   ) : (
-    <div className={className} {...hover}>
+    <div className={className} data-uid={card.uid} {...hover}>
       {body}
     </div>
   );

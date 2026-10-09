@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { PlayerId, SlotRef, SlotView as SlotViewData } from '@ptcg/engine';
 import { CardView } from './CardView.tsx';
+import { DiscardViewer } from './DiscardViewer.tsx';
 import { SlotView } from './SlotView.tsx';
 import type { PlayerView } from '@ptcg/engine';
 
@@ -18,6 +20,7 @@ interface Props {
 /** One player's half of the table: Active, Bench, deck, discard pile and Prizes. */
 export function Side({ label, player, side, mirrored, isActive, onSlot, handCount, benchSize }: Props) {
   const activeRef: SlotRef = { player, zone: 'active' };
+  const [showDiscard, setShowDiscard] = useState(false);
   const bench = (
     <div className="flex min-h-[8.5rem] flex-wrap items-start justify-center gap-2 lg:min-h-0">
       {Array.from({ length: benchSize }, (_, index) => {
@@ -59,7 +62,11 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
         <Pile label="Deck" count={side.deckCount} />
         <div className="flex flex-col items-center text-lg lg:text-base lg:leading-none">
           {side.discard.length > 0 ? (
-            <CardView card={side.discard[side.discard.length - 1]!} size="pile" />
+            <CardView
+              card={side.discard[side.discard.length - 1]!}
+              size="pile"
+              onClick={() => setShowDiscard(true)}
+            />
           ) : null}
           <span>Discard {side.discard.length}</span>
         </div>
@@ -85,6 +92,9 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
           {active}
           {bench}
         </>
+      )}
+      {showDiscard && (
+        <DiscardViewer label={label} cards={side.discard} onClose={() => setShowDiscard(false)} />
       )}
     </section>
   );
