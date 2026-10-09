@@ -187,3 +187,11 @@ describe('Magneton', () => {
     expect(s.players[me].hand.length).toBe(handBefore + 2);
   });
 });
+
+describe('scripts shared by name', () => {
+  test('a 151 Pokémon never borrows an older same-named card’s script', () => {
+    expect(registry.scripts[MAGNETON]).not.toBe(registry.scripts['me01-046']);
+    expect(registry.scripts['me01-046']).toBeDefined();
+    expect(registry.scripts[sv('083')]).toBeUndefined(); // Farfetch'd: unscripted, even if another set had one
+  });
+});

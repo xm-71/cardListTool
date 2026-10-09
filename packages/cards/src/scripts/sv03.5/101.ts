@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { inPlayRefs } from '../util.ts';
 
 export const name = 'Electrode';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Bang Boom Chain: discard any number of your Pokémon Tools first; 40 more for each.

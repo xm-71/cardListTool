@@ -1,6 +1,7 @@
 import type { CardScript } from '@ptcg/engine';
 
 export const name = 'Geodude';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Stiffen: takes 30 less damage during the opponent's next turn.

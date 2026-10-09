@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { pokemonDef } from '../util.ts';
 
 export const name = 'Onix';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Thumpalanche: discard the top 5 cards; 80 for each Pokémon with a Retreat Cost of exactly 4.

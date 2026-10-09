@@ -92,8 +92,11 @@ import * as me01_108 from './me01/108.ts';
 import * as me02_076 from './me02/076.ts';
 import * as me02_077 from './me02/077.ts';
 
-/** Every scripted card, keyed by card name so reprints share one script. */
-export const scriptModules: { name: string; script: CardScript }[] = [
+/**
+ * Every scripted card, keyed by card name so reprints share one script. A module that exports `set` applies only to
+ * that set's cards, so a 151 Pokémon can share a name with an older card that plays differently.
+ */
+export const scriptModules: { name: string; set?: string; script: CardScript }[] = [
   me02_077,
   me02_076,
   me01_108,

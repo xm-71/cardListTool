@@ -1,6 +1,7 @@
 import type { CardScript } from '@ptcg/engine';
 
 export const name = 'Golem ex';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Dynamic Roll: during your next turn, this Pokémon's attacks do 120 more damage.

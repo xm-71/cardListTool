@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { sameRef } from '../util.ts';
 
 export const name = 'Raichu';
+export const set = 'sv03.5';
 export const script: CardScript = {
   // Electrical Grounding: when another of your Pokémon is Knocked Out by an attack, you may move a {L} Energy from it to this Pokémon.
   afterKnockout(ctx, { holder, knocked }) {

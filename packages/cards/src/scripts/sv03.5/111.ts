@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { benchRefs } from '../util.ts';
 
 export const name = 'Rhyhorn';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Push Down: switch out the opponent's Active Pokémon; the opponent chooses the new one.

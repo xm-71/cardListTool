@@ -1,6 +1,7 @@
 import type { CardScript } from '@ptcg/engine';
 
 export const name = 'Graveler';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Rock Cannon: flip until tails; 40 for each heads.

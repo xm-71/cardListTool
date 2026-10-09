@@ -1,6 +1,7 @@
 import type { CardScript } from '@ptcg/engine';
 
 export const name = 'Magneton';
+export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
     // Junk Magnet: put up to 2 Item cards from your discard pile into your hand.
