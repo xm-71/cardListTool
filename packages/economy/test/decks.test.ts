@@ -1,7 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import type { CardRegistry, DeckList } from '@ptcg/engine';
 import { buildRegistry, isPlayable, setCards } from '@ptcg/cards';
-import { isDeckUsable, validateCustomDeck } from '../src/index.ts';
+import {
+  deckFormat,
+  isDeckUsable,
+  isGymLegal,
+  isStandardLegal,
+  validateCustomDeck,
+  validateGymDeck,
+} from '../src/index.ts';
 
 const base = buildRegistry();
 // A same-name reprint of Ultra Ball, to check that the 4-per-name rule counts reprints together.
@@ -106,5 +113,86 @@ describe('isDeckUsable', () => {
   });
   test('an unscripted Standard card is not usable', () => {
     expect(isDeckUsable(unplayableDef(), registry)).toBe(false);
+  });
+});
+
+describe('Gym format', () => {
+  // Weedle (151) has no card text, so the engine can already play it: only its legality is in question.
+  const WEEDLE = 'sv03.5-013';
+  const withWeedle = (): DeckList => ({
+    name: 'Gym test',
+    cards: [
+      { id: WEEDLE, count: 4 },
+      { id: GASTLY, count: 4 },
+      { id: PSYCHIC, count: 52 },
+    ],
+  });
+  const own = { ...owned, [WEEDLE]: 4 };
+
+  test('a 151 card is Gym-legal but not Standard-legal', () => {
+    const weedle = registry.defs[WEEDLE]!;
+    expect(isStandardLegal(weedle)).toBe(false);
+    expect(isGymLegal(weedle)).toBe(true);
+  });
+
+  test('a regulation-G card from another set is neither', () => {
+    const other = Object.values(registry.defs).find(
+      (d) => d.regulationMark === 'G' && !d.id.startsWith('sv03.5-'),
+    );
+    expect(other, 'fixture: some regulation G card outside 151').toBeDefined();
+    expect(isStandardLegal(other!)).toBe(false);
+    expect(isGymLegal(other!)).toBe(false);
+  });
+
+  test('Basic Energy and mark-H cards are legal in both', () => {
+    for (const id of [PSYCHIC, 'me01-131']) {
+      expect(isStandardLegal(registry.defs[id]!), id).toBe(true);
+      expect(isGymLegal(registry.defs[id]!), id).toBe(true);
+    }
+  });
+
+  test('validateGymDeck accepts a 151 deck that validateCustomDeck rejects by name', () => {
+    expect(validateGymDeck(withWeedle(), registry, own)).toEqual([]);
+    expect(validateCustomDeck(withWeedle(), registry, own)).toEqual(['Weedle (G) is not legal in Standard']);
+  });
+
+  test('both formats reject 5 copies of a name and a deck with no Basic Pokémon', () => {
+    const five: DeckList = {
+      name: 'Five',
+      cards: [
+        { id: WEEDLE, count: 5 },
+        { id: PSYCHIC, count: 55 },
+      ],
+    };
+    const manyOwned = { ...own, [WEEDLE]: 5 };
+    expect(validateGymDeck(five, registry, manyOwned)).toContain('More than 4 Weedle');
+    expect(validateCustomDeck(five, registry, manyOwned)).toContain('More than 4 Weedle');
+    const noBasic: DeckList = { name: 'None', cards: [{ id: PSYCHIC, count: 60 }] };
+    expect(validateGymDeck(noBasic, registry, own)).toContain('No Basic Pokémon');
+    expect(validateCustomDeck(noBasic, registry, own)).toContain('No Basic Pokémon');
+  });
+
+  test('validateGymDeck still wants playable cards, enough copies and 60 cards', () => {
+    const short = withWeedle();
+    short.cards[2]!.count -= 1;
+    expect(validateGymDeck(short, registry, own)).toContain('Deck has 59 cards (needs 60)');
+    expect(validateGymDeck(withWeedle(), registry, { ...own, [WEEDLE]: 1 })).toContain(
+      'You own 1 Weedle but the deck uses 4',
+    );
+    const unplayable = Object.values(registry.defs).find(
+      (d) => d.id.startsWith('sv03.5-') && d.category === 'Pokemon' && !isPlayable(d, registry),
+    )!;
+    const d: DeckList = {
+      name: 'U',
+      cards: [{ id: unplayable.id, count: 1 }, ...withWeedle().cards.slice(0, 2), { id: PSYCHIC, count: 51 }],
+    };
+    expect(validateGymDeck(d, registry, { ...own, [unplayable.id]: 1 })).toContain(
+      `${unplayable.name} isn't playable yet`,
+    );
+  });
+
+  test('deckFormat is standard until a card needs the Gym format', () => {
+    expect(deckFormat(deck([{ id: 'me01-131', count: 4 }]), registry)).toBe('standard');
+    expect(deckFormat(withWeedle(), registry)).toBe('gym');
   });
 });
