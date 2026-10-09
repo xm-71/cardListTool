@@ -34,6 +34,8 @@ test('a new profile starts with 500 credits and nothing else', () => {
     playerName: null,
     starterDeck: null,
     introDone: false,
+    binders: [],
+    collectorMode: false,
   });
 });
 
@@ -177,7 +179,14 @@ describe('intro fields', () => {
     });
     db.close();
     const loaded = await (await openIndexedDbStore(dbName)).load();
-    expect(loaded).toEqual({ ...m4, playerName: null, starterDeck: null, introDone: false });
+    expect(loaded).toEqual({
+      ...m4,
+      playerName: null,
+      starterDeck: null,
+      introDone: false,
+      binders: [],
+      collectorMode: false,
+    });
   });
 
   test('the memory store fills missing fields too', async () => {
