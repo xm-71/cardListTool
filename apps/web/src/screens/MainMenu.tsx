@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { deckById, registry, type DeckId } from '../game/catalog.ts';
 import { useNav, type Route } from '../nav/useNav.ts';
+import type { CustomBinder } from '../profile/types.ts';
 import { useProfile } from '../profile/useProfile.ts';
+import { BinderCover } from '../ui/binder/BinderCover.tsx';
+import { PokeBall } from '../ui/PokeBall.tsx';
 import { DialogBox, Header, Menu } from '../ui/retro/index.ts';
 
 const ITEMS: { id: Route; label: string }[] = [
@@ -38,6 +41,11 @@ export function MainMenu() {
   const tips = collector ? COLLECTOR_TIPS : TIPS;
   const [roll] = useState(() => Math.random());
   const tip = tips[Math.floor(roll * tips.length)]!;
+  const binders = useProfile((s) => s.profile.binders);
+  const latest = binders.reduce<CustomBinder | null>(
+    (a, b) => (!a || b.updatedAt > a.updatedAt ? b : a),
+    null,
+  );
   const deck = deckById((starter ?? 'mega-gengar') as DeckId) ?? deckById('mega-gengar');
   return (
     <div className="flex min-h-full flex-col">
@@ -52,18 +60,27 @@ export function MainMenu() {
               autoFocus
             />
           </div>
-          <figure className="flex flex-col items-center gap-3">
-            <img
-              src={`${registry.defs[deck.cover]!.image}/low.webp`}
-              alt={deck.name}
-              className="retro-shadow w-36 rounded-md border-4 border-ink"
-            />
-            <figcaption className="font-pixel text-[9px] leading-relaxed">
-              YOUR DECK:
-              <br />
-              {deck.name}
-            </figcaption>
-          </figure>
+          {collector ? (
+            <figure className="flex flex-col items-center gap-3">
+              {latest ? <BinderCover binder={latest} /> : <PokeBall size={96} />}
+              <figcaption className="font-pixel text-[9px] leading-relaxed">
+                {latest ? 'YOUR BINDER' : 'COLLECTOR MODE'}
+              </figcaption>
+            </figure>
+          ) : (
+            <figure className="flex flex-col items-center gap-3">
+              <img
+                src={`${registry.defs[deck.cover]!.image}/low.webp`}
+                alt={deck.name}
+                className="retro-shadow w-36 rounded-md border-4 border-ink"
+              />
+              <figcaption className="font-pixel text-[9px] leading-relaxed">
+                YOUR DECK:
+                <br />
+                {deck.name}
+              </figcaption>
+            </figure>
+          )}
         </div>
         <DialogBox text={tip} />
       </main>
