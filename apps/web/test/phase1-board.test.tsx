@@ -1,0 +1,124 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { GameScreen } from '../src/screens/GameScreen.tsx';
+import { useGame } from '../src/game/store.ts';
+import { useNav } from '../src/nav/useNav.ts';
+import { botCfg, finishSetupInStore, turnOf } from './helpers.ts';
+
+const media = (matches: boolean) =>
+  vi.stubGlobal('matchMedia', (q: string) => ({
+    matches: q.includes('max-width') ? matches : false,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+
+beforeEach(() => {
+  localStorage.clear();
+  useGame.getState().reset();
+  useGame.getState().start(botCfg(1));
+  finishSetupInStore();
+  turnOf(0);
+});
+afterEach(() => vi.unstubAllGlobals());
+
+describe('on a phone', () => {
+  beforeEach(() => media(true));
+
+  test('End turn, Log and Menu live in the bottom bar, once each', () => {
+    render(<GameScreen />);
+    const bar = screen.getByRole('toolbar', { name: 'Game controls' });
+    expect(screen.getAllByRole('button', { name: 'End turn' })).toHaveLength(1);
+    expect(within(bar).getByRole('button', { name: 'End turn' })).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: 'Show log' })).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: 'Menu' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Concede' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Quit to home' })).toBeNull();
+  });
+
+  test('the bar End turn ends the turn', () => {
+    render(<GameScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'End turn' }));
+    expect(useGame.getState().state!.current).toBe(1);
+  });
+
+  test('Menu has Concede (which asks first) and Quit to home', () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    render(<GameScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Concede' }));
+    expect(confirm).toHaveBeenCalled();
+    expect(useGame.getState().state!.result).toBeNull();
+    confirm.mockReturnValue(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Concede' }));
+    expect(useGame.getState().state!.result).not.toBeNull();
+  });
+
+  test('Quit to home from the menu leaves the game', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    useNav.getState().go('duel');
+    render(<GameScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Quit to home' }));
+    expect(useGame.getState().state).toBeNull();
+    expect(useNav.getState().route).toBe('menu');
+  });
+
+  test('Log shows and hides the battle log', () => {
+    render(<GameScreen />);
+    const log = screen.getByRole('region', { name: 'Game log' });
+    expect(log.parentElement).toHaveClass('hidden');
+    fireEvent.click(screen.getByRole('button', { name: 'Show log' }));
+    expect(log.parentElement).not.toHaveClass('hidden');
+    expect(screen.getByRole('button', { name: 'Hide log' })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('no bar while a prompt is open (the prompt has its own Done)', () => {
+    useGame.getState().reset();
+    useGame.getState().start(botCfg(1));
+    render(<GameScreen />);
+    expect(screen.queryByRole('toolbar', { name: 'Game controls' })).toBeNull();
+  });
+});
+
+describe('on a wide screen', () => {
+  beforeEach(() => media(false));
+
+  test('the side column keeps End turn, Concede and Quit, and there is no bottom bar', () => {
+    render(<GameScreen />);
+    expect(screen.queryByRole('toolbar', { name: 'Game controls' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'End turn' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Concede' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Quit to home' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show log' })).toBeNull();
+  });
+});
+
+describe('board details', () => {
+  beforeEach(() => media(false));
+
+  test('the hand is one row that scrolls sideways', () => {
+    render(<GameScreen />);
+    const hand = screen.getByRole('region', { name: 'Your hand' });
+    expect(hand).toHaveClass('flex-nowrap', 'overflow-x-auto');
+    expect(hand).not.toHaveClass('flex-wrap');
+  });
+
+  test('Energy and Tool overlay the Pokémon on every width', () => {
+    render(<GameScreen />);
+    const you = screen.getByRole('region', { name: /^You$/ });
+    const overlay = you.querySelector('.absolute.inset-x-0.bottom-0\\.5');
+    expect(overlay).not.toBeNull();
+    expect(overlay!.className).not.toContain('lg:absolute');
+  });
+
+  test('empty Bench spaces collapse into a +N chip on a phone', () => {
+    render(<GameScreen />);
+    const you = screen.getByRole('region', { name: /^You$/ });
+    const empty = you.querySelector('[data-empty-bench]');
+    expect(empty).not.toBeNull();
+    expect(empty).toHaveTextContent(/^\+\d$/);
+    expect(empty).toHaveClass('lg:hidden');
+    expect(you.querySelectorAll('[data-bench-space]').length).toBe(Number(empty!.textContent!.slice(1)));
+  });
+});

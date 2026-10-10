@@ -45,12 +45,12 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
           </div>
         )}
       </div>
-      {/* On desktop widths Energy and Tool sit over the card's lower edge so the board keeps a fixed height. */}
-      <div className="flex flex-col items-center gap-0.5 lg:pointer-events-none lg:absolute lg:inset-x-0 lg:bottom-0.5">
-        <div className="flex min-h-4 flex-wrap justify-center gap-0.5 lg:min-h-0">
+      {/* Energy and Tool sit over the card's lower edge so the board keeps a fixed height. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0.5 flex flex-col items-center gap-0.5">
+        <div className="flex flex-wrap justify-center gap-0.5">
           {slot.energy.map((e) =>
             defOf(e).category === 'Energy' ? (
-              // The container ignores the pointer on desktop (it sits over the card), the Energy cards don't.
+              // The container ignores the pointer (it sits over the card), the Energy cards don't.
               <span key={e.uid} className="pointer-events-auto" title={defOf(e).name}>
                 <CardView card={e} size="chip" />
               </span>
@@ -60,7 +60,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
         {slot.tool && (
           <span
             title={defOf(slot.tool).name}
-            className="max-w-full truncate border-2 border-ink bg-blue px-1 text-base leading-tight text-paper lg:text-sm"
+            className="max-w-full truncate border-2 border-ink bg-blue px-1 text-sm leading-tight text-paper"
           >
             {defOf(slot.tool).name}
           </span>

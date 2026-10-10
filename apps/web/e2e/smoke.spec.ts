@@ -384,3 +384,90 @@ test('on a phone the battle log can be hidden, and a long press opens a card ful
   await view.getByRole('button', { name: 'Close' }).click();
   await expect(view).toBeHidden();
 });
+
+test('phase 1 on a phone: End turn stays on screen on a crowded board and the Shop shows packs above the fold', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?e2e');
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Skip' }).click();
+
+  // Shop: at least 4 pack tiles fully above the fold, and no sideways scroll.
+  await page.getByRole('menuitem', { name: 'Shop' }).click();
+  await page.waitForTimeout(1500);
+  const tilesInView = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('[role="group"][aria-label]')].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return e.querySelector('[data-testid="pack-art"]') && r.top >= 0 && r.bottom <= window.innerHeight;
+      }).length,
+  );
+  expect(tilesInView, 'pack tiles above the fold').toBeGreaterThanOrEqual(4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= 390), 'shop sideways scroll').toBe(
+    true,
+  );
+  await page.screenshot({ path: 'test-results/shop-phone-phase1.png' });
+  await page.getByRole('button', { name: 'Back' }).click();
+
+  // Battlefield: a crowded mid-game board.
+  await page.getByRole('menuitem', { name: 'Duel' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await playThroughSetup(page);
+  await page.evaluate(() => {
+    type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const game = (window as unknown as { __game: Any }).__game;
+    const s = structuredClone(game.getState().state) as Any;
+    let n = 0;
+    for (const p of s.players) {
+      const take = (k: number) => p.deck.splice(0, k);
+      const copy = () => {
+        const uid = `e2e-${n++}`;
+        s.cards[uid] = { ...s.cards[p.active.stack[0]], uid };
+        return uid;
+      };
+      p.active.energy = take(3);
+      p.bench = Array.from({ length: 4 }, () => ({
+        ...structuredClone(p.active),
+        stack: [copy()],
+        energy: take(2),
+        damage: 0,
+      }));
+      p.discard = take(4);
+      p.hand = [...p.hand, ...take(Math.max(0, 7 - p.hand.length))];
+    }
+    game.setState({ state: s });
+  });
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: 'test-results/board-phone-phase1.png' });
+  const endTurn = await page.getByRole('button', { name: 'End turn' }).boundingBox();
+  expect(endTurn, 'End turn visible').not.toBeNull();
+  expect(endTurn!.y + endTurn!.height, 'End turn inside the viewport').toBeLessThanOrEqual(844);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= 390),
+    'board sideways scroll',
+  ).toBe(true);
+  // The hand is one row.
+  const hand = await page.getByRole('region', { name: 'Your hand' }).boundingBox();
+  expect(hand!.height, 'hand is a single row').toBeLessThan(160);
+});
+
+test('phase 1 on a desktop: the Shop shows at least 8 packs above the fold', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?e2e');
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('menuitem', { name: 'Shop' }).click();
+  await page.waitForTimeout(1500);
+  const tilesInView = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('[role="group"][aria-label]')].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return e.querySelector('[data-testid="pack-art"]') && r.top >= 0 && r.bottom <= window.innerHeight;
+      }).length,
+  );
+  await page.screenshot({ path: 'test-results/shop-desktop-phase1.png' });
+  expect(tilesInView, 'pack tiles above the fold').toBeGreaterThanOrEqual(8);
+});

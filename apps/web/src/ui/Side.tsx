@@ -21,6 +21,7 @@ interface Props {
 export function Side({ label, player, side, mirrored, isActive, onSlot, handCount, benchSize }: Props) {
   const activeRef: SlotRef = { player, zone: 'active' };
   const [showDiscard, setShowDiscard] = useState(false);
+  const emptySpaces = Math.max(0, benchSize - side.bench.length);
   const bench = (
     <div className="flex min-h-[8.5rem] flex-wrap items-start justify-center gap-2 lg:min-h-0">
       {Array.from({ length: benchSize }, (_, index) => {
@@ -37,10 +38,21 @@ export function Side({ label, player, side, mirrored, isActive, onSlot, handCoun
         ) : (
           <div
             key={index}
-            className="aspect-[63/88] w-16 border-2 border-dashed border-ink/30 lg:w-[min(4rem,6.5vh)]"
+            data-bench-space
+            className="hidden aspect-[63/88] w-16 border-2 border-dashed border-ink/30 lg:block lg:w-[min(4rem,6.5vh)]"
           />
         );
       })}
+      {/* On a phone the free Bench spaces are one chip instead of a row of empty outlines. */}
+      {emptySpaces > 0 && (
+        <div
+          data-empty-bench
+          aria-label={`${emptySpaces} empty Bench ${emptySpaces === 1 ? 'space' : 'spaces'}`}
+          className="flex aspect-[63/88] w-16 items-center justify-center border-2 border-dashed border-ink/30 font-pixel text-[10px] lg:hidden"
+        >
+          +{emptySpaces}
+        </div>
+      )}
     </div>
   );
   const active = (
