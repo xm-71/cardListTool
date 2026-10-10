@@ -87,19 +87,19 @@ function BinderBody() {
           searchLabel="Search sets"
         />
         <div className="flex flex-wrap gap-2">
-          {SETS.filter((s) => (eraFilter === 'all' || s.era === eraFilter) && matchesQuery(s.name, query)).map(
-            (s) => (
-              <button
-                key={s.id}
-                type="button"
-                aria-pressed={s.id === setId}
-                onClick={() => setSetId(s.id)}
-                className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
-              >
-                {s.name}
-              </button>
-            ),
-          )}
+          {SETS.filter(
+            (s) => (eraFilter === 'all' || s.era === eraFilter) && matchesQuery(s.name, query),
+          ).map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-pressed={s.id === setId}
+              onClick={() => setSetId(s.id)}
+              className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+            >
+              {s.name}
+            </button>
+          ))}
         </div>
       </div>
       <div className="retro-box flex flex-wrap items-center gap-3 p-4">

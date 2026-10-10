@@ -150,6 +150,23 @@ export function packSize(setId: string): number {
   return layout?.reduce((n, slot) => n + ('count' in slot ? slot.count : 1), 0) ?? 10;
 }
 
+/** What is in a pack of `setId`, in words (for the Shop's detail panel). */
+const CONTENTS: Record<PackEra, string> = {
+  classic: '7 Common, 3 Uncommon, 1 Rare or Holo Rare',
+  ecard: '4 Common, 3 Uncommon, 1 reverse holo, 1 Rare or Holo Rare',
+  ex: '4 Common, 3 Uncommon, 1 reverse holo, 1 Rare or Holo Rare',
+  dp: '5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better',
+  pt: '5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better',
+  hgss: '5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better',
+  mega: '4 Common, 3 Uncommon, 2 reverse holo, 1 Rare or better',
+  sv: '4 Common, 3 Uncommon, 2 reverse holo, 1 Rare or better',
+};
+
+export function packContents(setId: string): string {
+  const era = PACKS.find((p) => p.setId === setId)?.era ?? 'mega';
+  return `${packSize(setId)} cards: ${CONTENTS[era]}`;
+}
+
 /** The price of one pack of `setId` (the modern price for a set that is not on sale). */
 export function packPrice(setId: string): number {
   return PACKS.find((p) => p.setId === setId)?.price ?? CREDITS.packPrice;

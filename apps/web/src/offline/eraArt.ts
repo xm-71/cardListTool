@@ -12,6 +12,8 @@ export interface ArtGroup {
 export function eraArt(): ArtGroup[] {
   return ERAS.flatMap((era) => {
     const ids = SETS.filter((s) => s.era === era.id).map((s) => s.id);
-    return ids.length === 0 ? [] : [{ id: era.id, label: era.label, urls: artUrls(ids.flatMap((id) => setCards(id))) }];
+    return ids.length === 0
+      ? []
+      : [{ id: era.id, label: era.label, urls: artUrls(ids.flatMap((id) => setCards(id))) }];
   });
 }

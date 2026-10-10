@@ -20,5 +20,6 @@ test.each([
 
 test('the shop draws a booster pack for each set', () => {
   render(<Shop />);
-  expect(screen.getAllByTestId('pack-art')).toHaveLength(PACKS.length);
+  // one per pack tile, plus the art in the detail panel
+  expect(screen.getAllByTestId('pack-art')).toHaveLength(PACKS.length + 1);
 });

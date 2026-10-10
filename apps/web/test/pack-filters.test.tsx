@@ -48,7 +48,9 @@ test('the binder filters its set picker by era and search', () => {
   expect(within(picker).queryByRole('button', { name: 'Base Set' })).not.toBeInTheDocument();
   expect(within(picker).getByRole('button', { name: 'Phantasmal Flames' })).toBeInTheDocument();
   fireEvent.click(within(picker).getByRole('button', { name: 'All' }));
-  fireEvent.change(within(picker).getByRole('searchbox', { name: 'Search sets' }), { target: { value: 'jung' } });
+  fireEvent.change(within(picker).getByRole('searchbox', { name: 'Search sets' }), {
+    target: { value: 'jung' },
+  });
   expect(within(picker).getByRole('button', { name: 'Jungle' })).toBeInTheDocument();
   expect(within(picker).queryByRole('button', { name: 'Fossil' })).not.toBeInTheDocument();
 });

@@ -11,6 +11,7 @@ import {
   layoutRarities,
   openPack,
   packPrice,
+  packContents,
   packSize,
 } from '../src/index.ts';
 
@@ -341,5 +342,23 @@ describe('Diamond & Pearl, Platinum and HeartGold SoulSilver packs', () => {
     }
     expect(seen.has('Rare PRIME')).toBe(true);
     expect(seen.has('LEGEND')).toBe(true);
+  });
+});
+
+describe('packContents', () => {
+  test('describes each era in words', () => {
+    expect(packContents('base1')).toBe('11 cards: 7 Common, 3 Uncommon, 1 Rare or Holo Rare');
+    expect(packContents('ecard2')).toBe('9 cards: 4 Common, 3 Uncommon, 1 reverse holo, 1 Rare or Holo Rare');
+    expect(packContents('ex9')).toBe('9 cards: 4 Common, 3 Uncommon, 1 reverse holo, 1 Rare or Holo Rare');
+    expect(packContents('dp3')).toBe('10 cards: 5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better');
+    expect(packContents('pl2')).toBe('10 cards: 5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better');
+    expect(packContents('hgss1')).toBe('10 cards: 5 Common, 3 Uncommon, 1 reverse holo, 1 Rare or better');
+    expect(packContents('me01')).toBe('10 cards: 4 Common, 3 Uncommon, 2 reverse holo, 1 Rare or better');
+    expect(packContents('sv03.5')).toBe('10 cards: 4 Common, 3 Uncommon, 2 reverse holo, 1 Rare or better');
+  });
+
+  test('always starts with the real number of cards in a pack', () => {
+    for (const p of PACKS)
+      expect(packContents(p.setId), p.setId).toMatch(new RegExp(`^${packSize(p.setId)} cards: `));
   });
 });

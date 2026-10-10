@@ -107,7 +107,10 @@ test('an era can be downloaded on its own', async () => {
   expect(await screen.findByText(`Classic: 0 of ${classic.urls.length} images saved`)).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Download Classic art' }));
   await waitFor(
-    () => expect(screen.getByText(`Classic: ${classic.urls.length} of ${classic.urls.length} images saved`)).toBeInTheDocument(),
+    () =>
+      expect(
+        screen.getByText(`Classic: ${classic.urls.length} of ${classic.urls.length} images saved`),
+      ).toBeInTheDocument(),
     { timeout: 20000 },
   );
   expect(fetch).toHaveBeenCalledTimes(classic.urls.length);
