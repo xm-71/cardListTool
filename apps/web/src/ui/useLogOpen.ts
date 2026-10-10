@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isPhoneNow } from './useIsPhone.ts';
 
 const KEY = 'ptcg-log-open';
 
@@ -14,7 +15,7 @@ export function useLogOpen(): [boolean, () => void] {
     } catch {
       // storage can be unavailable (private windows); use the default
     }
-    return !(typeof matchMedia === 'function' && matchMedia('(max-width: 1023px)').matches);
+    return !isPhoneNow();
   });
   const toggle = () => {
     const next = !open;

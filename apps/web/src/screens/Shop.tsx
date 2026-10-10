@@ -6,11 +6,11 @@ import { ERAS } from '../game/catalog.ts';
 import { PackOpening } from '../ui/PackOpening.tsx';
 import { PackArt } from '../ui/pack/PackArt.tsx';
 import { EraFilter, matchesQuery } from '../ui/EraFilter.tsx';
-import { Box, Button } from '../ui/retro/index.ts';
+import { Button } from '../ui/retro/index.ts';
 
 export function Shop() {
   return (
-    <ScreenFrame>
+    <ScreenFrame wide>
       <ShopBody />
     </ScreenFrame>
   );
@@ -54,14 +54,7 @@ function ShopBody() {
 
   return (
     <section className="flex flex-col gap-5">
-      <Box title="Shop">
-        <p className="text-xl">
-          {collector
-            ? 'Collector mode: every pack is free. Rip as many as you like!'
-            : 'Win games against the bots to earn credits, then spend them here.'}
-        </p>
-      </Box>
-      <div role="group" aria-label="Filter packs" className="retro-box p-4">
+      <div role="group" aria-label="Filter packs" className="retro-box p-3 sm:p-4">
         <EraFilter
           eras={[...new Set(PACKS.map((p) => p.era))]}
           era={era}
@@ -71,29 +64,32 @@ function ShopBody() {
           searchLabel="Search packs"
         />
       </div>
+      {collector && <p className="text-xl">Collector mode: every pack is free. Rip as many as you like!</p>}
       {shown.length === 0 && <p className="text-xl">No packs match.</p>}
       {ERAS.filter((e) => shown.some((p) => p.era === e.id)).map((eraGroup) => (
         <section key={eraGroup.id} aria-label={eraGroup.label} className="flex flex-col gap-4">
           <h2 className="font-pixel text-xs uppercase">{eraGroup.label}</h2>
-          <div className="flex flex-wrap justify-center gap-6">
-            {shown.filter((p) => p.era === eraGroup.id).map((p) => (
-              <div
-                key={p.setId}
-                role="group"
-                aria-label={p.name}
-                className="retro-box flex w-60 flex-col items-center gap-3 p-5"
-              >
-                <PackArt setId={p.setId} name={p.name} className="-rotate-3" />
-                <h3 className="mt-2 font-pixel text-[10px]">{p.name}</h3>
-                <p className="text-2xl">{collector ? 'FREE' : `${p.price} credits`}</p>
-                <Button
-                  disabled={!ready || busy || (!collector && credits < p.price)}
-                  onClick={() => void buy(p.setId)}
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-5">
+            {shown
+              .filter((p) => p.era === eraGroup.id)
+              .map((p) => (
+                <div
+                  key={p.setId}
+                  role="group"
+                  aria-label={p.name}
+                  className="retro-box flex w-full min-w-0 flex-col items-center gap-1.5 p-2 sm:w-40"
                 >
-                  Buy & open
-                </Button>
-              </div>
-            ))}
+                  <PackArt setId={p.setId} name={p.name} size="sm" className="-rotate-3" />
+                  <h3 className="mt-1 text-center font-pixel text-[8px] leading-snug">{p.name}</h3>
+                  <p className="text-lg leading-none">{collector ? 'FREE' : `${p.price} credits`}</p>
+                  <Button
+                    disabled={!ready || busy || (!collector && credits < p.price)}
+                    onClick={() => void buy(p.setId)}
+                  >
+                    Buy & open
+                  </Button>
+                </div>
+              ))}
           </div>
         </section>
       ))}

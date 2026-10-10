@@ -148,14 +148,14 @@ export function deckSources(
 
 /** Card eras, in the order the Shop and Binder show them. */
 export const ERAS = [
-  { id: 'mega', label: 'Mega Evolution era' },
-  { id: 'classic', label: 'Classic' },
-  { id: 'ecard', label: 'e-Card' },
-  { id: 'ex', label: 'EX' },
-  { id: 'dp', label: 'Diamond & Pearl' },
-  { id: 'pt', label: 'Platinum' },
-  { id: 'hgss', label: 'HeartGold SoulSilver' },
-  { id: 'sv', label: 'Scarlet & Violet' },
+  { id: 'mega', label: 'Mega Evolution era', short: 'Mega' },
+  { id: 'classic', label: 'Classic', short: 'Classic' },
+  { id: 'ecard', label: 'e-Card', short: 'e-Card' },
+  { id: 'ex', label: 'EX', short: 'EX' },
+  { id: 'dp', label: 'Diamond & Pearl', short: 'D&P' },
+  { id: 'pt', label: 'Platinum', short: 'Platinum' },
+  { id: 'hgss', label: 'HeartGold SoulSilver', short: 'HGSS' },
+  { id: 'sv', label: 'Scarlet & Violet', short: 'S&V' },
 ] as const;
 
 /** The display name of an era (its id if unknown). */

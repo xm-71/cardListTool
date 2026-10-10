@@ -213,3 +213,20 @@ body {
     animation: flash 0.2s reverse both;
   }
 }
+
+/* Bottom sheets slide up (unless the player prefers less motion). */
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.sheet-in {
+  animation: sheet-in 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-in {
+    animation: none;
+  }
+}

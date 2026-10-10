@@ -33,29 +33,36 @@ export function PackArt({
   name,
   className = '',
   torn = false,
+  size = 'md',
 }: {
   setId: string;
   name: string;
   className?: string;
   torn?: boolean;
+  /** 'sm' is for the Shop's tiles and lists. */
+  size?: 'md' | 'sm';
 }) {
+  const sm = size === 'sm';
   const [from, to] = COLOURS[setId] ?? hashColours(setId);
   const logo = SETS.find((s) => s.id === setId)?.logo;
   const [logoFailed, setLogoFailed] = useState(false);
   return (
     <div
       data-testid="pack-art"
-      className={`retro-shadow relative h-48 w-32 border-4 border-ink ${className}`}
+      data-size={size}
+      className={`retro-shadow relative border-4 border-ink ${sm ? 'h-[7.5rem] w-20' : 'h-48 w-32'} ${className}`}
       style={{ background: `linear-gradient(170deg, ${from}, ${to})` }}
     >
       {!torn && (
         <div
           aria-hidden
           data-part="strip"
-          className="absolute inset-x-0 top-0 h-6 border-b-4 border-dashed border-paper"
+          className={`absolute inset-x-0 top-0 border-dashed border-paper ${sm ? 'h-4 border-b-2' : 'h-6 border-b-4'}`}
         />
       )}
-      <div className="absolute inset-x-2 top-12 flex h-20 items-center justify-center">
+      <div
+        className={`absolute inset-x-1 flex items-center justify-center ${sm ? 'top-8 h-12' : 'inset-x-2 top-12 h-20'}`}
+      >
         {logo && !logoFailed ? (
           <img
             src={`${logo}.webp`}
@@ -65,12 +72,17 @@ export function PackArt({
             className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink)]"
           />
         ) : (
-          <span className="text-center font-pixel text-[9px] leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)]">
+          <span
+            className={`text-center font-pixel leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)] ${sm ? 'text-[6px]' : 'text-[9px]'}`}
+          >
             {name.toUpperCase()}
           </span>
         )}
       </div>
-      <div aria-hidden className="absolute inset-x-0 bottom-3 text-center font-pixel text-[7px] text-paper">
+      <div
+        aria-hidden
+        className={`absolute inset-x-0 text-center font-pixel text-paper ${sm ? 'bottom-1.5 text-[5px]' : 'bottom-3 text-[7px]'}`}
+      >
         {packSize(setId)} CARDS
       </div>
     </div>
