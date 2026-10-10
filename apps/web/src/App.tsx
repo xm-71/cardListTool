@@ -20,7 +20,8 @@ import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
 import { CardZoom } from './ui/CardZoom.tsx';
 import { GymGameOver } from './ui/GymGameOver.tsx';
-import { deckSources } from './game/catalog.ts';
+import { validateGymDeck } from '@ptcg/economy';
+import { deckSources, registry } from './game/catalog.ts';
 import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
 
@@ -101,8 +102,15 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
           onBack={reset}
           onRematch={() => {
             if (config.context?.kind !== 'gym') return;
-            const deck = resolveDeck(config.context.deck, deckSources(useProfile.getState().profile.decks));
-            if (deck) startGymMatch(config.context.leaderId, deck);
+            const { decks, collection } = useProfile.getState().profile;
+            const deck = resolveDeck(config.context.deck, deckSources(decks));
+            // A deck that is gone, or no longer Gym-legal, is not played: back to the Gym Challenge to pick another.
+            if (
+              !deck ||
+              (deck.kind === 'custom' && validateGymDeck(deck.list, registry, collection).length > 0)
+            )
+              return reset();
+            startGymMatch(config.context.leaderId, deck);
           }}
           onNext={() => {
             const { run } = useProfile.getState().profile.gym;

@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { GYM_DECKS } from '@ptcg/cards';
 import { App } from '../src/App.tsx';
 import { LEADERS, type GymProgress, type RunDeck } from '../src/game/gym.ts';
@@ -308,4 +308,128 @@ test('the badge case and the intro show character portraits, not card art', asyn
   expect(order.querySelectorAll('svg')).toHaveLength(5);
   fireEvent.click(screen.getByRole('button', { name: 'Challenge Brock' }));
   expect(screen.getByRole('img', { name: 'Brock' })).toBeInTheDocument();
+});
+
+describe('draws', () => {
+  const draw = { winner: 'draw' as const, reason: 'noPokemon' as const };
+  const elite = {
+    kind: 'elite' as const,
+    stage: 1,
+    deck: { kind: 'starter' as const, id: 'x' },
+    deckName: 'D',
+    cover: 'me02-056',
+  };
+  const payout = { credits: 0, packs: [], badge: false, champion: false };
+
+  test('a drawn Gym match says Draw, not "You lose", and offers another try', () => {
+    render(
+      <GymGameOver
+        {...props}
+        context={{ kind: 'gym', leaderId: 'brock', deck: { kind: 'starter', id: 'mega-gengar' } }}
+        result={draw}
+        payout={{ ...payout, credits: 30 }}
+      />,
+    );
+    expect(screen.getByText('Draw')).toBeInTheDocument();
+    expect(screen.queryByText('You lose')).toBeNull();
+    expect(screen.getByText("It's a draw. Nobody takes the win.")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeEnabled();
+  });
+
+  test('a drawn Elite Four match keeps the run and offers to replay the same opponent', () => {
+    const onNext = vi.fn();
+    render(<GymGameOver {...props} onNext={onNext} context={elite} result={draw} payout={payout} />);
+    expect(screen.getByText('Draw')).toBeInTheDocument();
+    expect(screen.getByText('The match is replayed. Your run continues.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Replay: Bruno' }));
+    expect(onNext).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /Next:/ })).toBeNull();
+  });
+});
+
+describe('what the result screen announces', () => {
+  const win = { winner: 0 as const, reason: 'prizes' as const };
+  const elite = {
+    kind: 'elite' as const,
+    stage: 1,
+    deck: { kind: 'starter' as const, id: 'x' },
+    deckName: 'D',
+    cover: 'me02-056',
+  };
+
+  test('the saving state and the rewards are in a polite live region', () => {
+    const { rerender } = render(<GymGameOver {...props} context={elite} result={win} payout={undefined} />);
+    const live = screen.getByRole('status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('Saving…');
+    rerender(
+      <GymGameOver
+        {...props}
+        context={elite}
+        result={win}
+        payout={{ credits: 125, packs: [Array(10).fill('sv03.5-074')], badge: false, champion: false }}
+      />,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('+125 credits');
+    expect(screen.getByRole('status')).toHaveTextContent('You won a Scarlet & Violet 151 pack!');
+  });
+
+  test('a result that did not count says so', () => {
+    render(
+      <GymGameOver
+        {...props}
+        context={elite}
+        result={win}
+        payout={{ credits: 0, packs: [], badge: false, champion: false, counted: false }}
+      />,
+    );
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'This match did not count: your run has moved on (maybe in another tab).',
+    );
+  });
+});
+
+describe('rematch', () => {
+  async function lostMatchWith(
+    deck: { kind: 'starter' | 'theme' | 'custom'; id: string },
+    profile: Partial<Profile> = {},
+  ) {
+    await launch('gym', { credits: 0, ...profile });
+    act(() =>
+      useGame.getState().start({
+        mode: 'bot',
+        difficulty: 'easy',
+        humanDeck: DECKS[0]!.list,
+        botDeck: GYM_DECKS.brock,
+        seed: 1,
+        context: { kind: 'gym', leaderId: 'brock', deck },
+      }),
+    );
+    act(() => useGame.getState().dispatch(0, { type: 'concede' }));
+    return screen.findByRole('dialog', { name: 'Game over' });
+  }
+
+  test('a rematch with a starter deck starts a new match against the same leader', async () => {
+    const over = await lostMatchWith({ kind: 'starter', id: 'mega-gengar' });
+    fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(useGame.getState().state?.result).toBeNull());
+    expect(useGame.getState().config?.context).toMatchObject({ kind: 'gym', leaderId: 'brock' });
+  });
+
+  test('a rematch whose deck was deleted goes back to the Gym Challenge to pick another', async () => {
+    const over = await lostMatchWith({ kind: 'custom', id: 'ghost' });
+    fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
+    expect(useGame.getState().state).toBeNull();
+    expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
+  });
+
+  test('a rematch whose deck is no longer Gym-legal goes back to pick another instead of playing it', async () => {
+    const over = await lostMatchWith(
+      { kind: 'custom', id: 'mine' },
+      { decks: [{ id: 'mine', name: 'Mine', cards: [{ id: 'sv03.5-074', count: 60 }] }] },
+    );
+    fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
+    expect(useGame.getState().state).toBeNull();
+    expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
+  });
 });

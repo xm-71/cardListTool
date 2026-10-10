@@ -137,3 +137,29 @@ test('a finished match clears the mark and advances the run', async () => {
   await useProfile.getState().abandonUnfinishedRun();
   expect(profile().gym.run?.stage).toBe(1);
 });
+
+test('a drawn Elite Four match keeps the run at the same stage and clears the mark', async () => {
+  await init({ gym: { badges: ids, run: { stage: 2, deck }, hallOfFame: [] } });
+  await useProfile.getState().beginEliteMatch(2);
+  const paid = await useProfile
+    .getState()
+    .recordElite({ seed: 8, stage: 2, won: false, draw: true, deckName: 'D', cover: 'c' });
+  expect(paid).toMatchObject({ credits: 0, packs: [], counted: true });
+  expect(profile().gym.run).toEqual({ stage: 2, deck });
+  await useProfile.getState().abandonUnfinishedRun();
+  expect(profile().gym.run?.stage).toBe(2); // the mark is gone, so nothing is abandoned
+});
+
+test('a result for a stage the run has moved past (another tab) is reported as not counted', async () => {
+  await init({ gym: { badges: ids, run: { stage: 3, deck }, hallOfFame: [] } });
+  const paid = await useProfile
+    .getState()
+    .recordElite({ seed: 9, stage: 1, won: true, deckName: 'D', cover: 'c' });
+  expect(paid).toMatchObject({ credits: 0, packs: [], counted: false });
+  expect(profile().gym.run?.stage).toBe(3);
+  // a normal result says it counted
+  const ok = await useProfile
+    .getState()
+    .recordElite({ seed: 10, stage: 3, won: true, deckName: 'D', cover: 'c' });
+  expect(ok?.counted).toBe(true);
+});

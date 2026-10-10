@@ -40,6 +40,7 @@ export function useGymResult(): GymPayout | undefined {
   useEffect(() => {
     if (!result || !config || !context || seed === undefined) return;
     const won = result.winner === human;
+    const draw = result.winner === 'draw';
     const profile = useProfile.getState();
     const saved =
       context.kind === 'gym'
@@ -53,6 +54,7 @@ export function useGymResult(): GymPayout | undefined {
             seed,
             stage: context.stage,
             won,
+            draw,
             deckName: context.deckName,
             cover: context.cover,
           });

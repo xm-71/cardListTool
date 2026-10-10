@@ -131,9 +131,23 @@ describe('the Elite Four run', () => {
     // finishing the match with a win clears the mark
     expect(applyEliteResult(marked, 2, true, entry).next.run).toEqual({ stage: 3, deck });
   });
-  test('a result for the wrong stage, or with no run, changes nothing', () => {
-    expect(applyEliteResult(run(1), 0, true, entry).next).toEqual(run(1));
-    expect(applyEliteResult(withBadges(8), 0, true, entry).reward).toBeNull();
+  test('a result for the wrong stage, or with no run, changes nothing and says it did not count', () => {
+    expect(applyEliteResult(run(1), 0, true, entry)).toEqual({ next: run(1), reward: null, stale: true });
+    expect(applyEliteResult(withBadges(8), 0, true, entry)).toMatchObject({ reward: null, stale: true });
+    expect(applyEliteResult(run(1), 1, true, entry).stale).toBeUndefined();
+  });
+  test('a draw keeps the run at the same stage (the match is replayed) and clears the match mark', () => {
+    const marked = beginMatch(run(2), 2);
+    const drawn = applyEliteResult(marked, 2, false, entry, true);
+    expect(drawn).toEqual({ next: run(2), reward: null });
+    expect(drawn.next.run?.inMatch).toBeUndefined();
+  });
+  test('a draw for the wrong stage still changes nothing', () => {
+    expect(applyEliteResult(run(1), 0, false, entry, true)).toEqual({
+      next: run(1),
+      reward: null,
+      stale: true,
+    });
   });
 });
 
