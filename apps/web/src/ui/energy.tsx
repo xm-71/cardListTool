@@ -18,6 +18,7 @@ export function EnergyDot({ type, title }: { type: EnergyType; title?: string })
   const s = ENERGY_STYLE[type];
   return (
     <span
+      data-testid="energy-dot"
       title={title ?? `${type} Energy`}
       className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${s.bg}`}
     >

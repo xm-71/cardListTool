@@ -350,7 +350,9 @@ test('with all 8 badges the Elite Four panel is ready', async ({ page }) => {
   await page.screenshot({ path: 'test-results/gym-elite.png', fullPage: true });
 });
 
-test('on a phone the battle log can be hidden, and a long press opens a card full size', async ({ page }) => {
+test('on a phone the battle log is in the menu, and a long press opens a card full size', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await page.goto('/');
   await expect(page.getByText('PRESS START')).toBeVisible();
@@ -360,13 +362,15 @@ test('on a phone the battle log can be hidden, and a long press opens a card ful
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await playThroughSetup(page);
 
-  // The log starts hidden on a phone and a button shows it.
+  // The log lives in the Menu on a phone: hidden until asked for.
   const log = page.getByRole('region', { name: 'Game log' });
   await expect(log).toBeHidden();
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Show log' }).click();
   await expect(log).toBeVisible();
   await page.getByRole('button', { name: 'Hide log' }).click();
   await expect(log).toBeHidden();
+  await page.getByRole('dialog', { name: 'Game menu' }).getByRole('button', { name: 'Close' }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= 375), 'no sideways scroll').toBe(
     true,
   );
@@ -385,7 +389,7 @@ test('on a phone the battle log can be hidden, and a long press opens a card ful
   await expect(view).toBeHidden();
 });
 
-test('phase 1 on a phone: End turn stays on screen on a crowded board and the Shop shows packs above the fold', async ({
+test('phone: the Shop shows packs above the fold and a crowded board fits one screen with End turn on it', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -441,16 +445,90 @@ test('phase 1 on a phone: End turn stays on screen on a crowded board and the Sh
   });
   await page.waitForTimeout(800);
   await page.screenshot({ path: 'test-results/board-phone-phase1.png' });
+  const fits = await page.evaluate(() => ({
+    h: document.documentElement.scrollHeight,
+    view: window.innerHeight,
+    w: document.documentElement.scrollWidth,
+  }));
+  expect(fits.h, 'board height fits one screen').toBeLessThanOrEqual(fits.view);
+  expect(fits.w, 'board sideways scroll').toBeLessThanOrEqual(390);
   const endTurn = await page.getByRole('button', { name: 'End turn' }).boundingBox();
   expect(endTurn, 'End turn visible').not.toBeNull();
   expect(endTurn!.y + endTurn!.height, 'End turn inside the viewport').toBeLessThanOrEqual(844);
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth <= 390),
-    'board sideways scroll',
-  ).toBe(true);
-  // The hand is one row.
-  const hand = await page.getByRole('region', { name: 'Your hand' }).boundingBox();
-  expect(hand!.height, 'hand is a single row').toBeLessThan(160);
+  // Your Active and your whole Bench are on screen.
+  const cards = await page
+    .getByRole('region', { name: /^You$/ })
+    .locator('[data-uid]')
+    .evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return { top: r.top, bottom: r.bottom, left: r.left, right: r.right };
+      }),
+    );
+  expect(cards.length, 'cards on your side').toBeGreaterThanOrEqual(5);
+  for (const c of cards.slice(0, 5)) {
+    expect(c.top).toBeGreaterThanOrEqual(0);
+    expect(c.bottom).toBeLessThanOrEqual(844 - 60);
+    expect(c.left).toBeGreaterThanOrEqual(0);
+    expect(c.right).toBeLessThanOrEqual(390);
+  }
+  // Tapping the Active opens its sheet with its attacks (one more tap uses one).
+  await page.getByRole('region', { name: /^You$/ }).locator('[data-uid]').first().click();
+  const sheet = page.getByRole('dialog').last();
+  await expect(sheet.getByRole('menu')).toBeVisible();
+  expect(await sheet.getByRole('menuitem').count()).toBeGreaterThanOrEqual(1);
+  await sheet.getByRole('button', { name: 'Close' }).click();
+});
+
+test('desktop 1280×800: the Active and Bench cards are big, and the whole board fits', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/?e2e');
+  await expect(page.getByText('PRESS START')).toBeVisible();
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Skip' }).click();
+  await page.getByRole('menuitem', { name: 'Duel' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await playThroughSetup(page);
+  await page.evaluate(() => {
+    type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const game = (window as unknown as { __game: Any }).__game;
+    const s = structuredClone(game.getState().state) as Any;
+    let n = 0;
+    for (const p of s.players) {
+      const take = (k: number) => p.deck.splice(0, k);
+      const copy = () => {
+        const uid = `e2e-${n++}`;
+        s.cards[uid] = { ...s.cards[p.active.stack[0]], uid };
+        return uid;
+      };
+      p.bench = Array.from({ length: 4 }, () => ({
+        ...structuredClone(p.active),
+        stack: [copy()],
+        energy: take(2),
+        damage: 0,
+      }));
+      p.hand = [...p.hand, ...take(Math.max(0, 7 - p.hand.length))];
+    }
+    game.setState({ state: s });
+  });
+  await page.waitForTimeout(800);
+  const widths = await page
+    .getByRole('region', { name: /^You$/ })
+    .locator('[data-uid]')
+    .evaluateAll((els) => els.slice(0, 2).map((e) => e.getBoundingClientRect().width));
+  expect(widths[0], 'Active card width').toBeGreaterThanOrEqual(110);
+  expect(widths[1], 'Bench card width').toBeGreaterThanOrEqual(70);
+  const fit = await page.evaluate(() => ({ h: document.documentElement.scrollHeight, v: innerHeight }));
+  expect(fit.h).toBeLessThanOrEqual(fit.v);
+  // every card of both sides is fully on screen
+  const off = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('main [data-uid]')].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return r.bottom > innerHeight + 1 || r.top < -1;
+      }).length,
+  );
+  expect(off, 'cards off screen').toBe(0);
 });
 
 test('phase 1 and 2 on a desktop: the Shop shows at least 10 packs above the fold', async ({ page }) => {

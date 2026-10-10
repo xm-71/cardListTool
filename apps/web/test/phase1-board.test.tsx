@@ -24,12 +24,12 @@ afterEach(() => vi.unstubAllGlobals());
 describe('on a phone', () => {
   beforeEach(() => media(true));
 
-  test('End turn, Log and Menu live in the bottom bar, once each', () => {
+  test('Hand, End turn and Menu live in the bottom bar, once each', () => {
     render(<GameScreen />);
     const bar = screen.getByRole('toolbar', { name: 'Game controls' });
     expect(screen.getAllByRole('button', { name: 'End turn' })).toHaveLength(1);
     expect(within(bar).getByRole('button', { name: 'End turn' })).toBeInTheDocument();
-    expect(within(bar).getByRole('button', { name: 'Show log' })).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: /^Hand \d+$/ })).toBeInTheDocument();
     expect(within(bar).getByRole('button', { name: 'Menu' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Concede' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Quit to home' })).toBeNull();
@@ -62,15 +62,6 @@ describe('on a phone', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Quit to home' }));
     expect(useGame.getState().state).toBeNull();
     expect(useNav.getState().route).toBe('menu');
-  });
-
-  test('Log shows and hides the battle log', () => {
-    render(<GameScreen />);
-    const log = screen.getByRole('region', { name: 'Game log' });
-    expect(log.parentElement).toHaveClass('hidden');
-    fireEvent.click(screen.getByRole('button', { name: 'Show log' }));
-    expect(log.parentElement).not.toHaveClass('hidden');
-    expect(screen.getByRole('button', { name: 'Hide log' })).toHaveAttribute('aria-expanded', 'true');
   });
 
   test('no bar while a prompt is open (the prompt has its own Done)', () => {

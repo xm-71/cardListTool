@@ -11,13 +11,14 @@ const SIZES = {
   md: 'w-24',
   lg: 'w-64',
   // Board sizes: on desktop widths they also shrink with the window height so the board fits without scrolling.
-  bench: 'w-16 lg:w-[min(4rem,6.5vh)]',
-  active: 'w-24 lg:w-[min(6rem,8.5vh)]',
-  hand: 'w-16 lg:w-[min(5rem,8vh)]',
+  bench: 'w-16 lg:w-[min(6.5rem,10vh)]',
+  active: 'w-24 lg:w-[min(9rem,14vh)]',
+  hand: 'w-16 lg:w-[min(5.5rem,8vh)]',
+  /** The card shown big in the selection panel. */
+  panel: 'w-28 lg:w-[min(6.5rem,12vh)]',
   pile: 'w-12 lg:w-[min(3.5rem,6vh)]',
   /** Attached Energy under a Pokémon. */
   chip: 'w-6 lg:w-[min(1.5rem,3.2vh)]',
-  zoom: 'w-64 lg:w-[min(16rem,32vh)]',
 } as const;
 export type CardSize = keyof typeof SIZES;
 
@@ -26,24 +27,31 @@ interface Props {
   size?: CardSize;
   onClick?: () => void;
   highlighted?: boolean;
-  /** Disable hover zoom (e.g. inside the zoom itself). */
+  /** The card the player has picked. */
+  selected?: boolean;
+  /** Disable long-press zoom (e.g. inside the zoom itself). */
   noPreview?: boolean;
 }
 
-export function CardView({ card, size = 'md', onClick, highlighted, noPreview }: Props) {
+export function CardView({ card, size = 'md', onClick, highlighted, selected, noPreview }: Props) {
   const def = defOf(card);
   const [failed, setFailed] = useState(false);
-  const show = usePreview((s) => s.show);
   const zoom = usePreview((s) => s.zoom);
   const press = useLongPress(() => zoom(card));
-  const quality = size === 'lg' || size === 'zoom' ? 'high' : 'low';
-  const ring = highlighted ? 'ring-4 ring-red' : onClick ? 'hover:ring-4 hover:ring-yellow' : '';
+  const quality = size === 'lg' || size === 'panel' ? 'high' : 'low';
+  const ring = selected
+    ? 'ring-4 ring-yellow'
+    : highlighted
+      ? 'ring-4 ring-red'
+      : onClick
+        ? 'hover:ring-4 hover:ring-yellow'
+        : '';
   // A tiny Energy card that can't load is shown as its coloured dot.
   if (failed && size === 'chip' && def.category === 'Energy') {
     return <EnergyDot type={def.provides[0] ?? 'Colorless'} title={def.name} />;
   }
   const body = failed ? (
-    <TextCard def={def} compact={size !== 'lg' && size !== 'zoom'} />
+    <TextCard def={def} compact={size !== 'lg' && size !== 'panel'} />
   ) : (
     <img
       src={`${def.image}/${quality}.webp`}
@@ -57,7 +65,7 @@ export function CardView({ card, size = 'md', onClick, highlighted, noPreview }:
   // Press and hold a card to look at it full size (no hover on a phone).
   const hold = noPreview ? '' : ' select-none [-webkit-touch-callout:none]';
   const className = `${SIZES[size]} aspect-[63/88] shrink-0 rounded-[6%] ${ring} ${onClick ? 'cursor-pointer' : ''}${hold}`;
-  const hover = noPreview ? {} : { onMouseEnter: () => show(card), ...press.handlers };
+  const hover = noPreview ? {} : press.handlers;
   const click = onClick
     ? () => {
         if (!noPreview && press.consumeClick()) return;

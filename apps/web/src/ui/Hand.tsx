@@ -4,10 +4,11 @@ import { CardView } from './CardView.tsx';
 interface Props {
   cards: CardInstance[];
   playable(uid: string): boolean;
+  selectedUid?: string | null;
   onCard(uid: string): void;
 }
 
-export function Hand({ cards, playable, onCard }: Props) {
+export function Hand({ cards, playable, selectedUid, onCard }: Props) {
   return (
     <section
       aria-label="Your hand"
@@ -18,7 +19,13 @@ export function Hand({ cards, playable, onCard }: Props) {
         const ok = playable(c.uid);
         return (
           <div key={c.uid} className={`shrink-0 snap-start ${ok ? '' : 'opacity-60'}`}>
-            <CardView card={c} size="hand" onClick={() => onCard(c.uid)} highlighted={ok} />
+            <CardView
+              card={c}
+              size="hand"
+              onClick={() => onCard(c.uid)}
+              highlighted={ok}
+              selected={c.uid === selectedUid}
+            />
           </div>
         );
       })}
