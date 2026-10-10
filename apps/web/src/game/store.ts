@@ -60,7 +60,7 @@ export const useGame = create<GameStore>()((set, get) => ({
       decks: [cfg.humanDeck, cfg.botDeck],
       seed: cfg.seed,
     });
-    usePreview.getState().show(null);
+    usePreview.getState().zoom(null);
     set({ state, config: cfg, human: 0, actions: [], error: null, failure: null });
   },
   dispatch(player, action) {
@@ -79,7 +79,7 @@ export const useGame = create<GameStore>()((set, get) => ({
     }
   },
   reset() {
-    usePreview.getState().show(null);
+    usePreview.getState().zoom(null);
     set({ state: null, config: null, human: 0, actions: [], error: null, failure: null });
   },
 }));

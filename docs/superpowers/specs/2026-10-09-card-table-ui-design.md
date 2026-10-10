@@ -273,3 +273,14 @@ Contents, top to bottom:
 - Redesigning `PromptPanel`, `PackOpening`, the Binder book, the Deck Builder and the Gym screens. The Binder only gets the shared one-row chip filter.
 - New animations beyond sheet slide-ins.
 - Engine, bot or economy rule changes. Pack prices stay as they are.
+
+## 9. Implementation notes (phase 3, as built)
+
+Where the build differs from the sections above:
+
+- **Bench card width** is at least 70 px at 1280×800 (not 78). At 78 px the board no longer fits that window with the hand on screen. The Active is 112 px.
+- **Desktop log** is always shown (not collapsible); it takes the height the panel leaves.
+- **Stadium** is not selectable. The card is shown next to the turn status, and its effect is a menu item in the panel when legal.
+- **Discard pile** top cards still open the discard viewer (the viewer is more useful than selecting a card that has no actions).
+- **Phone Menu** holds Show/Hide log, Concede and Quit. The bar's buttons are Hand, End turn and Menu.
+- **Selection panel card size** is smaller than first drawn (about 100 px wide) so the attacks and actions stay in view.

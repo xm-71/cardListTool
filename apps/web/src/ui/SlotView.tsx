@@ -10,10 +10,11 @@ interface Props {
   size?: CardSize;
   onClick?: () => void;
   highlighted?: boolean;
+  selected?: boolean;
 }
 
 /** A Pokémon in play: its card, HP left, attached Energy and Tool, and Special Conditions. */
-export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
+export function SlotView({ slot, size = 'md', onClick, highlighted, selected }: Props) {
   const def = topDef(slot);
   const hp = slot.hp ?? def.hp; // effective max HP (e.g. Gravity Mountain), when the view provides it
   const hpLeft = Math.max(0, hp - slot.damage);
@@ -25,7 +26,13 @@ export function SlotView({ slot, size = 'md', onClick, highlighted }: Props) {
   return (
     <div className="relative flex flex-col items-center gap-1">
       <div className="relative">
-        <CardView card={topCard(slot)} size={size} onClick={onClick} highlighted={highlighted} />
+        <CardView
+          card={topCard(slot)}
+          size={size}
+          onClick={onClick}
+          highlighted={highlighted}
+          selected={selected}
+        />
         <div className="absolute -top-3 -right-3 w-16 border-2 border-ink bg-paper px-1 py-0.5 font-pixel text-[7px] leading-tight lg:-right-1 lg:w-[calc(100%+0.5rem)] lg:text-[6px]">
           <span className={slot.damage > 0 ? 'text-red' : ''}>
             {hpLeft}/{hp}

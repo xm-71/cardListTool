@@ -15,24 +15,22 @@ afterEach(() => vi.useRealTimers());
 
 const nameOf = (uid: string) => registry.defs[useGame.getState().state!.cards[uid]!.defId]!.name;
 
-describe('hotseat zoom preview', () => {
-  test('a card hovered by one player is not shown to the next player after passing', () => {
+describe('hotseat selection', () => {
+  test('a card picked by one player is not shown to the next player after passing', () => {
     useGame.getState().start({ ...botCfg(seedWhereSeat0PromptsFirst()), mode: 'hotseat' });
     finishSetupInStore();
     render(<App botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     fireEvent.click(screen.getByRole('button', { name: 'Ready' }));
     const s = useGame.getState().state!;
     const me = actorOf(s)!;
-    const hovered = s.players[me].hand[0]!;
-    fireEvent.mouseEnter(
-      within(screen.getByRole('region', { name: 'Your hand' })).getAllByRole('button')[0]!,
-    );
-    expect(screen.getByRole('complementary', { name: 'Card zoom' })).toHaveTextContent(''); // preview shows an image
+    const picked = s.players[me].hand[0]!;
+    fireEvent.click(within(screen.getByRole('region', { name: 'Your hand' })).getAllByRole('button')[0]!);
+    const panel = () => screen.getByRole('complementary', { name: 'Selection' });
+    expect(within(panel()).getByRole('menu', { name: nameOf(picked) })).toBeInTheDocument();
     rtlAct(() => useGame.getState().dispatch(me, { type: 'endTurn' }));
     fireEvent.click(screen.getByRole('button', { name: 'Ready' }));
-    const zoom = screen.getByRole('complementary', { name: 'Card zoom' });
-    expect(within(zoom).queryByRole('img', { name: nameOf(hovered) })).toBeNull();
-    expect(within(zoom).getByText('Hover a card to zoom')).toBeInTheDocument();
+    expect(document.querySelector(`[data-uid="${picked}"]`)).toBeNull();
+    expect(within(panel()).queryByRole('menu', { name: nameOf(picked) })).toBeNull();
   });
 });
 
@@ -122,13 +120,14 @@ describe('same-name targets', () => {
   });
 });
 
-describe('reading cards without the side panel', () => {
-  test('clicking a Pokémon with no available actions opens a card details view', () => {
+describe('reading cards', () => {
+  test("clicking the opponent's Pokémon shows it in the side panel, and Card details opens it", () => {
     useGame.getState().start(botCfg(1));
     finishSetupInStore();
     render(<App botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     const opp = screen.getByRole('region', { name: 'Opponent' });
     fireEvent.click(within(opp).getAllByRole('button')[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Card details' }));
     expect(screen.getByRole('dialog', { name: 'Card details' })).toBeInTheDocument();
   });
 });

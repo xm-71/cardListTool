@@ -60,30 +60,24 @@ describe('Sheet', () => {
 describe('ActionBar', () => {
   const setup = (over: Partial<Parameters<typeof ActionBar>[0]> = {}) => {
     const props = {
-      logOpen: false,
-      onToggleLog: vi.fn(),
+      handCount: 5,
+      onHand: vi.fn(),
       onEndTurn: vi.fn(),
       onConcede: vi.fn(),
       onQuit: vi.fn(),
+      log: <section aria-label="Game log">entries</section>,
       ...over,
     };
     render(<ActionBar {...props} />);
     return props;
   };
 
-  test('Log toggles the log, End turn ends the turn', () => {
+  test('Hand opens the hand, End turn ends the turn', () => {
     const p = setup();
-    const log = screen.getByRole('button', { name: 'Show log' });
-    expect(log).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(log);
-    expect(p.onToggleLog).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Hand 5' }));
+    expect(p.onHand).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'End turn' }));
     expect(p.onEndTurn).toHaveBeenCalled();
-  });
-
-  test('says Hide log when the log is open', () => {
-    setup({ logOpen: true });
-    expect(screen.getByRole('button', { name: 'Hide log' })).toHaveAttribute('aria-expanded', 'true');
   });
 
   test('End turn is missing when it is not legal', () => {
@@ -91,10 +85,15 @@ describe('ActionBar', () => {
     expect(screen.queryByRole('button', { name: 'End turn' })).toBeNull();
   });
 
-  test('Menu opens a Game menu sheet with Concede and Quit to home', () => {
+  test('Menu opens a Game menu sheet with the log, Concede and Quit to home', () => {
     const p = setup();
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
     const sheet = screen.getByRole('dialog', { name: 'Game menu' });
+    expect(within(sheet).queryByRole('region', { name: 'Game log' })).toBeNull();
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Show log' }));
+    expect(within(sheet).getByRole('region', { name: 'Game log' })).toBeInTheDocument();
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Hide log' }));
+    expect(within(sheet).queryByRole('region', { name: 'Game log' })).toBeNull();
     fireEvent.click(within(sheet).getByRole('button', { name: 'Concede' }));
     expect(p.onConcede).toHaveBeenCalled();
     expect(screen.queryByRole('dialog', { name: 'Game menu' })).toBeNull();

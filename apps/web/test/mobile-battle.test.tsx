@@ -7,7 +7,6 @@ import { CardZoom } from '../src/ui/CardZoom.tsx';
 import { DiscardViewer } from '../src/ui/DiscardViewer.tsx';
 import { SlotView } from '../src/ui/SlotView.tsx';
 import { usePreview } from '../src/ui/preview.ts';
-import { useLogOpen } from '../src/ui/useLogOpen.ts';
 import { CardThumb } from '../src/ui/CardThumb.tsx';
 import { registry } from '../src/game/catalog.ts';
 
@@ -32,7 +31,7 @@ const slot = (energy: CardInstance[] = []): SlotViewData => ({
 
 beforeEach(() => {
   vi.useFakeTimers();
-  usePreview.setState({ card: null, zoomed: null });
+  usePreview.setState({ zoomed: null });
 });
 afterEach(() => vi.useRealTimers());
 
@@ -185,58 +184,5 @@ describe('discard pile viewer', () => {
     expect(names).toEqual(['Psychic Energy', 'Darkness Energy', 'Gastly']);
     fireEvent.click(within(view).getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalled();
-  });
-});
-
-describe('the battle log on a phone', () => {
-  const Probe = () => {
-    const [open, toggle] = useLogOpen();
-    return (
-      <button type="button" onClick={toggle}>
-        {open ? 'open' : 'hidden'}
-      </button>
-    );
-  };
-  const media = (matches: boolean) =>
-    vi.stubGlobal('matchMedia', (q: string) => ({ matches: q.includes('max-width') ? matches : false }));
-  beforeEach(() => {
-    localStorage.clear();
-    vi.useRealTimers();
-  });
-  afterEach(() => vi.unstubAllGlobals());
-
-  test('starts hidden on a phone, open on a wide screen', () => {
-    media(true);
-    const phone = render(<Probe />);
-    expect(screen.getByRole('button')).toHaveTextContent('hidden');
-    phone.unmount();
-    media(false);
-    render(<Probe />);
-    expect(screen.getByRole('button')).toHaveTextContent('open');
-  });
-
-  test('the choice is remembered', () => {
-    media(true);
-    const first = render(<Probe />);
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('button')).toHaveTextContent('open');
-    first.unmount();
-    render(<Probe />);
-    expect(screen.getByRole('button')).toHaveTextContent('open');
-  });
-
-  test('without matchMedia or storage the log is open and toggling still works', () => {
-    vi.stubGlobal('matchMedia', undefined);
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('blocked');
-    });
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('blocked');
-    });
-    render(<Probe />);
-    expect(screen.getByRole('button')).toHaveTextContent('open');
-    fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('button')).toHaveTextContent('hidden');
-    vi.restoreAllMocks();
   });
 });

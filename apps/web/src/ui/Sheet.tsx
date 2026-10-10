@@ -4,7 +4,7 @@ interface Props {
   title: string;
   onClose(): void;
   children: ReactNode;
-  /** Extra classes for the panel, e.g. a height limit. */
+  /** The panel's height limit (a Tailwind max-h class). */
   className?: string;
 }
 
@@ -33,7 +33,7 @@ export function Sheet({ title, onClose, children, className = '' }: Props) {
       <div
         role="dialog"
         aria-label={title}
-        className={`retro-box sheet-in flex max-h-[85dvh] w-full max-w-xl flex-col gap-3 overflow-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] ${className}`}
+        className={`retro-box sheet-in flex w-full max-w-xl flex-col gap-3 overflow-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3">
