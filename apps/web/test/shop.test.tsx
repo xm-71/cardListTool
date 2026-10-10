@@ -37,8 +37,11 @@ test('(RF2) Buy & open is disabled below the price of the pack', async () => {
 
 test('older packs are cheaper: 120 credits buys a Classic pack but not a Mega Evolution one', async () => {
   await openShop(120);
-  const buy = (name: string) => within(screen.getByRole('group', { name })).getByRole('button', { name: 'Buy & open' });
-  expect(within(screen.getByRole('group', { name: 'Base Set' })).getByText('100 credits')).toBeInTheDocument();
+  const buy = (name: string) =>
+    within(screen.getByRole('group', { name })).getByRole('button', { name: 'Buy & open' });
+  expect(
+    within(screen.getByRole('group', { name: 'Base Set' })).getByText('100 credits'),
+  ).toBeInTheDocument();
   expect(buy('Base Set')).toBeEnabled();
   expect(buy('Mega Evolution')).toBeDisabled();
 });

@@ -1,13 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { registry } from '../game/catalog.ts';
-import {
-  artCacheSupported,
-  artUrls,
-  cachedArtUrls,
-  clearArt,
-  downloadArt,
-  keepArt,
-} from '../offline/art.ts';
+import { artCacheSupported, artUrls, cachedArtUrls, clearArt, downloadArt, keepArt } from '../offline/art.ts';
 import { eraArt } from '../offline/eraArt.ts';
 import { useInstall } from '../offline/useInstall.ts';
 import { Button } from '../ui/retro/index.ts';

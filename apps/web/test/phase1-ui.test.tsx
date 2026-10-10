@@ -129,7 +129,14 @@ describe('the Shop on a small screen', () => {
     await useProfile.getState().init(createMemoryStore({ ...newProfile(), ...p }), true);
     render(<Shop />);
   }
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q.includes('max-width'),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+  });
 
   test('has no intro box; Collector mode gets a one-line note', async () => {
     await shop();
@@ -160,9 +167,9 @@ describe('the Shop on a small screen', () => {
     expect(box.parentElement).not.toHaveClass('hidden');
   });
 
-  test('pack tiles use the small pack art', async () => {
+  test('pack rows use the mini pack art', async () => {
     await shop();
-    for (const art of screen.getAllByTestId('pack-art')) expect(art).toHaveAttribute('data-size', 'sm');
+    for (const art of screen.getAllByTestId('pack-art')) expect(art).toHaveAttribute('data-size', 'mini');
     expect(screen.getAllByRole('button', { name: 'Buy & open' })).toHaveLength(PACKS.length);
   });
 });

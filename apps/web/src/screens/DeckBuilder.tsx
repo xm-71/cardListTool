@@ -222,7 +222,9 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
                   </span>
                 ) : (
                   <span className="text-lg opacity-70">
-                    {vintageEra(def.id) ? `${eraLabel(vintageEra(def.id)!)}: not playable yet` : "Isn't playable yet"}
+                    {vintageEra(def.id)
+                      ? `${eraLabel(vintageEra(def.id)!)}: not playable yet`
+                      : "Isn't playable yet"}
                   </span>
                 )}
                 <button

@@ -27,6 +27,33 @@ function hashColours(setId: string): [string, string] {
   return [`hsl(${h} 55% 50%)`, `hsl(${h} 55% 25%)`];
 }
 
+/** Pack sizes: the frame, the torn-off strip, the logo area and the label. `mini` is just a coloured wrapper. */
+const SIZES = {
+  md: {
+    frame: 'h-48 w-32 border-4',
+    strip: 'h-6 border-b-4',
+    logo: 'inset-x-2 top-12 h-20',
+    name: 'text-[9px]',
+    label: 'bottom-3 text-[7px]',
+  },
+  sm: {
+    frame: 'h-[7.5rem] w-20 border-4',
+    strip: 'h-4 border-b-2',
+    logo: 'inset-x-1 top-8 h-12',
+    name: 'text-[6px]',
+    label: 'bottom-1.5 text-[5px]',
+  },
+  xs: {
+    frame: 'h-[5.25rem] w-14 border-2',
+    strip: 'h-3 border-b-2',
+    logo: 'inset-x-1 top-5 h-9',
+    name: 'text-[5px]',
+    label: '',
+  },
+  mini: { frame: 'h-9 w-6 border-2', strip: 'h-1.5 border-b', logo: '', name: '', label: '' },
+} as const;
+export type PackArtSize = keyof typeof SIZES;
+
 /** A CSS-drawn booster pack with its set logo; `torn` hides the top strip (pack opening). */
 export function PackArt({
   setId,
@@ -39,10 +66,10 @@ export function PackArt({
   name: string;
   className?: string;
   torn?: boolean;
-  /** 'sm' is for the Shop's tiles and lists. */
-  size?: 'md' | 'sm';
+  /** Smaller sizes are for the Shop's tiles (`sm`, `xs`) and phone list rows (`mini`). */
+  size?: PackArtSize;
 }) {
-  const sm = size === 'sm';
+  const sz = SIZES[size];
   const [from, to] = COLOURS[setId] ?? hashColours(setId);
   const logo = SETS.find((s) => s.id === setId)?.logo;
   const [logoFailed, setLogoFailed] = useState(false);
@@ -50,41 +77,40 @@ export function PackArt({
     <div
       data-testid="pack-art"
       data-size={size}
-      className={`retro-shadow relative border-4 border-ink ${sm ? 'h-[7.5rem] w-20' : 'h-48 w-32'} ${className}`}
+      className={`retro-shadow relative shrink-0 border-ink ${sz.frame} ${className}`}
       style={{ background: `linear-gradient(170deg, ${from}, ${to})` }}
     >
       {!torn && (
         <div
           aria-hidden
           data-part="strip"
-          className={`absolute inset-x-0 top-0 border-dashed border-paper ${sm ? 'h-4 border-b-2' : 'h-6 border-b-4'}`}
+          className={`absolute inset-x-0 top-0 border-dashed border-paper ${sz.strip}`}
         />
       )}
-      <div
-        className={`absolute inset-x-1 flex items-center justify-center ${sm ? 'top-8 h-12' : 'inset-x-2 top-12 h-20'}`}
-      >
-        {logo && !logoFailed ? (
-          <img
-            src={`${logo}.webp`}
-            alt={`${name} logo`}
-            draggable={false}
-            onError={() => setLogoFailed(true)}
-            className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink)]"
-          />
-        ) : (
-          <span
-            className={`text-center font-pixel leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)] ${sm ? 'text-[6px]' : 'text-[9px]'}`}
-          >
-            {name.toUpperCase()}
-          </span>
-        )}
-      </div>
-      <div
-        aria-hidden
-        className={`absolute inset-x-0 text-center font-pixel text-paper ${sm ? 'bottom-1.5 text-[5px]' : 'bottom-3 text-[7px]'}`}
-      >
-        {packSize(setId)} CARDS
-      </div>
+      {sz.logo && (
+        <div className={`absolute flex items-center justify-center ${sz.logo}`}>
+          {logo && !logoFailed ? (
+            <img
+              src={`${logo}.webp`}
+              alt={`${name} logo`}
+              draggable={false}
+              onError={() => setLogoFailed(true)}
+              className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink)]"
+            />
+          ) : (
+            <span
+              className={`text-center font-pixel leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)] ${sz.name}`}
+            >
+              {name.toUpperCase()}
+            </span>
+          )}
+        </div>
+      )}
+      {sz.label && (
+        <div aria-hidden className={`absolute inset-x-0 text-center font-pixel text-paper ${sz.label}`}>
+          {packSize(setId)} CARDS
+        </div>
+      )}
     </div>
   );
 }

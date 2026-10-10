@@ -404,11 +404,11 @@ test('phase 1 on a phone: End turn stays on screen on a crowded board and the Sh
         return e.querySelector('[data-testid="pack-art"]') && r.top >= 0 && r.bottom <= window.innerHeight;
       }).length,
   );
-  expect(tilesInView, 'pack tiles above the fold').toBeGreaterThanOrEqual(4);
+  await page.screenshot({ path: 'test-results/shop-phone-phase2.png' });
+  expect(tilesInView, 'pack rows above the fold').toBeGreaterThanOrEqual(8);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= 390), 'shop sideways scroll').toBe(
     true,
   );
-  await page.screenshot({ path: 'test-results/shop-phone-phase1.png' });
   await page.getByRole('button', { name: 'Back' }).click();
 
   // Battlefield: a crowded mid-game board.
@@ -453,7 +453,7 @@ test('phase 1 on a phone: End turn stays on screen on a crowded board and the Sh
   expect(hand!.height, 'hand is a single row').toBeLessThan(160);
 });
 
-test('phase 1 on a desktop: the Shop shows at least 8 packs above the fold', async ({ page }) => {
+test('phase 1 and 2 on a desktop: the Shop shows at least 10 packs above the fold', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/?e2e');
   await expect(page.getByText('PRESS START')).toBeVisible();
@@ -468,6 +468,6 @@ test('phase 1 on a desktop: the Shop shows at least 8 packs above the fold', asy
         return e.querySelector('[data-testid="pack-art"]') && r.top >= 0 && r.bottom <= window.innerHeight;
       }).length,
   );
-  await page.screenshot({ path: 'test-results/shop-desktop-phase1.png' });
-  expect(tilesInView, 'pack tiles above the fold').toBeGreaterThanOrEqual(8);
+  await page.screenshot({ path: 'test-results/shop-desktop-phase2.png' });
+  expect(tilesInView, 'pack tiles above the fold').toBeGreaterThanOrEqual(10);
 });
