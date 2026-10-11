@@ -1,5 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
+// These tests drive the board quickly, so battle animations are Off unless a test turns them on.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('ptcg.settings') ?? '{}') as Record<string, unknown>;
+      if (!('animations' in saved))
+        localStorage.setItem('ptcg.settings', JSON.stringify({ ...saved, animations: 'off' }));
+    } catch {
+      // no storage: the default applies
+    }
+  });
+});
+
 /** Answer setup prompts (first card, then Done) until the human can act on the board. */
 async function playThroughSetup(page: Page) {
   const endTurn = page.getByRole('button', { name: 'End turn' });

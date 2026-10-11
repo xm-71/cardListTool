@@ -69,7 +69,10 @@ export function playTrainer(ctx: EffectCtx, uid: string, target?: SlotRef): void
   const def = ctx.def(uid) as TrainerDef;
   removeFrom(p.hand, uid);
   ctx.source = target ? { kind: 'trainer', uid, target } : { kind: 'trainer', uid };
-  log(s, 'playTrainer', `Player ${ctx.me + 1} plays ${def.name}`, { player: ctx.me });
+  log(s, 'playTrainer', `Player ${ctx.me + 1} plays ${def.name}`, {
+    player: ctx.me,
+    anim: { kind: 'trainer', uid, player: ctx.me },
+  });
   switch (def.trainerType) {
     case 'Tool': {
       const slot = getSlot(s, target!)!;

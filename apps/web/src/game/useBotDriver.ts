@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { PlayerId } from '@ptcg/engine';
 import type { BotClient, BotSetup } from './botClient.ts';
+import { useAnim } from './animation/director.ts';
 import { engine } from './catalog.ts';
 import { actorOf, useGame } from './store.ts';
 
@@ -11,6 +12,8 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
   const mode = config?.mode;
   const seed = useGame((s) => s.config?.seed);
   const human = useGame((s) => s.human);
+  // While the last move is still animating, the bot waits, so its turn plays out one move at a time.
+  const busy = useAnim((s) => s.busy);
   const rng = useRef(0);
   const seq = useRef(0);
 
@@ -19,7 +22,7 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
   }, [seed]);
 
   useEffect(() => {
-    if (!state || mode !== 'bot') return;
+    if (!state || mode !== 'bot' || busy) return;
     const botSeat: PlayerId = human === 0 ? 1 : 0;
     if (actorOf(state) !== botSeat) return;
     const mine = ++seq.current;
@@ -54,5 +57,5 @@ export function useBotDriver(client: BotClient, delayMs: number): void {
       }
     }, delayMs);
     return () => clearTimeout(timer);
-  }, [state, mode, config, human, client, delayMs]);
+  }, [state, mode, config, human, client, delayMs, busy]);
 }

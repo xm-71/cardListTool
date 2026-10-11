@@ -24,6 +24,7 @@ import { validateGymDeck } from '@ptcg/economy';
 import { deckSources, registry } from './game/catalog.ts';
 import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
+import { useShownState } from './game/animation/director.ts';
 
 interface Props {
   botClient?: BotClient;
@@ -55,7 +56,8 @@ export function App({ botClient, botDelayMs = 700, startAt }: Props) {
 
 function Game({ client, delay }: { client: BotClient; delay: number }) {
   useBotDriver(client, delay);
-  const state = useGame((s) => s.state);
+  // What the board shows: game over and the hotseat hand-off wait for the last move's animations.
+  const state = useShownState();
   const config = useGame((s) => s.config);
   const human = useGame((s) => s.human);
   const error = useGame((s) => s.error);

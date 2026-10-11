@@ -70,6 +70,7 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
   const onto = slotDef(ctx.env, ctx.state, getSlot(ctx.state, target)!).name;
   log(ctx.state, 'attachEnergy', `Player ${ctx.me + 1} attaches ${ctx.def(uid).name} to ${onto}`, {
     player: ctx.me,
+    anim: { kind: 'energy', uid, target: getSlot(ctx.state, target)!.stack[0]! },
   });
 }
 
@@ -161,6 +162,7 @@ function retreat(ctx: EffectCtx, benchIndex: number): void {
   p.retreatTurn = s.turn;
   log(s, 'retreat', `Player ${ctx.me + 1} retreats to ${slotDef(ctx.env, s, incoming).name}`, {
     player: ctx.me,
+    anim: { kind: 'retreat', from: active.stack[0]!, to: incoming.stack[0]!, player: ctx.me },
   });
 }
 

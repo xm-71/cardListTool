@@ -22,20 +22,32 @@ export function pokemonCheckup(ctx: EffectCtx): void {
     const name = slotDef(ctx.env, s, slot).name;
     if (slot.conditions.poisoned) {
       slot.damage += 10;
-      log(s, 'checkup', `${name} takes 10 Poison damage`, { player });
+      log(s, 'checkup', `${name} takes 10 Poison damage`, {
+        player,
+        anim: { kind: 'checkup', target: slot.stack[0]!, condition: 'poisoned', amount: 10 },
+      });
     }
     if (slot.conditions.burned) {
       slot.damage += 20;
-      log(s, 'checkup', `${name} takes 20 Burn damage`, { player });
+      log(s, 'checkup', `${name} takes 20 Burn damage`, {
+        player,
+        anim: { kind: 'checkup', target: slot.stack[0]!, condition: 'burned', amount: 20 },
+      });
       if (ctx.flipCoin()) slot.conditions.burned = false;
     }
     if (slot.conditions.rotation === 'asleep' && ctx.flipCoin()) {
       slot.conditions.rotation = 'none';
-      log(s, 'checkup', `${name} wakes up`, { player });
+      log(s, 'checkup', `${name} wakes up`, {
+        player,
+        anim: { kind: 'checkup', target: slot.stack[0]!, condition: 'asleep' },
+      });
     }
     if (slot.conditions.rotation === 'paralyzed' && player === ended) {
       slot.conditions.rotation = 'none';
-      log(s, 'checkup', `${name} is no longer Paralyzed`, { player });
+      log(s, 'checkup', `${name} is no longer Paralyzed`, {
+        player,
+        anim: { kind: 'checkup', target: slot.stack[0]!, condition: 'paralyzed' },
+      });
     }
   }
   checkKnockouts(ctx);

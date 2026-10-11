@@ -118,12 +118,14 @@ export function FaceOffBoard({
               type="button"
               aria-label="Empty Bench space"
               data-target=""
+              data-bench-space-of={player}
               onClick={() => pick(benchTarget)}
               className="aspect-[63/88] w-[var(--fo-bench)] border-2 border-dashed border-yellow bg-yellow/20 shadow-[0_0_12px_3px_var(--color-yellow)] motion-safe:animate-pulse"
             />
           ) : (
             <div
               key={index}
+              data-bench-space-of={player}
               className="aspect-[63/88] w-[var(--fo-bench)] border-2 border-dashed border-ink/25"
             />
           );
@@ -134,7 +136,10 @@ export function FaceOffBoard({
 
   const piles = (side: PlayerView['you'] | PlayerView['opponent'], who: 'you' | 'opponent') => (
     <div className="flex flex-col items-center gap-1 text-base leading-none">
-      <div className="card-back relative flex aspect-[63/88] w-[min(9vw,40px)] items-end justify-center border-2 border-ink pb-0.5 text-paper-fixed">
+      <div
+        data-deck-of={who === 'you' ? viewer : opp}
+        className="card-back relative flex aspect-[63/88] w-[min(9vw,40px)] items-end justify-center border-2 border-ink pb-0.5 text-paper-fixed"
+      >
         <span className="relative z-10 font-pixel text-[7px] [text-shadow:1px_1px_var(--color-ink-fixed)]">
           {side.deckCount}
         </span>
@@ -150,8 +155,13 @@ export function FaceOffBoard({
     </div>
   );
 
-  const prizes = (count: number, label: string) => (
-    <div aria-label={`${label}: ${count} Prizes`} className="grid grid-cols-3 gap-0.5" data-prizes>
+  const prizes = (count: number, label: string, player: PlayerId) => (
+    <div
+      aria-label={`${label}: ${count} Prizes`}
+      className="grid grid-cols-3 gap-0.5"
+      data-prizes
+      data-prizes-of={player}
+    >
       {Array.from({ length: 6 }, (_, i) => (
         <span
           key={i}
@@ -208,14 +218,18 @@ export function FaceOffBoard({
           {menu}
           <span className="flex min-w-0 gap-1">
             <span className="truncate">{opponentName}</span>·
-            <span className="shrink-0">Hand {view.opponent.handCount}</span>
+            <span className="shrink-0" data-hand-of={opp}>
+              Hand {view.opponent.handCount}
+            </span>
           </span>
-          {prizes(view.opponent.prizeCount, opponentName)}
+          {prizes(view.opponent.prizeCount, opponentName, opp)}
         </div>
         {bench(opp, view.opponent)}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center px-2">
           <span />
-          {slotView({ player: opp, zone: 'active' }, view.opponent.active, 'foOpp')}
+          <div data-active-of={opp}>
+            {slotView({ player: opp, zone: 'active' }, view.opponent.active, 'foOpp')}
+          </div>
           <div className="justify-self-end">{piles(view.opponent, 'opponent')}</div>
         </div>
       </section>
@@ -236,8 +250,10 @@ export function FaceOffBoard({
 
       <section aria-label="You" className="flex flex-col gap-1">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 px-2">
-          <div className="justify-self-start">{prizes(view.you.prizeCount, 'You')}</div>
-          {slotView({ player: viewer, zone: 'active' }, view.you.active, 'foYou')}
+          <div className="justify-self-start">{prizes(view.you.prizeCount, 'You', viewer)}</div>
+          <div data-active-of={viewer}>
+            {slotView({ player: viewer, zone: 'active' }, view.you.active, 'foYou')}
+          </div>
           <div className="flex flex-col items-end gap-2 justify-self-end">
             {piles(view.you, 'you')}
             {onEndTurn && (
@@ -279,6 +295,7 @@ export function FaceOffBoard({
           </div>
         )}
         <HandFan
+          owner={viewer}
           cards={view.you.hand}
           playable={(uid) => targetsFor(usable, uid).length > 0 || untargeted(usable, uid).length > 0}
           held={held}

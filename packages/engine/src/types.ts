@@ -156,10 +156,39 @@ export interface GameResult {
   reason: 'prizes' | 'noPokemon' | 'deckOut' | 'concede';
 }
 
+/**
+ * What a log event did on the board, for the app to animate. Pokémon in play are named by the first card of
+ * their stack (it stays the same through evolution and moves between Active and Bench).
+ */
+export type EventAnim =
+  | { kind: 'attack'; by: string }
+  | { kind: 'damage'; target: string; amount: number }
+  | { kind: 'knockout'; target: string }
+  | { kind: 'prize'; player: PlayerId; count: number }
+  | { kind: 'promote'; target: string; player: PlayerId }
+  | { kind: 'retreat'; from: string; to: string; player: PlayerId }
+  | { kind: 'bench'; uid: string; player: PlayerId }
+  | { kind: 'energy'; uid: string; target: string }
+  | { kind: 'evolve'; uid: string; target: string }
+  | { kind: 'trainer'; uid: string; player: PlayerId }
+  | { kind: 'coin'; heads: boolean }
+  | {
+      kind: 'condition';
+      target: string;
+      condition: 'asleep' | 'confused' | 'paralyzed' | 'poisoned' | 'burned';
+    }
+  | {
+      kind: 'checkup';
+      target: string;
+      condition: 'poisoned' | 'burned' | 'asleep' | 'paralyzed';
+      amount?: number;
+    };
+
 export interface GameEvent {
   type: string;
   player?: PlayerId;
   text: string;
+  anim?: EventAnim;
   [k: string]: unknown;
 }
 
