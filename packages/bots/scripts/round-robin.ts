@@ -61,7 +61,10 @@ if (hardMode) {
         const hardSeat = (g % 2) as 0 | 1;
         const decks: [DeckList, DeckList] = [d0, d1];
         // Fixed rounds and a frozen clock keep the win-rate run reproducible.
-        const hard = createHardBot(registry, decks, hardSeat, { maxRounds: 4, now: () => 0 });
+        const hard = createHardBot(registry, decks, hardSeat, {
+          maxRounds: Number(process.env.HARD_ROUNDS ?? 16),
+          now: () => 0,
+        });
         const r = play(d0, d1, hardSeat, hard);
         const mine = byDeck.get(hardSeat === 0 ? n0 : n1)!;
         mine.games++;
