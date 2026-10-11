@@ -46,7 +46,10 @@ export function CardPicker({
   const ownedSets = SETS.filter((s) => owned.some((id) => setOf(id) === s.id));
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/40 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-30 flex items-center justify-center bg-ink-fixed/40 p-4"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-modal="true"

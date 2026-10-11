@@ -25,7 +25,7 @@ export function EraFilter({
 }) {
   const [searching, setSearching] = useState(query !== '');
   const chip = (active: boolean) =>
-    `shrink-0 border-4 border-ink px-2 py-1.5 font-pixel text-[8px] uppercase sm:px-2.5 ${active ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`;
+    `shrink-0 border-4 border-ink px-2 py-1.5 font-pixel text-[8px] uppercase sm:px-2.5 ${active ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`;
   return (
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-1 [mask-image:linear-gradient(90deg,#000_92%,transparent)] sm:flex-wrap sm:overflow-visible sm:pb-0 sm:[mask-image:none]">

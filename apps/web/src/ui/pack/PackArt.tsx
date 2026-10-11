@@ -84,7 +84,7 @@ export function PackArt({
         <div
           aria-hidden
           data-part="strip"
-          className={`absolute inset-x-0 top-0 border-dashed border-paper ${sz.strip}`}
+          className={`absolute inset-x-0 top-0 border-dashed border-paper-fixed ${sz.strip}`}
         />
       )}
       {sz.logo && (
@@ -95,11 +95,11 @@ export function PackArt({
               alt={`${name} logo`}
               draggable={false}
               onError={() => setLogoFailed(true)}
-              className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink)]"
+              className="max-h-full max-w-full object-contain drop-shadow-[2px_2px_0_var(--color-ink-fixed)]"
             />
           ) : (
             <span
-              className={`text-center font-pixel leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink)] ${sz.name}`}
+              className={`text-center font-pixel leading-relaxed text-yellow [text-shadow:2px_2px_var(--color-ink-fixed)] ${sz.name}`}
             >
               {name.toUpperCase()}
             </span>
@@ -107,7 +107,7 @@ export function PackArt({
         </div>
       )}
       {sz.label && (
-        <div aria-hidden className={`absolute inset-x-0 text-center font-pixel text-paper ${sz.label}`}>
+        <div aria-hidden className={`absolute inset-x-0 text-center font-pixel text-paper-fixed ${sz.label}`}>
           {packSize(setId)} CARDS
         </div>
       )}

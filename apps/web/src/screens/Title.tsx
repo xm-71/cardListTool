@@ -45,12 +45,12 @@ export function Title() {
           className="text-4xl text-yellow sm:text-6xl"
           style={{
             textShadow:
-              '4px 0 var(--color-ink), -4px 0 var(--color-ink), 0 4px var(--color-ink), 0 -4px var(--color-ink), 4px 4px var(--color-ink), 6px 8px var(--color-blue)',
+              '4px 0 var(--color-ink-fixed), -4px 0 var(--color-ink-fixed), 0 4px var(--color-ink-fixed), 0 -4px var(--color-ink-fixed), 4px 4px var(--color-ink-fixed), 6px 8px var(--color-blue)',
           }}
         >
           POKéMON
         </span>
-        <span className="text-xs tracking-widest text-red sm:text-sm">TRADING CARD GAME</span>
+        <span className="text-xs tracking-widest text-red-fg sm:text-sm">TRADING CARD GAME</span>
       </h1>
       <PokeBall size={72} />
       <p className="animate-blink font-pixel text-sm">{ready ? 'PRESS START' : 'LOADING…'}</p>

@@ -60,7 +60,7 @@ export function PromptPanel({ prompt, view, legal, onAnswer }: Props) {
         {canFinish && (
           <button
             type="button"
-            className="self-end retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
+            className="self-end retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink-fixed hover:brightness-105"
             onClick={settled(() => onAnswer('done'))}
           >
             Done
@@ -75,7 +75,7 @@ function OptionButton({ label, onClick }: { label: string; onClick(): void }) {
   return (
     <button
       type="button"
-      className="border-4 border-ink bg-paper px-3 py-2 text-xl hover:bg-yellow"
+      className="border-4 border-ink bg-paper px-3 py-2 text-xl hover:bg-yellow hover:text-ink-fixed"
       onClick={onClick}
     >
       {label}

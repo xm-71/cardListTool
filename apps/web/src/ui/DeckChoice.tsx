@@ -40,7 +40,7 @@ export function DeckChoice({
                       sfx('cursor');
                       onChange(d.id);
                     }}
-                    className={`flex w-28 flex-col items-center gap-2 border-4 border-ink p-2 ${value === d.id ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+                    className={`flex w-28 flex-col items-center gap-2 border-4 border-ink p-2 ${value === d.id ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
                   >
                     <img src={`${registry.defs[d.cover]!.image}/low.webp`} alt="" className="w-20" />
                     <span className="font-pixel text-[8px] leading-relaxed">{d.name}</span>

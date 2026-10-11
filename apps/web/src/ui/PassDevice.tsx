@@ -13,7 +13,7 @@ export function PassDevice({ player, onReady }: { player: number; onReady(): voi
       <button
         type="button"
         onClick={onReady}
-        className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
+        className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink-fixed hover:brightness-105"
       >
         Ready
       </button>

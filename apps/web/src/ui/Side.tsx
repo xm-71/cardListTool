@@ -146,11 +146,11 @@ export function Side({
           <PrizeGrid count={side.prizeCount} total={engine.ruleset.prizeCount} />
           {middle}
           <div className="flex flex-col items-center gap-2">
-            <div className="card-back retro-shadow relative flex aspect-[63/88] w-14 flex-col items-center justify-end border-4 border-ink pb-1 text-paper lg:w-[min(3.5rem,6vh)]">
-              <span className="relative z-10 font-pixel text-[10px] [text-shadow:2px_2px_var(--color-ink)]">
+            <div className="card-back retro-shadow relative flex aspect-[63/88] w-14 flex-col items-center justify-end border-4 border-ink pb-1 text-paper-fixed lg:w-[min(3.5rem,6vh)]">
+              <span className="relative z-10 font-pixel text-[10px] [text-shadow:2px_2px_var(--color-ink-fixed)]">
                 {side.deckCount}
               </span>
-              <span className="relative z-10 font-pixel text-[6px] uppercase [text-shadow:1px_1px_var(--color-ink)]">
+              <span className="relative z-10 font-pixel text-[6px] uppercase [text-shadow:1px_1px_var(--color-ink-fixed)]">
                 Deck
               </span>
             </div>

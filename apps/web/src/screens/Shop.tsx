@@ -163,7 +163,7 @@ function ShopBody() {
         </div>
       )}
       {error && (
-        <p role="alert" className="retro-box border-red p-3 text-xl text-red">
+        <p role="alert" className="retro-box border-red p-3 text-xl text-red-fg">
           {error}
         </p>
       )}

@@ -31,7 +31,7 @@ export function SelectionPanel({ view, status, model, onAct, onDetails, stadium 
   return (
     <div className="flex min-h-0 flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2 font-pixel text-[9px] uppercase">
-        <span className="border-2 border-ink bg-yellow px-2 py-1">{status}</span>
+        <span className="border-2 border-ink bg-yellow text-ink-fixed px-2 py-1">{status}</span>
         {stadium && (
           <span className="flex items-center gap-1 normal-case">
             Stadium: <CardView card={stadium.card} size="xs" />

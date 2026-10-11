@@ -55,7 +55,7 @@ export function GymChallenge() {
               <CharacterPortrait id={leader.id} size={80} />
               <h3 className="font-pixel text-[10px]">{leader.name}</h3>
               <p className="text-lg">{leader.type}</p>
-              <p className={`font-pixel text-[8px] ${status === 'beaten' ? 'text-green' : 'opacity-70'}`}>
+              <p className={`font-pixel text-[8px] ${status === 'beaten' ? 'text-green-fg' : 'opacity-70'}`}>
                 {status === 'beaten' ? `★ ${leader.badge} Badge` : `${leader.badge} Badge`}
               </p>
               {status === 'next' && (
@@ -96,7 +96,7 @@ function EliteFour({ onStart }: { onStart(): void }) {
             <li
               key={o.id}
               aria-current={run?.stage === i ? 'step' : undefined}
-              className={`border-2 border-ink px-2 py-1 ${run && i < run.stage ? 'bg-green/30 line-through' : ''} ${run?.stage === i ? 'bg-yellow' : ''}`}
+              className={`border-2 border-ink px-2 py-1 ${run && i < run.stage ? 'bg-green/30 line-through' : ''} ${run?.stage === i ? 'bg-yellow text-ink-fixed' : ''}`}
             >
               <CharacterPortrait id={o.id} size={20} className="mr-1 inline-block border-2 align-middle" />
               {i + 1}. {o.name}

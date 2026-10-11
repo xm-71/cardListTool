@@ -58,11 +58,11 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
     <div
       role="dialog"
       aria-label="Game over"
-      className="fixed inset-0 z-40 flex items-center justify-center bg-ink/70 p-6"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-ink-fixed/70 p-6"
     >
       <div className="retro-box flex w-full max-w-md flex-col items-center gap-4 p-6 text-center">
         <CharacterPortrait id={opponent.id} name={opponent.name} size={96} />
-        <h2 className="font-pixel text-lg text-red uppercase">{title}</h2>
+        <h2 className="font-pixel text-lg text-red-fg uppercase">{title}</h2>
         {draw ? (
           <p className="text-2xl">
             {context.kind === 'elite'
@@ -86,7 +86,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
                 </p>
               )}
               {payout.credits > 0 && (
-                <p className="font-pixel text-xs text-green">+{payout.credits} credits</p>
+                <p className="font-pixel text-xs text-green-fg">+{payout.credits} credits</p>
               )}
               {packs.length > 0 && (
                 <p className="text-xl">

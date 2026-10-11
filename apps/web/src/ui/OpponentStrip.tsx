@@ -50,7 +50,7 @@ export function OpponentStrip({
                 type="button"
                 aria-label={`Bench ${index + 1}: ${def.name} ${hp} HP`}
                 onClick={() => onSlot({ player, zone: 'bench', index })}
-                className={`min-h-9 min-w-9 border-2 border-ink bg-paper px-1 font-pixel text-[8px] ${selected({ player, zone: 'bench', index }) ? 'bg-yellow' : ''}`}
+                className={`min-h-9 min-w-9 border-2 border-ink bg-paper px-1 font-pixel text-[8px] ${selected({ player, zone: 'bench', index }) ? 'bg-yellow text-ink-fixed' : ''}`}
               >
                 {hp}
               </button>

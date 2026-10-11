@@ -2,15 +2,20 @@ import { useState } from 'react';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useNav } from '../nav/useNav.ts';
 import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
+import { THEMES, type Theme } from '../settings/theme.ts';
 import { useSettings } from '../settings/useSettings.ts';
 import { Box, Button } from '../ui/retro/index.ts';
 import { OfflineSettings } from './OfflineSettings.tsx';
+
+const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 
 export function Options() {
   const sound = useSettings((s) => s.sound);
   const setSound = useSettings((s) => s.setSound);
   const skipTitle = useSettings((s) => s.skipTitle);
   const setSkipTitle = useSettings((s) => s.setSkipTitle);
+  const theme = useSettings((s) => s.theme);
+  const setTheme = useSettings((s) => s.setTheme);
   const current = useProfile((s) => s.profile.playerName);
   const setName = useProfile((s) => s.setName);
   const replayIntro = useProfile((s) => s.replayIntro);
@@ -39,6 +44,23 @@ export function Options() {
             />
             Skip title screen
           </label>
+          <div role="radiogroup" aria-label="Theme" className="flex flex-col gap-2">
+            <span className="font-pixel text-xs">Theme</span>
+            <div className="flex flex-wrap gap-4">
+              {THEMES.map((t) => (
+                <label key={t} className="flex items-center gap-2 font-pixel text-[10px]">
+                  <input
+                    type="radio"
+                    name="theme"
+                    checked={theme === t}
+                    onChange={() => setTheme(t)}
+                    className="size-5"
+                  />
+                  {THEME_LABEL[t]}
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
             <label className="flex items-center gap-3 font-pixel text-xs">
               <input

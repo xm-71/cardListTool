@@ -22,7 +22,7 @@ export function DiscardViewer({
     <div
       role="dialog"
       aria-label={`${label} discard pile`}
-      className="fixed inset-0 z-40 flex items-center justify-center bg-ink/80 p-4"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-ink-fixed/80 p-4"
     >
       <div className="retro-box flex max-h-full w-full max-w-3xl flex-col gap-3 overflow-auto p-4">
         <h2 className="font-pixel text-xs uppercase">

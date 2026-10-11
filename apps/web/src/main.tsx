@@ -5,6 +5,8 @@ import { unlockAudio } from './audio/sfx.ts';
 import { useGame } from './game/store.ts';
 import { useProfile } from './profile/useProfile.ts';
 import { registerServiceWorker } from './offline/register.ts';
+import { applyTheme } from './settings/theme.ts';
+import { useSettings } from './settings/useSettings.ts';
 import '@fontsource/press-start-2p/400.css';
 import '@fontsource/vt323/400.css';
 import './index.css';
@@ -20,6 +22,7 @@ if (new URLSearchParams(location.search).has('e2e')) {
   (window as unknown as { __profile: typeof useProfile }).__profile = useProfile;
 }
 
+applyTheme(useSettings.getState().theme);
 registerServiceWorker();
 
 createRoot(document.getElementById('root')!).render(

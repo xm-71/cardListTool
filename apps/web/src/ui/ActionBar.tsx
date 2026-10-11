@@ -34,7 +34,7 @@ export function ActionBar({ handCount, onHand, onEndTurn, onConcede, onQuit, log
           <button
             type="button"
             onClick={onEndTurn}
-            className="retro-shadow min-h-11 flex-[2] border-4 border-ink bg-yellow px-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
+            className="retro-shadow min-h-11 flex-[2] border-4 border-ink bg-yellow px-2 font-pixel text-[10px] uppercase text-ink-fixed hover:brightness-105"
           >
             End turn
           </button>

@@ -49,7 +49,7 @@ function DeckBuilderBody() {
         <button
           type="button"
           onClick={() => setEditing({ id: newId(), name: 'New deck', cards: [] })}
-          className="retro-shadow ml-auto border-4 border-ink bg-yellow px-3 py-2 font-pixel text-[10px] uppercase"
+          className="retro-shadow ml-auto border-4 border-ink bg-yellow text-ink-fixed px-3 py-2 font-pixel text-[10px] uppercase"
         >
           New deck
         </button>
@@ -79,7 +79,7 @@ function DeckBuilderBody() {
                 type="button"
                 aria-label={`Delete ${d.name}`}
                 onClick={() => void deleteDeck(d.id)}
-                className="border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-red hover:text-paper"
+                className="border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-red hover:text-paper-fixed"
               >
                 Delete
               </button>
@@ -96,7 +96,7 @@ function FormatBadge({ format }: { format: 'standard' | 'gym' }) {
   return (
     <span
       title={format === 'standard' ? 'Legal in Duel and Gym Challenge' : 'Has 151 cards: Gym Challenge only'}
-      className={`border-2 border-ink px-2 py-1 font-pixel text-[8px] uppercase ${format === 'standard' ? 'bg-paper' : 'bg-purple text-paper'}`}
+      className={`border-2 border-ink px-2 py-1 font-pixel text-[8px] uppercase ${format === 'standard' ? 'bg-paper' : 'bg-purple text-paper-fixed'}`}
     >
       {format === 'standard' ? 'Standard' : 'Gym only'}
     </span>
@@ -169,7 +169,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
             className="border-b-4 border-ink bg-transparent px-1 text-2xl outline-none"
           />
         </label>
-        <span className={`font-pixel text-xs ${total === DECK_SIZE ? 'text-green' : 'text-red'}`}>
+        <span className={`font-pixel text-xs ${total === DECK_SIZE ? 'text-green-fg' : 'text-red-fg'}`}>
           {total} / {DECK_SIZE}
         </span>
         <FormatBadge format={format} />
@@ -177,7 +177,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
           type="button"
           disabled={problems.length > 0}
           onClick={() => void save()}
-          className="retro-shadow ml-auto border-4 border-ink bg-yellow px-3 py-2 font-pixel text-[10px] uppercase disabled:cursor-not-allowed disabled:opacity-40"
+          className="retro-shadow ml-auto border-4 border-ink bg-yellow text-ink-fixed px-3 py-2 font-pixel text-[10px] uppercase disabled:cursor-not-allowed disabled:opacity-40"
         >
           Save deck
         </button>
@@ -190,12 +190,12 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
         </button>
       </div>
       {saveError && (
-        <p role="alert" className="text-xl text-red">
+        <p role="alert" className="text-xl text-red-fg">
           {saveError}
         </p>
       )}
       {problems.length > 0 && (
-        <ul aria-label="Problems" className="retro-box list-inside list-disc p-4 text-xl text-red">
+        <ul aria-label="Problems" className="retro-box list-inside list-disc p-4 text-xl text-red-fg">
           {problems.map((p) => (
             <li key={p}>{p}</li>
           ))}
@@ -232,7 +232,7 @@ function Editor({ initial, onClose }: { initial: CustomDeck; onClose(): void }) 
                   aria-label={`Add ${def.name}`}
                   disabled={!canAdd(def, playable)}
                   onClick={() => change(def.id, 1)}
-                  className="border-2 border-ink bg-yellow px-2 font-pixel text-xs disabled:cursor-not-allowed disabled:bg-paper disabled:opacity-30"
+                  className="border-2 border-ink bg-yellow text-ink-fixed px-2 font-pixel text-xs disabled:cursor-not-allowed disabled:bg-paper disabled:opacity-30"
                 >
                   +
                 </button>

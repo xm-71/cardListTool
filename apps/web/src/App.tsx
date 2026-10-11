@@ -161,7 +161,10 @@ function Screens() {
   return (
     <div className="flex min-h-full flex-col">
       {route !== 'title' && ready && !persistent && (
-        <p role="status" className="border-b-4 border-ink bg-yellow px-4 py-1 text-center text-lg">
+        <p
+          role="status"
+          className="border-b-4 border-ink bg-yellow text-ink-fixed px-4 py-1 text-center text-lg"
+        >
           Progress won't be saved in this browser (storage is unavailable).
         </p>
       )}
