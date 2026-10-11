@@ -1,5 +1,6 @@
 import {
   createEngine,
+  nextRandom,
   type Action,
   type CardRegistry,
   type DeckList,
@@ -73,18 +74,18 @@ export function createHardBot(
     const startedAt = now();
     for (let round = 1; ; round++) {
       const d = determinize(view, decks, registry, rng);
-      rng = d.rng;
+      // Every move in a round is played out from the same random stream, so two moves are compared on the
+      // same dice rolls instead of on noise from the rollouts.
       for (const action of candidates) {
         let score: number;
         try {
-          const r = scoreAfter(play(d.state, action), me, rng);
-          rng = r.rng;
-          score = r.score;
+          score = scoreAfter(play(d.state, action), me, d.rng).score;
         } catch {
           score = IMPOSSIBLE;
         }
         totals.set(action, (totals.get(action) ?? 0) + score);
       }
+      rng = nextRandom(d.rng)[1];
       options.onRound?.(round);
       if (round >= maxRounds) break;
       if (round >= minRounds && now() - startedAt >= budgetMs) break;
