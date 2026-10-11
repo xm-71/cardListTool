@@ -106,6 +106,8 @@ export interface PlayerState {
   stadiumPlayedTurn: number | null;
   /** This player can't play Stadium cards from hand during this turn (e.g. Chi-Yu). */
   stadiumLockedTurn?: number | null;
+  /** This player can't play Item cards from hand during this turn (e.g. Budew's Itchy Pollen). */
+  itemLockedTurn?: number | null;
   mulligans: number;
   /** Turn on which one of this player's Pokémon was last Knocked Out. */
   lastKnockedOutTurn: number | null;

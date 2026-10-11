@@ -3,7 +3,7 @@ import type { GymDeckId } from '@ptcg/cards';
 
 /** Kanto Gym Challenge data and rules. Everything here is pure; the profile applies the results. */
 
-export type DeckRef = { kind: 'starter' | 'theme' | 'custom'; id: string };
+export type DeckRef = { kind: 'starter' | 'theme' | 'meta' | 'custom'; id: string };
 
 /** The deck a run is locked to: a copy of its contents, so editing or deleting the deck later changes nothing. */
 export interface RunDeck extends DeckRef {
@@ -343,7 +343,7 @@ export function normalizeGym(raw: unknown): GymProgress {
     ? [...new Set(g.badges.filter((b): b is string => isString(b) && ids.has(b)))]
     : [];
   const r = g.run as Partial<EliteRun> | null | undefined;
-  const kinds = ['starter', 'theme', 'custom'];
+  const kinds = ['starter', 'theme', 'meta', 'custom'];
   const d = r?.deck as Partial<RunDeck> | undefined;
   const cards =
     Array.isArray(d?.cards) &&

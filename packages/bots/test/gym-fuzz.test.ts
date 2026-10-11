@@ -12,6 +12,12 @@ import {
   megaLucarioDeck,
   megaManectricDeck,
   megaVenusaurDeck,
+  metaAlakazamDeck,
+  metaCrustleDeck,
+  metaDragapultDeck,
+  metaNsZoroarkDeck,
+  metaOgerponBoxDeck,
+  metaSlowkingDeck,
 } from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
 import { runMatch } from '../src/runMatch.ts';
@@ -19,7 +25,7 @@ import { runMatch } from '../src/runMatch.ts';
 const registry = buildRegistry();
 const engine = createEngine(registry);
 const bot = createEasyBot(registry);
-/** The 3 starter decks and 6 theme decks every Gym deck is played against. */
+/** The starter, theme and meta decks every Gym deck is played against. */
 const OPPONENTS: [string, DeckList][] = [
   ['gengar', megaGengarDeck],
   ['diancie', megaDiancieDeck],
@@ -30,6 +36,12 @@ const OPPONENTS: [string, DeckList][] = [
   ['manectric', megaManectricDeck],
   ['kangaskhan', megaKangaskhanDeck],
   ['lopunny', megaLopunnyDeck],
+  ['dragapult', metaDragapultDeck],
+  ['alakazam', metaAlakazamDeck],
+  ['ogerpon-box', metaOgerponBoxDeck],
+  ['ns-zoroark', metaNsZoroarkDeck],
+  ['slowking', metaSlowkingDeck],
+  ['crustle', metaCrustleDeck],
 ];
 const GAMES_PER_SEAT = Number(process.env.GYM_FUZZ_GAMES ?? 2);
 /** Lets the Vitest worker answer its RPC between long synchronous tests (see fuzz.test.ts). */

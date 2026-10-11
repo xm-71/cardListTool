@@ -85,7 +85,7 @@ export function DuelSetup() {
         />
       ) : (
         <Box title="Opponent's deck">
-          <p className="text-xl">Random: the bot plays a surprise starter or theme deck.</p>
+          <p className="text-xl">Random: the bot plays a surprise starter, theme or meta deck.</p>
         </Box>
       )}
       <Button onClick={play} className="self-center px-10 py-4 text-sm">

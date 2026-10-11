@@ -22,6 +22,12 @@ const DECKS: [string, DeckList][] = [
   ['Mega Manectric ex', cards.megaManectricDeck],
   ['Mega Kangaskhan ex', cards.megaKangaskhanDeck],
   ['Mega Lopunny ex', cards.megaLopunnyDeck],
+  ['Dragapult ex', cards.metaDragapultDeck],
+  ['Alakazam', cards.metaAlakazamDeck],
+  ['Ogerpon Box', cards.metaOgerponBoxDeck],
+  ["N's Zoroark ex", cards.metaNsZoroarkDeck],
+  ['Slowking', cards.metaSlowkingDeck],
+  ['Crustle', cards.metaCrustleDeck],
 ];
 const args = process.argv.slice(2);
 const gym = args.includes('--gym');

@@ -134,7 +134,19 @@ export function dealAttackDamage(
     const attackerDef = slotDef(ctx.env, s, attackerSlot);
     const defenderDef = slotDef(ctx.env, s, targetSlot);
     if (!opts.ignoreWeaknessResistance) {
-      if (amount > 0 && defenderDef.weakness && attackerDef.types.includes(defenderDef.weakness)) amount *= 2;
+      let weakness = defenderDef.weakness;
+      for (const h of scriptsInPlay(ctx.env, s, info.attacker.player)) {
+        if (h.script.modifyWeakness)
+          weakness = h.script.modifyWeakness({
+            state: s,
+            holder: h.ref,
+            defender: target,
+            defenderTop: targetSlot.stack[targetSlot.stack.length - 1]!,
+            weakness,
+            registry: ctx.env.registry,
+          });
+      }
+      if (amount > 0 && weakness && attackerDef.types.includes(weakness)) amount *= 2;
       if (
         !opts.ignoreResistance &&
         defenderDef.resistance &&
@@ -213,6 +225,36 @@ export function attack(ctx: EffectCtx, attackIndex: number, benchIndex?: number)
   // Anything after this (Pokémon Checkup) is no longer part of the attack.
   attackInfo.delete(ctx);
   endTurn(ctx);
+}
+
+/**
+ * Use another card's attack as part of the attack now resolving ("choose 1 of its attacks and use it as this
+ * attack"): its damage to the opponent's Active Pokémon and its effect, without paying its cost.
+ */
+export function useAttackAs(ctx: EffectCtx, defId: string, attackIndex: number): void {
+  const def = ctx.env.registry.defs[defId];
+  if (def?.category !== 'Pokemon') return;
+  const atk = def.attacks[attackIndex];
+  if (!atk) return;
+  const script = ctx.env.registry.scripts[defId]?.attacks?.[attackIndex];
+  ctx.log(`It uses ${def.name}'s ${atk.name}`);
+  const scripted = script?.damage ? script.damage(ctx) : atk.damage;
+  const base = typeof scripted === 'number' ? scripted : scripted.amount;
+  const defender: SlotRef = { player: ctx.opp, zone: 'active' };
+  if (base > 0 && getSlot(ctx.state, defender))
+    dealAttackDamage(
+      ctx,
+      defender,
+      base,
+      typeof scripted === 'number'
+        ? {}
+        : {
+            ignoreWeaknessResistance: scripted.ignoreWR,
+            ignoreResistance: !!scripted.ignoreResistance,
+            ignoreDefenderEffects: !!scripted.ignoreDefenderEffects,
+          },
+    );
+  script?.effect?.(ctx);
 }
 
 /** Tools such as Punk Helmet react when the Pokémon holding them is damaged in the Active Spot. */
