@@ -2,10 +2,12 @@
  * Balance check: Easy-vs-Easy games for every ordered pair of different decks; prints each deck's win rate.
  * Usage: npx tsx scripts/round-robin.ts [gamesPerPair=40]
  *        npx tsx scripts/round-robin.ts --gym [gamesPerPair=20]   (each Gym deck vs the 9 decks, both seats)
+ *        npx tsx scripts/round-robin.ts --hard [gamesPerPair=4]   (Hard vs Medium on every ordered deck pair)
  */
 import { createEngine, type DeckList } from '@ptcg/engine';
 import * as cards from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
+import { createHardBot } from '../src/hard.ts';
 import { createMediumBot } from '../src/medium.ts';
 import { runMatch } from '../src/runMatch.ts';
 
@@ -31,9 +33,68 @@ const DECKS: [string, DeckList][] = [
 ];
 const args = process.argv.slice(2);
 const gym = args.includes('--gym');
+const hardMode = args.includes('--hard');
 /** With --medium the Gym deck is piloted by the Medium bot (as in the game for gyms 5–8, Elite Four and Champion). */
 const medium = args.includes('--medium');
 const numeric = args.filter((a) => !a.startsWith('--'));
+
+if (hardMode) {
+  const perPair = Number(numeric[0] ?? 4);
+  const WIN_TARGET = 60;
+  const P95_TARGET_MS = 2000;
+  const byDeck = new Map(DECKS.map(([n]) => [n, { wins: 0, games: 0 }]));
+  let hardWins = 0;
+  let played = 0;
+  let hardSeed = 1;
+  const play = (d0: DeckList, d1: DeckList, hardSeat: 0 | 1, hard: ReturnType<typeof createHardBot>) => {
+    const decks: [DeckList, DeckList] = [d0, d1];
+    const medium = createMediumBot(registry, decks, (1 - hardSeat) as 0 | 1);
+    const bots = (hardSeat === 0 ? [hard, medium] : [medium, hard]) as [typeof bot, typeof bot];
+    return runMatch({ engine, decks, seed: hardSeed++, bots });
+  };
+  for (const [n0, d0] of DECKS)
+    for (const [n1, d1] of DECKS)
+      for (let g = 0; g < perPair; g++) {
+        const hardSeat = (g % 2) as 0 | 1;
+        const decks: [DeckList, DeckList] = [d0, d1];
+        // Fixed rounds and a frozen clock keep the win-rate run reproducible.
+        const hard = createHardBot(registry, decks, hardSeat, { maxRounds: 4, now: () => 0 });
+        const r = play(d0, d1, hardSeat, hard);
+        const mine = byDeck.get(hardSeat === 0 ? n0 : n1)!;
+        mine.games++;
+        played++;
+        if (r.result?.winner === hardSeat) {
+          hardWins++;
+          mine.wins++;
+        }
+      }
+  const pct = (100 * hardWins) / played;
+  for (const [name, { wins, games }] of byDeck)
+    console.log(`${name.padEnd(20)} Hard ${((100 * wins) / Math.max(1, games)).toFixed(1).padStart(5)}%  (${wins}/${games})`);
+  console.log(`Hard vs Medium: ${pct.toFixed(1)}% (${hardWins}/${played})  target >= ${WIN_TARGET}%  ${pct >= WIN_TARGET ? 'PASS' : 'FAIL'}`);
+
+  // Think time with the real clock and default options.
+  const times: number[] = [];
+  for (let g = 0; g < 6; g++) {
+    const [, d0] = DECKS[(g * 2) % DECKS.length]!;
+    const [, d1] = DECKS[(g * 2 + 1) % DECKS.length]!;
+    const hardSeat = (g % 2) as 0 | 1;
+    const real = createHardBot(registry, [d0, d1], hardSeat);
+    const timed: typeof real = (v, l, rng) => {
+      const t = performance.now();
+      const out = real(v, l, rng);
+      times.push(performance.now() - t);
+      return out;
+    };
+    play(d0, d1, hardSeat, timed);
+  }
+  const searched = times.filter((t) => t > 5).sort((a, b) => a - b);
+  const q = (f: number) => searched[Math.min(searched.length - 1, Math.floor(f * searched.length))] ?? 0;
+  console.log(
+    `Hard think time over ${searched.length} searched decisions: median ${q(0.5).toFixed(0)} ms, p95 ${q(0.95).toFixed(0)} ms  target <= ${P95_TARGET_MS} ms  ${q(0.95) <= P95_TARGET_MS ? 'PASS' : 'FAIL'}`,
+  );
+  process.exit(0);
+}
 
 /** Spec §6 win-rate targets (percent) for each Gym deck against the starter and theme decks. */
 const GYM_TARGETS: Record<string, [number, number]> = {
