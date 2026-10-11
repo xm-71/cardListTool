@@ -78,6 +78,19 @@ const TRAINER_TYPES: Record<string, 'Item' | 'Supporter' | 'Stadium' | 'Tool'> =
   'Technical Machine': 'Tool',
 };
 
+const SYMBOL_TYPE: Record<string, EnergyType> = {
+  G: 'Grass',
+  R: 'Fire',
+  W: 'Water',
+  L: 'Lightning',
+  P: 'Psychic',
+  F: 'Fighting',
+  D: 'Darkness',
+  M: 'Metal',
+  N: 'Dragon',
+  C: 'Colorless',
+};
+
 export function normalizeTcgdexCard(input: unknown): CardDef {
   const raw = input as RawCard;
   const base = {
@@ -108,7 +121,10 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
           ...parseDamage(a.damage),
           text: a.effect ?? '',
         })),
-        abilities: (raw.abilities ?? []).map((a) => ({ name: a.name ?? a.type ?? 'Ability', text: a.effect ?? '' })),
+        abilities: (raw.abilities ?? []).map((a) => ({
+          name: a.name ?? a.type ?? 'Ability',
+          text: a.effect ?? '',
+        })),
         isEx,
         isMega: isEx && raw.name.startsWith('Mega '),
       };
@@ -129,11 +145,15 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
       const basicType = raw.name.replace(/^Basic /, '').replace(/ Energy$/, '');
       // TCGdex labels some Special Energy (e.g. Ignition Energy) as 'Normal'; only a real type name is Basic.
       const basic = raw.energyType === 'Normal' && (ENERGY_TYPES as readonly string[]).includes(basicType);
+      // A Special Energy's text says what it provides ("it provides {P} Energy").
+      const named = /provides \{([GRWLPFDMNC])\} Energy/.exec(raw.effect ?? '')?.[1];
       const provides = raw.types?.length
         ? raw.types.map(energyType)
         : basic
           ? [energyType(basicType)]
-          : ['Colorless' as const];
+          : named
+            ? [SYMBOL_TYPE[named]!]
+            : ['Colorless' as const];
       const art = basic && !base.image ? BASIC_ENERGY_ART[provides[0]!] : undefined;
       return {
         ...base,

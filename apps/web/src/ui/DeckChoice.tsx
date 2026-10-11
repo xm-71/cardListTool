@@ -19,6 +19,7 @@ export function DeckChoice({
   const sections = [
     { kind: 'starter', title: 'Starter decks' },
     { kind: 'theme', title: 'Theme decks' },
+    { kind: 'meta', title: 'Meta decks' },
     { kind: 'custom', title: 'Custom decks' },
   ] as const;
   return (

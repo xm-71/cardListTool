@@ -10,6 +10,12 @@ import {
   megaLucarioDeck,
   megaManectricDeck,
   megaVenusaurDeck,
+  metaAlakazamDeck,
+  metaCrustleDeck,
+  metaDragapultDeck,
+  metaNsZoroarkDeck,
+  metaOgerponBoxDeck,
+  metaSlowkingDeck,
 } from '@ptcg/cards';
 
 export const registry = buildRegistry();
@@ -24,13 +30,19 @@ export type DeckId =
   | 'mega-abomasnow'
   | 'mega-manectric'
   | 'mega-kangaskhan'
-  | 'mega-lopunny';
+  | 'mega-lopunny'
+  | 'meta-dragapult'
+  | 'meta-alakazam'
+  | 'meta-ogerpon-box'
+  | 'meta-ns-zoroark'
+  | 'meta-slowking'
+  | 'meta-crustle';
 
 export interface DeckInfo {
   id: DeckId;
   name: string;
-  /** Official starter deck, or one of our fan-made theme decks. */
-  kind: 'starter' | 'theme';
+  /** Official starter deck, one of our fan-made theme decks, or a tournament-winning meta deck. */
+  kind: 'starter' | 'theme' | 'meta';
   type: EnergyType;
   list: DeckList;
   /** TCGdex id of the deck's featured card, for its picture. */
@@ -110,6 +122,55 @@ export const DECKS: DeckInfo[] = [
     list: megaLopunnyDeck,
     cover: 'me02-084',
   },
+  // Meta decks: the top tournament decks of the 2026 season (cards the game can't play are swapped for close ones).
+  {
+    id: 'meta-dragapult',
+    name: 'Dragapult ex',
+    kind: 'meta',
+    type: 'Dragon',
+    list: metaDragapultDeck,
+    cover: 'sv06-130',
+  },
+  {
+    id: 'meta-alakazam',
+    name: 'Alakazam',
+    kind: 'meta',
+    type: 'Psychic',
+    list: metaAlakazamDeck,
+    cover: 'me01-056',
+  },
+  {
+    id: 'meta-ogerpon-box',
+    name: 'Ogerpon Box',
+    kind: 'meta',
+    type: 'Grass',
+    list: metaOgerponBoxDeck,
+    cover: 'sv06-025',
+  },
+  {
+    id: 'meta-ns-zoroark',
+    name: "N's Zoroark ex",
+    kind: 'meta',
+    type: 'Darkness',
+    list: metaNsZoroarkDeck,
+    cover: 'sv09-098',
+  },
+  {
+    id: 'meta-slowking',
+    name: 'Slowking',
+    kind: 'meta',
+    type: 'Psychic',
+    list: metaSlowkingDeck,
+    cover: 'sv07-058',
+  },
+  {
+    id: 'meta-crustle',
+    name: 'Crustle',
+    kind: 'meta',
+    type: 'Grass',
+    list: metaCrustleDeck,
+    cover: 'sv10-012',
+  },
 ];
 
 /** The official starter decks: the intro's choices. */
@@ -124,7 +185,7 @@ export interface DeckSource {
   list: DeckList;
   /** Card id shown as the deck's picture. */
   cover: string;
-  kind: 'starter' | 'theme' | 'custom';
+  kind: 'starter' | 'theme' | 'meta' | 'custom';
 }
 
 /** Starter decks, then theme decks, then the player's custom decks (custom ids are prefixed so they never clash). */

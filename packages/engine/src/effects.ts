@@ -84,6 +84,32 @@ export class EffectCtx {
     return played?.turn === this.state.turn && played.name === name;
   }
 
+  /** `player` can't play Item cards from their hand during their next turn. */
+  lockItems(player: PlayerId): void {
+    this.state.players[player].itemLockedTurn = this.state.turn + 1;
+  }
+
+  /** Shuffle the Pokémon at `ref` and every card attached to it into its owner's deck. */
+  shuffleSlotIntoDeck(ref: SlotRef): void {
+    this.removeSlot(ref, 'deck');
+    this.shuffleDeck(ref.player);
+  }
+
+  /** Put the Pokémon at `ref` and every card attached to it into its owner's hand. */
+  returnSlotToHand(ref: SlotRef): void {
+    this.removeSlot(ref, 'hand');
+  }
+
+  private removeSlot(ref: SlotRef, zone: 'deck' | 'hand'): void {
+    const slot = this.slot(ref);
+    const p = this.state.players[ref.player];
+    const name = slotDef(this.env, this.state, slot).name;
+    p[zone].push(...slot.stack, ...slot.energy, ...(slot.tool ? [slot.tool] : []));
+    if (ref.zone === 'active') p.active = null;
+    else p.bench.splice(ref.index, 1);
+    this.log(`${name} and its cards go to the ${zone === 'deck' ? 'deck' : 'hand'}`);
+  }
+
   /** `player` can't play Stadium cards from their hand during their next turn. */
   lockStadium(player: PlayerId): void {
     this.state.players[player].stadiumLockedTurn = this.state.turn + 1;
@@ -265,6 +291,20 @@ export class EffectCtx {
   }
 
   placeCounters(ref: SlotRef, n: number): void {
+    // The Pokémon may already have left play (e.g. an attacker that returned itself to the hand).
+    if (!getSlot(this.state, ref)) return;
+    const stadium = this.state.stadium;
+    const fromOpponent =
+      ref.player !== this.me && (this.source?.kind === 'attack' || this.source?.kind === 'ability');
+    if (
+      stadium &&
+      ref.zone === 'bench' &&
+      fromOpponent &&
+      this.env.registry.scripts[this.state.cards[stadium.uid]!.defId]?.stadium?.protectsBench
+    ) {
+      this.log(`${this.def(stadium.uid).name} prevents damage counters on the Bench`);
+      return;
+    }
     const slot = this.slot(ref);
     slot.damage += n * 10;
     this.state.log.push({

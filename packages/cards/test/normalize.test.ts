@@ -81,6 +81,20 @@ test('an Energy TCGdex labels Normal but without a basic type name is Special', 
   expect(def).toMatchObject({ category: 'Energy', energyKind: 'Special', provides: ['Colorless'] });
 });
 
+test('a Special Energy provides the type its text names', () => {
+  const def = normalizeTcgdexCard({
+    id: 'me03-088',
+    name: 'Telepathic Psychic Energy',
+    category: 'Energy',
+    energyType: 'Normal',
+    effect:
+      'As long as this card is attached to a Pokémon, it provides {P} Energy.\nWhen you attach this card ...',
+    regulationMark: 'J',
+    rarity: 'Rare',
+  });
+  expect(def).toMatchObject({ energyKind: 'Special', provides: ['Psychic'] });
+});
+
 test('a classic Trainer without a trainer type is an Item', () => {
   const def = normalizeTcgdexCard({
     id: 'base1-70',
@@ -101,7 +115,14 @@ test('a Basic Energy without an image borrows the Crown Zenith picture of its ty
 
 describe('stages from the vintage eras', () => {
   const pokemon = (stage?: string) =>
-    normalizeTcgdexCard({ id: 'ecard1-1', name: 'Pichu', category: 'Pokemon', hp: 30, types: ['Lightning'], stage });
+    normalizeTcgdexCard({
+      id: 'ecard1-1',
+      name: 'Pichu',
+      category: 'Pokemon',
+      hp: 30,
+      types: ['Lightning'],
+      stage,
+    });
 
   test.each([
     ['Baby', 'Basic'],

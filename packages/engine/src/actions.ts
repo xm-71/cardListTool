@@ -59,7 +59,22 @@ function baseHandler(origin: Origin): EffectFn {
 
 function playBasic(ctx: EffectCtx, uid: string): void {
   log(ctx.state, 'playBasic', `Player ${ctx.me + 1} plays ${ctx.def(uid).name}`, { player: ctx.me });
-  ctx.putOnBench(ctx.me, uid);
+  const ref = ctx.putOnBench(ctx.me, uid);
+  const hook = ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onPlayToBench;
+  if (!hook || (hook.canUse && !hook.canUse(ctx, ref))) return;
+  const name = ctx.def(uid).name;
+  const pick = ctx.chooseOption({
+    player: ctx.me,
+    options: [
+      { id: 'yes', label: `Use ${name}'s Ability` },
+      { id: 'no', label: 'No' },
+    ],
+    message: `Use ${name}'s Ability?`,
+  });
+  if (pick === 'yes') {
+    ctx.source = { kind: 'ability', slot: ref, ability: name };
+    hook.use(ctx, ref);
+  }
 }
 
 function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
@@ -72,6 +87,7 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
     player: ctx.me,
     anim: { kind: 'energy', uid, target: getSlot(ctx.state, target)!.stack[0]! },
   });
+  ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onAttachFromHand?.(ctx, target);
 }
 
 function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {

@@ -33,6 +33,7 @@ export function trainerActions(env: Env, state: GameState, player: PlayerId): Ac
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Item':
+        if (p.itemLockedTurn === state.turn) continue;
         if (script?.canPlay && !script.canPlay(ctx)) continue;
         out.push({ type: 'playTrainer', uid });
         break;

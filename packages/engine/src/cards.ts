@@ -91,7 +91,29 @@ export interface CardScript {
     canUse?(ctx: EffectCtx): boolean;
     use?(ctx: EffectCtx): void;
     onBenchFromHand?(ctx: EffectCtx, slot: SlotRef): void;
+    /** Damage counters can't be put on Benched Pokémon by effects of the opponent's attacks and Abilities. */
+    protectsBench?: boolean;
   };
+  /** An Energy card's effect when attached from the hand (e.g. "When you attach this card from your hand ..."). */
+  onAttachFromHand?(ctx: EffectCtx, slot: SlotRef): void;
+  /**
+   * "When you play this Pokémon from your hand onto your Bench, you may use this Ability." Asked about when played
+   * (unless `canUse` says no); `use` runs on yes.
+   */
+  onPlayToBench?: {
+    canUse?(ctx: EffectCtx, slot: SlotRef): boolean;
+    use(ctx: EffectCtx, slot: SlotRef): void;
+  };
+  /** From the attacker's side: changes the Weakness of the Pokémon being attacked (e.g. Lillie's Clefairy ex). */
+  modifyWeakness?(q: {
+    state: GameState;
+    holder: SlotRef;
+    defender: SlotRef;
+    /** uid of the defending Pokémon's top card. */
+    defenderTop: string;
+    weakness: EnergyType | null;
+    registry: CardRegistry;
+  }): EnergyType | null;
   modifyOutgoingDamage?(q: DamageQuery): number;
   modifyIncomingDamage?(q: DamageQuery): number;
   modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number; registry: CardRegistry }): number;

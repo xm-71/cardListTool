@@ -11,6 +11,12 @@ import {
   megaLucarioDeck,
   megaManectricDeck,
   megaVenusaurDeck,
+  metaAlakazamDeck,
+  metaCrustleDeck,
+  metaDragapultDeck,
+  metaNsZoroarkDeck,
+  metaOgerponBoxDeck,
+  metaSlowkingDeck,
 } from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
 import { runMatch } from '../src/runMatch.ts';
@@ -28,8 +34,14 @@ const DECKS: [string, DeckList][] = [
   ['manectric', megaManectricDeck],
   ['kangaskhan', megaKangaskhanDeck],
   ['lopunny', megaLopunnyDeck],
+  ['dragapult', metaDragapultDeck],
+  ['alakazam', metaAlakazamDeck],
+  ['ogerpon-box', metaOgerponBoxDeck],
+  ['ns-zoroark', metaNsZoroarkDeck],
+  ['slowking', metaSlowkingDeck],
+  ['crustle', metaCrustleDeck],
 ];
-/** Every unordered pairing, mirrors included: 45 for 9 decks. */
+/** Every unordered pairing, mirrors included: 120 for 15 decks. */
 const PAIRINGS = DECKS.flatMap((a, i) => DECKS.slice(i).map((b) => [a, b] as const));
 const GAMES = Number(process.env.FUZZ_GAMES ?? 540);
 const PER_PAIRING = Math.max(1, Math.round(GAMES / PAIRINGS.length));

@@ -81,6 +81,7 @@ export function maxHp(env: Env, state: GameState, ref: SlotRef): number {
     ...(state.stadium ? [state.cards[state.stadium.uid]!.defId] : []),
     state.cards[topUid(slot)]!.defId,
     ...(slot.tool ? [state.cards[slot.tool]!.defId] : []),
+    ...slot.energy.map((uid) => state.cards[uid]!.defId),
   ];
   for (const id of ids) {
     const hook = env.registry.scripts[id]?.modifyMaxHp;

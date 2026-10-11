@@ -15,7 +15,7 @@ export function scriptsInPlay(env: Env, state: GameState, player: PlayerId): InP
   const out: InPlayScript[] = [];
   for (const ref of slotRefs(state, player)) {
     const slot = getSlot(state, ref)!;
-    const uids = [slot.stack[slot.stack.length - 1]!, ...(slot.tool ? [slot.tool] : [])];
+    const uids = [slot.stack[slot.stack.length - 1]!, ...(slot.tool ? [slot.tool] : []), ...slot.energy];
     for (const uid of uids) {
       const script = env.registry.scripts[state.cards[uid]!.defId];
       if (script) out.push({ ref, uid, script });

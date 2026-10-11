@@ -153,11 +153,114 @@ import * as me01_108 from './me01/108.ts';
 import * as me02_076 from './me02/076.ts';
 import * as me02_077 from './me02/077.ts';
 
+import * as sv06_129 from './sv06/129.ts';
+import * as sv06_130 from './sv06/130.ts';
+import * as sv06_095 from './sv06/095.ts';
+import * as me02_5_016 from './me02.5/016.ts';
+import * as sv05_128 from './sv05/128.ts';
+import * as sv05_129 from './sv05/129.ts';
+import * as me03_062 from './me03/062.ts';
+import * as sv07_133 from './sv07/133.ts';
+import * as me03_084 from './me03/084.ts';
+import * as me03_081 from './me03/081.ts';
+import * as me03_071 from './me03/071.ts';
+import * as sv06_165 from './sv06/165.ts';
+import * as me01_054 from './me01/054.ts';
+import * as me01_055 from './me01/055.ts';
+import * as me01_056 from './me01/056.ts';
+import * as me02_008 from './me02/008.ts';
+import * as me03_029 from './me03/029.ts';
+import * as sv05_013 from './sv05/013.ts';
+import * as me02_087 from './me02/087.ts';
+import * as sv10_5w_084 from './sv10.5w/084.ts';
+import * as sv06_155 from './sv06/155.ts';
+import * as sv05_146 from './sv05/146.ts';
+import * as sv06_148 from './sv06/148.ts';
+import * as sv10_168 from './sv10/168.ts';
+import * as sv06_158 from './sv06/158.ts';
+import * as me02_085 from './me02/085.ts';
+import * as me03_088 from './me03/088.ts';
+import * as sv08_191 from './sv08/191.ts';
+import * as sv06_025 from './sv06/025.ts';
+import * as sv08_076 from './sv08/076.ts';
+import * as sv09_056 from './sv09/056.ts';
+import * as me01_115 from './me01/115.ts';
+import * as sv05_157 from './sv05/157.ts';
+import * as me01_123 from './me01/123.ts';
+import * as sv09_098 from './sv09/098.ts';
+import * as sv06_5_039 from './sv06.5/039.ts';
+import * as me02_5_155 from './me02.5/155.ts';
+import * as sv09_116 from './sv09/116.ts';
+import * as sv10_5b_084 from './sv10.5b/084.ts';
+import * as sv07_057 from './sv07/057.ts';
+import * as sv07_058 from './sv07/058.ts';
+import * as sv06_5_047 from './sv06.5/047.ts';
+import * as sv06_5_054 from './sv06.5/054.ts';
+import * as sv05_145 from './sv05/145.ts';
+import * as sv10_011 from './sv10/011.ts';
+import * as sv10_012 from './sv10/012.ts';
+import * as sv10_176 from './sv10/176.ts';
+import * as sv06_5_064 from './sv06.5/064.ts';
+import * as me04_082 from './me04/082.ts';
+import * as me03_086 from './me03/086.ts';
+import * as sv09_159 from './sv09/159.ts';
+
 /**
  * Every scripted card, keyed by card name so reprints share one script. A module that exports `set` applies only to
  * that set's cards, so a 151 Pokémon can share a name with an older card that plays differently.
  */
 export const scriptModules: { name: string; set?: string; script: CardScript }[] = [
+  sv06_129,
+  sv06_130,
+  sv06_095,
+  me02_5_016,
+  sv05_128,
+  sv05_129,
+  me03_062,
+  sv07_133,
+  me03_084,
+  me03_081,
+  me03_071,
+  sv06_165,
+  me01_054,
+  me01_055,
+  me01_056,
+  me02_008,
+  me03_029,
+  sv05_013,
+  me02_087,
+  sv10_5w_084,
+  sv06_155,
+  sv05_146,
+  sv06_148,
+  sv10_168,
+  sv06_158,
+  me02_085,
+  me03_088,
+  sv08_191,
+  sv06_025,
+  sv08_076,
+  sv09_056,
+  me01_115,
+  sv05_157,
+  me01_123,
+  sv09_098,
+  sv06_5_039,
+  me02_5_155,
+  sv09_116,
+  sv10_5b_084,
+  sv07_057,
+  sv07_058,
+  sv06_5_047,
+  sv06_5_054,
+  sv05_145,
+  sv10_011,
+  sv10_012,
+  sv10_176,
+  sv06_5_064,
+  me04_082,
+  me03_086,
+  sv09_159,
   me02_077,
   me02_076,
   me01_108,

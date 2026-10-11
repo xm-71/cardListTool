@@ -202,4 +202,11 @@ describe('normalizeGym', () => {
     ).toBeNull();
     expect(normalizeGym({ badges: all, run: { stage: 9, deck } }).run).toBeNull();
   });
+  test('a run with a meta deck is kept', () => {
+    const meta = { ...deck, kind: 'meta' as const, id: 'meta-dragapult' };
+    expect(normalizeGym({ badges: all, run: { stage: 1, deck: meta } }).run).toEqual({
+      stage: 1,
+      deck: meta,
+    });
+  });
 });
