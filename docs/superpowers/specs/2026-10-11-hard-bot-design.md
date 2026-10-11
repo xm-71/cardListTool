@@ -10,8 +10,10 @@ separately). The Gym and Elite Four keep their current difficulties.
 
 ## Success criteria
 
-- Hard beats Medium in **at least 60%** of bot-vs-bot games across all starter, theme and meta decks
-  (both seats, round-robin script).
+- Hard clearly beats Medium: above 50% in bot-vs-bot games across all starter, theme and meta decks (both seats,
+  round-robin script). The first target was 60%; measured results are about 56% (130/225 and 122/225 games), and the
+  owner accepted shipping at that level on 2026-10-11. On phones Hard completes fewer rounds in its time budget, so
+  it is weaker there.
 - Hard's **95th-percentile think time is 2 seconds or less** per decision on a desktop Node run, and it thinks about
   1.5 seconds per decision on any device because its budget is measured by the clock.
 - Easy and Medium play exactly as they do today (same choices for the same inputs).
