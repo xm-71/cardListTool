@@ -33,6 +33,10 @@ test("with animations on, the opponent's turn plays out (banner first) and the b
   await expect(page.locator('#fx-layer').getByText("Opponent's turn")).toBeVisible({ timeout: 5000 });
   await page.screenshot({ path: 'test-results/anim-banner.png' });
   await expect(page.getByRole('button', { name: 'End turn' })).toBeHidden();
+  // The ticker reads the Rival's moves out, and Skip hurries the rest of their turn along.
+  await expect(page.getByRole('status')).toContainText('Rival');
+  await page.screenshot({ path: 'test-results/anim-ticker.png' });
+  await page.getByRole('button', { name: /Skip/ }).click();
   // Back to you: your banner plays and End turn returns.
   await expect(page.getByRole('button', { name: 'End turn' })).toBeVisible({ timeout: 60_000 });
   const engine = await page.evaluate(() => {

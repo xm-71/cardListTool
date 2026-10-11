@@ -2,14 +2,15 @@ import type { EventAnim, GameEvent, PlayerId } from '@ptcg/engine';
 
 /**
  * One step of what happened, played in order on the board. Pokémon in play are named by the first card of their
- * stack (see `EventAnim`); `text` is what the log says.
+ * stack (see `EventAnim`); `text` is what the log says and `event` the log event it came from (the ticker reads it).
  */
-export type Beat =
-  | { kind: 'turn'; player: PlayerId; text: string }
-  | { kind: 'draw'; player: PlayerId; text: string }
-  | { kind: 'attack'; by: string; target: string | null; text: string }
-  | { kind: 'note'; text: string }
-  | (Exclude<EventAnim, { kind: 'attack' }> & { text: string });
+export type Beat = (
+  | { kind: 'turn'; player: PlayerId }
+  | { kind: 'draw'; player: PlayerId }
+  | { kind: 'attack'; by: string; target: string | null }
+  | { kind: 'note' }
+  | Exclude<EventAnim, { kind: 'attack' }>
+) & { text: string; event: GameEvent };
 
 /** How long each kind of beat takes at Normal speed, in ms. A note only carries text. */
 const MS: Record<Beat['kind'], number> = {
@@ -38,22 +39,23 @@ export function beatsFor(events: readonly GameEvent[]): Beat[] {
   const beats: Beat[] = [];
   events.forEach((e, i) => {
     if (e.type === 'turnStart' && e.player !== undefined) {
-      beats.push({ kind: 'turn', player: e.player, text: e.text });
-      beats.push({ kind: 'draw', player: e.player, text: e.text });
+      const draw: GameEvent = { type: 'draw', player: e.player, text: `Player ${e.player + 1} draws a card` };
+      beats.push({ kind: 'turn', player: e.player, text: e.text, event: e });
+      beats.push({ kind: 'draw', player: e.player, text: draw.text, event: draw });
       return;
     }
     const anim = e.anim;
     if (!anim) {
-      beats.push({ kind: 'note', text: e.text });
+      beats.push({ kind: 'note', text: e.text, event: e });
       return;
     }
     if (anim.kind === 'attack') {
       // The attacker lunges at the Pokémon the attack's first damage lands on.
       const hit = events.slice(i + 1).find((x) => x.anim?.kind === 'damage')?.anim;
-      beats.push({ ...anim, target: hit?.kind === 'damage' ? hit.target : null, text: e.text });
+      beats.push({ ...anim, target: hit?.kind === 'damage' ? hit.target : null, text: e.text, event: e });
       return;
     }
-    beats.push({ ...anim, text: e.text });
+    beats.push({ ...anim, text: e.text, event: e });
   });
   return beats;
 }

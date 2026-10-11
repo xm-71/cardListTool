@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { GameEvent, PlayerId } from '@ptcg/engine';
+import { describeEvent, type Names } from '../game/describe.ts';
 
-export function GameLog({ log, me }: { log: GameEvent[]; me: PlayerId }) {
+/** The battle log, newest at the bottom; with `names`, lines read from the player's side ("You play …"). */
+export function GameLog({ log, me, names }: { log: GameEvent[]; me: PlayerId; names?: Names }) {
   const end = useRef<HTMLDivElement>(null);
   // Braces matter: newer browsers return a Promise from scrollIntoView, and an effect's return value is
   // treated as its cleanup function (calling a Promise crashed the board on mobile Chrome).
@@ -27,7 +29,7 @@ export function GameLog({ log, me }: { log: GameEvent[]; me: PlayerId }) {
                   : 'text-red-fg'
           }
         >
-          {e.text}
+          {names ? describeEvent(e, names) : e.text}
         </div>
       ))}
       <div ref={end} />
