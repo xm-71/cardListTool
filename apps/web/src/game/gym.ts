@@ -299,16 +299,22 @@ export function startRun(g: GymProgress, deck: RunDeck): GymProgress {
 }
 
 /**
- * Applies a finished Elite Four or Champion match: a loss ends the run, a win moves on, and beating the
- * Champion ends the run with a Hall of Fame entry and the Champion reward.
+ * Applies a finished Elite Four or Champion match: a loss ends the run, a win moves on, a draw replays the
+ * same match (the run stays where it is), and beating the Champion ends the run with a Hall of Fame entry and
+ * the Champion reward. A result for a stage the run is not at (or with no run, e.g. the other tab already moved
+ * on) changes nothing and is marked `stale`.
  */
 export function applyEliteResult(
   g: GymProgress,
   stage: number,
   won: boolean,
   entry: HallOfFameEntry,
-): { next: GymProgress; reward: Payout | null } {
-  if (!g.run || g.run.stage !== stage) return { next: g, reward: null };
+  draw = false,
+): { next: GymProgress; reward: Payout | null; stale?: true } {
+  if (!g.run || g.run.stage !== stage) return { next: g, reward: null, stale: true };
+  if (draw) {
+    return { next: { ...g, run: { stage: g.run.stage, deck: g.run.deck } }, reward: null };
+  }
   if (!won) return { next: { ...g, run: null }, reward: null };
   if (stage < CHAMPION_STAGE) {
     return { next: { ...g, run: { deck: g.run.deck, stage: stage + 1 } }, reward: null };

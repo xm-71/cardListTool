@@ -41,6 +41,8 @@ export interface GymPayout {
   badge: boolean;
   /** The Champion was beaten and a Hall of Fame entry was added. */
   champion: boolean;
+  /** False when an Elite Four result arrived for a stage the run had already moved past (another tab). */
+  counted?: boolean;
 }
 
 /** Opens `n` free 151 packs into `collection`, returning each pack's cards. */
@@ -92,11 +94,12 @@ interface ProfileState {
     won: boolean;
     normalCredits: number;
   }): Promise<GymPayout | undefined>;
-  /** Records a finished Elite Four or Champion match, once per game seed. */
+  /** Records a finished Elite Four or Champion match, once per game seed (`draw`: the match is replayed). */
   recordElite(o: {
     seed: number;
     stage: number;
     won: boolean;
+    draw?: boolean;
     deckName: string;
     cover: string;
   }): Promise<GymPayout | undefined>;
@@ -214,7 +217,7 @@ export const useProfile = create<ProfileState>()((set, get) => {
         };
       });
     },
-    async recordElite({ seed, stage, won, deckName, cover }) {
+    async recordElite({ seed, stage, won, draw, deckName, cover }) {
       return change((p) => {
         if (p.awardedGames.includes(seed)) return null;
         const entry = {
@@ -223,7 +226,7 @@ export const useProfile = create<ProfileState>()((set, get) => {
           deckName,
           cover,
         };
-        const { next: gym, reward } = applyEliteResult(p.gym, stage, won, entry);
+        const { next: gym, reward, stale } = applyEliteResult(p.gym, stage, won, entry, draw);
         const paid = pay(p, reward);
         return {
           next: {
@@ -233,7 +236,13 @@ export const useProfile = create<ProfileState>()((set, get) => {
             credits: paid.credits,
             awardedGames: [...p.awardedGames, seed].slice(-AWARD_HISTORY),
           },
-          result: { credits: reward?.credits ?? 0, packs: paid.packs, badge: false, champion: !!reward },
+          result: {
+            credits: reward?.credits ?? 0,
+            packs: paid.packs,
+            badge: false,
+            champion: !!reward,
+            counted: !stale,
+          },
         };
       });
     },
