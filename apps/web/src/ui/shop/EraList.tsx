@@ -19,7 +19,7 @@ export function EraList({
   onQuery(query: string): void;
 }) {
   const row = (active: boolean) =>
-    `flex items-center justify-between gap-2 border-2 border-ink px-2 py-1.5 text-left text-xl leading-none ${active ? 'bg-yellow' : 'bg-paper hover:bg-cream'}`;
+    `flex items-center justify-between gap-2 border-2 border-ink px-2 py-1.5 text-left text-xl leading-none ${active ? 'bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`;
   return (
     <div className="flex flex-col gap-1.5">
       <span className="mb-1 font-pixel text-[8px] uppercase">Eras</span>

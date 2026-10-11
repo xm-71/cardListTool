@@ -1,17 +1,74 @@
 @import 'tailwindcss';
 
+/*
+ * Colours are CSS variables so dark mode can swap them. The `--c-*` values below are the palette: surfaces
+ * (cream = page, paper = panels, mat = the play mat) and ink (text and borders) flip in dark mode; the accents
+ * stay the same, with lighter "-fg" versions for coloured text on a dark surface. Text that sits ON an accent
+ * (yellow buttons, red/blue/green/purple tags) uses the fixed pair `ink-fixed` / `paper-fixed`, which never flips.
+ */
+:root {
+  --c-cream: #f8f0d0;
+  --c-paper: #fffbe8;
+  --c-ink: #283040;
+  --c-mat: #cfe0b0;
+  --c-mat-dark: #c4d8a4;
+  --c-shadow: #283040;
+  --c-red-fg: #d84848;
+  --c-green-fg: #58a050;
+  --c-blue-fg: #3868c0;
+  --c-purple-fg: #8060c0;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --c-cream: #141a28;
+  --c-paper: #1e2536;
+  --c-ink: #ece4c4;
+  --c-mat: #274a2e;
+  --c-mat-dark: #224127;
+  --c-shadow: #05070c;
+  --c-red-fg: #ff8080;
+  --c-green-fg: #8fd486;
+  --c-blue-fg: #8fb2ff;
+  --c-purple-fg: #b49cff;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --c-cream: #141a28;
+    --c-paper: #1e2536;
+    --c-ink: #ece4c4;
+    --c-mat: #274a2e;
+    --c-mat-dark: #224127;
+    --c-shadow: #05070c;
+    --c-red-fg: #ff8080;
+    --c-green-fg: #8fd486;
+    --c-blue-fg: #8fb2ff;
+    --c-purple-fg: #b49cff;
+    color-scheme: dark;
+  }
+}
+
 @theme {
-  --color-cream: #f8f0d0;
-  --color-paper: #fffbe8;
-  --color-ink: #283040;
+  --color-cream: var(--c-cream);
+  --color-paper: var(--c-paper);
+  --color-ink: var(--c-ink);
+  --color-mat: var(--c-mat);
+  --color-mat-dark: var(--c-mat-dark);
+  --color-shadow: var(--c-shadow);
+  --color-red-fg: var(--c-red-fg);
+  --color-green-fg: var(--c-green-fg);
+  --color-blue-fg: var(--c-blue-fg);
+  --color-purple-fg: var(--c-purple-fg);
+  --color-ink-fixed: #283040;
+  --color-paper-fixed: #fffbe8;
   --color-red: #d84848;
   --color-blue: #3868c0;
   --color-yellow: #f0c030;
   --color-green: #58a050;
   --color-purple: #8060c0;
   --color-pink: #e890b8;
-  --color-mat: #cfe0b0;
-  --color-mat-dark: #c4d8a4;
   --font-pixel: 'Press Start 2P', ui-monospace, monospace;
   --font-text: 'VT323', ui-monospace, monospace;
 }
@@ -38,7 +95,7 @@ body {
 
 /* Chunky offset shadow for cards and buttons. */
 @utility retro-shadow {
-  box-shadow: 4px 4px 0 var(--color-ink);
+  box-shadow: 4px 4px 0 var(--color-shadow);
 }
 
 @utility play-mat {
@@ -196,8 +253,8 @@ body {
   height: auto;
   aspect-ratio: 1;
   border-radius: 50%;
-  border: 3px solid var(--color-ink);
-  background: linear-gradient(var(--color-red) 0 45%, var(--color-ink) 45% 55%, #fff 55%);
+  border: 3px solid var(--color-ink-fixed);
+  background: linear-gradient(var(--color-red) 0 45%, var(--color-ink-fixed) 45% 55%, #fff 55%);
 }
 
 @media (prefers-reduced-motion: reduce) {

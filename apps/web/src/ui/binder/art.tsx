@@ -7,13 +7,13 @@ export const COLOR_VAR: Record<BinderColor, string> = {
   yellow: 'var(--color-yellow)',
   green: 'var(--color-green)',
   purple: 'var(--color-purple)',
-  ink: 'var(--color-ink)',
-  cream: 'var(--color-cream)',
+  ink: 'var(--color-ink-fixed)',
+  cream: '#f8f0d0',
   pink: 'var(--color-pink)',
 };
 
 const PIXEL: Record<string, string> = {
-  k: 'var(--color-ink)',
+  k: 'var(--color-ink-fixed)',
   r: 'var(--color-red)',
   y: 'var(--color-yellow)',
   g: 'var(--color-green)',
@@ -43,7 +43,7 @@ export function Sticker({ id, size = 32 }: { id: StickerId; size?: number }) {
       height={size}
       viewBox="0 0 8 8"
       shapeRendering="crispEdges"
-      style={{ filter: 'drop-shadow(1px 1px 0 var(--color-ink))' }}
+      style={{ filter: 'drop-shadow(1px 1px 0 var(--color-ink-fixed))' }}
     >
       {STICKER_ART[id].flatMap((row, y) =>
         [...row].map((c, x) =>
@@ -84,7 +84,7 @@ export function Background({ kind, color }: { kind: BinderBackground; color: Bin
     <svg
       aria-hidden
       data-testid="binder-pattern"
-      className={`pointer-events-none absolute inset-0 h-full w-full ${LIGHT.has(color) ? 'text-ink opacity-15' : 'text-white opacity-30'}`}
+      className={`pointer-events-none absolute inset-0 h-full w-full ${LIGHT.has(color) ? 'text-ink-fixed opacity-15' : 'text-white opacity-30'}`}
     >
       <defs>
         <pattern id={id} width="24" height="24" patternUnits="userSpaceOnUse">

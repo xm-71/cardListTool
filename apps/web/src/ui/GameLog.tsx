@@ -23,8 +23,8 @@ export function GameLog({ log, me }: { log: GameEvent[]; me: PlayerId }) {
               : e.player === undefined
                 ? 'opacity-70'
                 : e.player === me
-                  ? 'text-blue'
-                  : 'text-red'
+                  ? 'text-blue-fg'
+                  : 'text-red-fg'
           }
         >
           {e.text}

@@ -27,7 +27,7 @@ export function Sheet({ title, onClose, children, className = '' }: Props) {
   return (
     <div
       data-testid="sheet-backdrop"
-      className="fixed inset-0 z-30 flex items-end justify-center bg-ink/40"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-ink-fixed/40"
       onClick={onClose}
     >
       <div

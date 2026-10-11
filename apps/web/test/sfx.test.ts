@@ -87,7 +87,7 @@ test('the sound setting persists across reloads', async () => {
   const first = await load();
   expect(first.useSettings.getState().sound).toBe(true);
   first.useSettings.getState().setSound(false);
-  expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({ sound: false, skipTitle: false });
+  expect(JSON.parse(localStorage.getItem(KEY)!)).toEqual({ sound: false, skipTitle: false, theme: 'system' });
   const second = await load();
   expect(second.useSettings.getState().sound).toBe(false);
 });

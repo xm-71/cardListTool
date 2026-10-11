@@ -30,13 +30,13 @@ export function downloadBugReport(error: string): void {
 export function ErrorScreen({ error, onHome }: { error: string; onHome(): void }) {
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-4 p-6 text-center">
-      <h2 className="font-pixel text-base uppercase text-red">Something went wrong</h2>
+      <h2 className="font-pixel text-base uppercase text-red-fg">Something went wrong</h2>
       <p className="retro-box max-w-lg p-4 text-xl">{error}</p>
       <div className="flex gap-3">
         <button
           type="button"
           onClick={() => downloadBugReport(error)}
-          className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
+          className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink-fixed hover:brightness-105"
         >
           Download bug report
         </button>

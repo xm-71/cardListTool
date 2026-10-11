@@ -19,7 +19,7 @@ export function CardZoom() {
       role="dialog"
       aria-label="Card view"
       onClick={() => zoom(null)}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-ink/85 p-4"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-ink-fixed/85 p-4"
     >
       <CardView card={card} size="lg" noPreview />
       <Button onClick={() => zoom(null)}>Close</Button>

@@ -238,7 +238,7 @@ function SlotMenu({
   useDialog(dialog, onClose);
   return (
     <div
-      className="fixed inset-0 z-30 flex items-end justify-center bg-ink/40 p-4 sm:items-center"
+      className="fixed inset-0 z-30 flex items-end justify-center bg-ink-fixed/40 p-4 sm:items-center"
       onClick={onClose}
     >
       <div

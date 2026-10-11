@@ -86,7 +86,7 @@ export function PackOpening({
   const tag = currentDef ? TAG[tier](currentDef.rarity) : null;
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/80 p-4">
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink-fixed/80 p-4">
       {flash && (
         <div data-testid="flash" className="animate-flash pointer-events-none fixed inset-0 z-40 bg-white" />
       )}
@@ -121,7 +121,7 @@ export function PackOpening({
                   onClick={flip}
                   className="card-back retro-shadow relative h-56 w-40 border-4 border-ink"
                 >
-                  <span className="absolute right-2 bottom-2 font-pixel text-[9px] text-paper">
+                  <span className="absolute right-2 bottom-2 font-pixel text-[9px] text-paper-fixed">
                     ×{cards.length - shown}
                   </span>
                 </button>
@@ -142,7 +142,7 @@ export function PackOpening({
                     {(tier === 'ultra' || tier === 'special') && <Sparkles />}
                   </div>
                   {tag && (
-                    <span className="animate-tag-pop border-4 border-ink bg-purple px-2 py-1 font-pixel text-[9px] text-paper">
+                    <span className="animate-tag-pop border-4 border-ink bg-purple px-2 py-1 font-pixel text-[9px] text-paper-fixed">
                       {tag}
                     </span>
                   )}
@@ -160,7 +160,7 @@ export function PackOpening({
                 <div key={i} className="flex flex-col items-center gap-1">
                   <CardView card={instance(id, i)} size="md" noPreview />
                   {t !== 'common' && (
-                    <span className="font-pixel text-[7px] text-purple">★ {def?.rarity}</span>
+                    <span className="font-pixel text-[7px] text-purple-fg">★ {def?.rarity}</span>
                   )}
                 </div>
               );

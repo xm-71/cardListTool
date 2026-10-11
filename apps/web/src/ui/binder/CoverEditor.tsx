@@ -47,7 +47,7 @@ export function CoverEditor({ binder, onSave, onDelete, onClose }: Props) {
     });
 
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-ink/40 p-4">
+    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-ink-fixed/40 p-4">
       <div
         role="dialog"
         aria-modal="true"
@@ -86,7 +86,7 @@ export function CoverEditor({ binder, onSave, onDelete, onClose }: Props) {
                   role="radio"
                   aria-checked={draft.background === bg}
                   onClick={() => set({ background: bg })}
-                  className={`border-4 border-ink px-2 py-1 text-lg ${draft.background === bg ? 'bg-yellow' : 'bg-paper hover:bg-cream'}`}
+                  className={`border-4 border-ink px-2 py-1 text-lg ${draft.background === bg ? 'bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
                 >
                   {bg}
                 </button>
@@ -119,7 +119,7 @@ export function CoverEditor({ binder, onSave, onDelete, onClose }: Props) {
           {onDelete && (
             <Button
               variant="plain"
-              className="mr-auto text-red"
+              className="mr-auto text-red-fg"
               onClick={() =>
                 confirm(`Delete "${binder.name}"? Its cards stay in your collection.`) && onDelete()
               }

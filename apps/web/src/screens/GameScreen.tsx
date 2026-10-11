@@ -189,7 +189,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           onViewBoard={() => setBoardOpen(true)}
         />
         <div className="flex flex-wrap items-center justify-center gap-2 font-pixel text-[9px] uppercase">
-          <span className="border-2 border-ink bg-yellow px-2 py-1">{statusLine}</span>
+          <span className="border-2 border-ink bg-yellow text-ink-fixed px-2 py-1">{statusLine}</span>
           {view.stadium && (
             <span className="flex items-center gap-1 normal-case">
               Stadium: <CardView card={view.stadium.card} size="xs" />
@@ -245,7 +245,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           <button
             type="button"
             onClick={() => act({ type: 'endTurn' })}
-            className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink hover:brightness-105"
+            className="retro-shadow border-4 border-ink bg-yellow px-4 py-2 font-pixel text-[10px] uppercase text-ink-fixed hover:brightness-105"
           >
             End turn
           </button>

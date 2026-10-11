@@ -5,7 +5,10 @@ import { CardView, TextCard } from './CardView.tsx';
 /** Full-size card plus its full text; reachable on any screen size by clicking a card. */
 export function CardDetails({ card, onClose }: { card: CardInstance; onClose(): void }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-ink/70 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-30 flex items-center justify-center bg-ink-fixed/70 p-4"
+      onClick={onClose}
+    >
       <div
         role="dialog"
         aria-label="Card details"

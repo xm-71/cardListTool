@@ -34,7 +34,7 @@ export function Binder() {
               setTab(t.id);
               setOpenId(null);
             }}
-            className={`border-4 border-ink px-3 py-2 font-pixel text-[10px] uppercase ${tab === t.id ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+            className={`border-4 border-ink px-3 py-2 font-pixel text-[10px] uppercase ${tab === t.id ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
           >
             {t.label}
           </button>
@@ -95,7 +95,7 @@ function BinderBody() {
               type="button"
               aria-pressed={s.id === setId}
               onClick={() => setSetId(s.id)}
-              className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow' : 'bg-paper hover:bg-cream'}`}
+              className={`border-4 border-ink px-3 py-2 font-pixel text-[9px] uppercase ${s.id === setId ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
             >
               {s.name}
             </button>
@@ -141,7 +141,7 @@ function BinderBody() {
                   </span>
                 )}
                 {playable && (
-                  <span className="border-2 border-ink bg-green px-1 font-pixel text-[7px] text-paper">
+                  <span className="border-2 border-ink bg-green px-1 font-pixel text-[7px] text-paper-fixed">
                     Playable
                   </span>
                 )}

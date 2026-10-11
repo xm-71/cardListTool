@@ -34,7 +34,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted, selected }: 
           selected={selected}
         />
         <div className="absolute -top-3 -right-3 w-16 border-2 border-ink bg-paper px-1 py-0.5 font-pixel text-[7px] leading-tight lg:-right-1 lg:w-[calc(100%+0.5rem)] lg:text-[6px]">
-          <span className={slot.damage > 0 ? 'text-red' : ''}>
+          <span className={slot.damage > 0 ? 'text-red-fg' : ''}>
             {hpLeft}/{hp}
           </span>
           <HpBar hp={hpLeft} max={hp} />
@@ -44,7 +44,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted, selected }: 
             {badges.map((b) => (
               <span
                 key={b}
-                className="border-2 border-ink bg-purple px-1 font-pixel text-[6px] uppercase text-paper"
+                className="border-2 border-ink bg-purple px-1 font-pixel text-[6px] uppercase text-paper-fixed"
               >
                 {b}
               </span>
@@ -67,7 +67,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted, selected }: 
         {slot.tool && (
           <span
             title={defOf(slot.tool).name}
-            className="max-w-full truncate border-2 border-ink bg-blue px-1 text-sm leading-tight text-paper"
+            className="max-w-full truncate border-2 border-ink bg-blue px-1 text-sm leading-tight text-paper-fixed"
           >
             {defOf(slot.tool).name}
           </span>
