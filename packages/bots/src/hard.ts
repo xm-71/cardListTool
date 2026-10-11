@@ -30,6 +30,8 @@ export interface HardOptions {
   now?: () => number;
   /** Called after each finished round with its 1-based number (tests and timing only). */
   onRound?: (round: number) => void;
+  /** Called for every move scored in every guessed world (tests only); impossible moves score -1e9. */
+  onScore?: (action: Action, score: number) => void;
 }
 
 /**
@@ -61,16 +63,16 @@ export function createHardBot(
     return { score: evaluate(state, me, registry), rng };
   };
 
-  /** Rounds of fresh guesses; `play` turns one candidate in one guessed world into a state to score. */
+  /** Rounds of fresh guesses; `scoreOf` values one candidate in one guessed world (throwing if it can't be played). */
   const search = (
     view: PlayerView,
     candidates: Action[],
     rngIn: number,
-    play: (world: GameState, action: Action) => GameState,
+    scoreOf: (world: GameState, action: Action, rng: number) => number,
   ): { action: Action; rng: number } => {
     let rng = rngIn;
-    const me = view.me ?? seat;
     const totals = new Map<Action, number>();
+    let scored = 0;
     const startedAt = now();
     for (let round = 1; ; round++) {
       const d = determinize(view, decks, registry, rng);
@@ -79,10 +81,12 @@ export function createHardBot(
       for (const action of candidates) {
         let score: number;
         try {
-          score = scoreAfter(play(d.state, action), me, d.rng).score;
+          score = scoreOf(d.state, action, d.rng);
+          scored++;
         } catch {
           score = IMPOSSIBLE;
         }
+        options.onScore?.(action, score);
         totals.set(action, (totals.get(action) ?? 0) + score);
       }
       rng = nextRandom(d.rng)[1];
@@ -90,8 +94,23 @@ export function createHardBot(
       if (round >= maxRounds) break;
       if (round >= minRounds && now() - startedAt >= budgetMs) break;
     }
+    // Nothing could be played in any guessed world: a random pick would be worse than the Easy policy.
+    if (scored === 0) throw new Error('no candidate could be scored');
     return pickBest(totals, rng);
   };
+
+  /** Promote the chosen Benched Pokémon by hand and score the board (the guessed world has no prompt to answer). */
+  const promotionScore =
+    (view: PlayerView, me: PlayerId) =>
+    (world: GameState, action: Action): number => {
+      if (action.type !== 'answer') throw new Error('not a promotion answer');
+      const ref = view.prompt!.options.find((o) => o.id === action.optionId)?.slot;
+      if (!ref || ref.zone !== 'bench') throw new Error('not a Benched Pokémon');
+      const s = structuredClone(world);
+      const p = s.players[me];
+      p.active = p.bench.splice(ref.index, 1)[0]!;
+      return evaluate(s, me, registry);
+    };
 
   return (view, legal, rng) => {
     const me = view.me ?? seat;
@@ -104,7 +123,15 @@ export function createHardBot(
       if (!(promoting && candidates.length > 1)) return easy(view, legal, rng);
     }
     try {
-      return search(view, candidates, rng, (world, action) => engine.applyAction(world, me, action).state);
+      const promoting = view.prompt?.kind === 'slot' && view.prompt.message === PROMOTE;
+      return search(
+        view,
+        candidates,
+        rng,
+        promoting
+          ? promotionScore(view, me)
+          : (world, action, r) => scoreAfter(engine.applyAction(world, me, action).state, me, r).score,
+      );
     } catch {
       return easy(view, legal, rng);
     }

@@ -11,6 +11,7 @@ import {
   started,
   swapActiveTo,
 } from '@ptcg/engine/testing';
+import { createEasyBot } from '../src/easy.ts';
 import { createHardBot, type HardOptions } from '../src/hard.ts';
 import { createMediumBot } from '../src/medium.ts';
 
@@ -77,13 +78,17 @@ describe('hard bot', () => {
   test('answers a promotion prompt for its own seat during the opponent reply', () => {
     // A plain Basic is on the Bench, so the Knockout in the reply raises a promotion prompt for Hard's seat.
     const { s, me } = threatened('t-basic');
+    const scores: number[] = [];
     const out = createHardBot(
       registry,
       decks,
       me,
-      frozen({ maxRounds: 1 }),
+      frozen({ maxRounds: 1, onScore: (_a, v) => scores.push(v) }),
     )(engine.viewFor(s, me), legalFor(s, me), 3);
     expect(legalFor(s, me)).toContainEqual(out.action);
+    // The search really ran: moves were scored, not skipped because the reply rollout threw or stalled.
+    expect(scores.length).toBeGreaterThan(1);
+    expect(scores.every((v) => v > -1e8)).toBe(true);
   });
 
   test('stops at maxRounds when the clock never moves', () => {
@@ -144,7 +149,7 @@ describe('hard bot', () => {
     expect(rounds).toEqual([]);
   });
 
-  test('takes a winning attack without playing a reply', () => {
+  test('takes an attack that wins the game', () => {
     // The opponent has one Pokémon with 10 HP left and an empty Bench: attacking ends the game.
     let s = started(engine, spec, spec, 11);
     s = act(engine, s, { type: 'endTurn' });
@@ -161,5 +166,54 @@ describe('hard bot', () => {
     const legal = legalFor(s, me);
     const out = createHardBot(registry, decks, me, frozen({ maxRounds: 1 }))(engine.viewFor(s, me), legal, 4);
     expect(out.action.type).toBe('attack');
+  });
+
+  test('promotes the bench Pokémon that can Knock Out the opponent, whatever the random seed', () => {
+    // My Active (60 HP) is Knocked Out by the opponent's sniper (50 damage already on it). The Bench has a bare Basic
+    // and a tank with 4 Energy, whose 100-damage attack would Knock the sniper out.
+    let s = started(engine, spec, spec, 7);
+    s = act(engine, s, { type: 'endTurn' });
+    const me = s.current;
+    const opp: PlayerId = me === 0 ? 1 : 0;
+    swapActiveTo(s, me, 'spare');
+    benchFromHand(s, me, giveCard(s, me, 't-basic'));
+    benchFromHand(s, me, giveCard(s, me, 'tank'));
+    for (let i = 0; i < 4; i++) attachFromDeck(s, me, 't-dark', 1);
+    swapActiveTo(s, opp, 'sniper');
+    attachFromDeck(s, opp, 't-dark');
+    s.players[opp].active!.damage = 50;
+    s = act(engine, s, { type: 'endTurn' });
+    const easy = createEasyBot(registry);
+    for (let i = 0; i < 60 && !(s.prompt && s.prompt.player === me); i++) {
+      const p = s.prompt ? s.prompt.player : s.current;
+      const r = easy(engine.viewFor(s, p), engine.getLegalActions(s, p), 100 + i);
+      s = engine.applyAction(s, p, r.action).state;
+    }
+    expect(s.prompt?.message).toBe('Choose a new Active Pokémon');
+    const view = engine.viewFor(s, me);
+    const legal = legalFor(s, me);
+    const tankOption = s.prompt!.options.find((o) => o.slot?.zone === 'bench' && o.slot.index === 1)!;
+    for (let seed = 1; seed <= 8; seed++) {
+      const out = createHardBot(registry, decks, me, frozen({ maxRounds: 2 }))(view, legal, seed);
+      expect(out.action, `seed ${seed}`).toEqual({ type: 'answer', optionId: tankOption.id });
+    }
+  });
+
+  test('falls back to the Easy policy when no move can be played in any guessed world', () => {
+    const { s, me } = threatened();
+    // Neither attack exists, so applying either throws in every guessed world; Easy picks the first of equals.
+    const legal: Action[] = [
+      { type: 'attack', attackIndex: 7 },
+      { type: 'attack', attackIndex: 8 },
+    ];
+    for (let seed = 1; seed <= 8; seed++) {
+      const out = createHardBot(
+        registry,
+        decks,
+        me,
+        frozen({ maxRounds: 1 }),
+      )(engine.viewFor(s, me), legal, seed);
+      expect(out.action, `seed ${seed}`).toEqual(legal[0]);
+    }
   });
 });
