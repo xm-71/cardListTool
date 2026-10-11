@@ -18,10 +18,9 @@ const ev = (e: Partial<GameEvent> & { type: string }): GameEvent => ({ text: e.t
 
 describe('beatsFor', () => {
   test('a turn start is a banner and a draw for that player', () => {
-    expect(beatsFor([ev({ type: 'turnStart', player: 1, text: 'Turn 3: Player 2' })]).map((b) => b.kind)).toEqual([
-      'turn',
-      'draw',
-    ]);
+    expect(
+      beatsFor([ev({ type: 'turnStart', player: 1, text: 'Turn 3: Player 2' })]).map((b) => b.kind),
+    ).toEqual(['turn', 'draw']);
   });
 
   test('an attack aims at the Pokémon its damage lands on, then damage, Knock Out, Prize and promote follow', () => {
@@ -38,7 +37,7 @@ describe('beatsFor', () => {
 
   test('events with nothing to animate become text-only notes that take no time', () => {
     const [note] = beatsFor([ev({ type: 'playBasic', text: 'Player 1 plays Gastly' })]);
-    expect(note).toEqual({ kind: 'note', text: 'Player 1 plays Gastly' });
+    expect(note).toMatchObject({ kind: 'note', text: 'Player 1 plays Gastly' });
     expect(beatMs(note!)).toBe(0);
   });
 

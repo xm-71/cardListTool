@@ -15,8 +15,8 @@ interface Props {
   viewer: PlayerId;
   /** The viewer's legal actions right now (empty when it is not their move). */
   legal: Action[];
-  /** "Turn 3 · Your turn". */
-  status: string;
+  /** The ticker line (turn, and each move as it plays). */
+  ticker: ReactNode;
   opponentName: string;
   benchSize: number;
   onAct(action: Action): void;
@@ -45,7 +45,7 @@ export function FaceOffBoard({
   view,
   viewer,
   legal,
-  status,
+  ticker,
   opponentName,
   benchSize,
   onAct,
@@ -234,8 +234,8 @@ export function FaceOffBoard({
         </div>
       </section>
 
-      <div className="flex items-center justify-center gap-2 px-2 font-pixel text-[8px] uppercase">
-        <span className="border-2 border-ink bg-yellow px-2 py-1 text-ink-fixed">{status}</span>
+      <div className="flex min-w-0 items-center justify-center gap-2 px-2 font-pixel text-[8px] uppercase">
+        {ticker}
         {view.stadium && (
           <button
             type="button"

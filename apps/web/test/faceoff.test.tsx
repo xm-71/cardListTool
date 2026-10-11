@@ -167,6 +167,20 @@ describe('the Face-off board on a phone', () => {
     expect(useNav.getState().route).toBe('menu');
   });
 
+  test('the ticker says the turn, and Log opens the battle log in plain words', () => {
+    render(<GameScreen />);
+    expect(screen.getByRole('status')).toHaveTextContent(`Turn ${st().turn} · Your turn`);
+    fireEvent.click(screen.getByRole('button', { name: 'Log' }));
+    const sheet = screen.getByRole('dialog', { name: 'Battle log' });
+    expect(within(sheet).getByRole('region', { name: 'Game log' })).toHaveTextContent(/Your turn|You /);
+    expect(within(sheet).getByRole('region', { name: 'Game log' })).not.toHaveTextContent('Player 1');
+  });
+
+  test('the opponent is called Rival in a Duel', () => {
+    render(<GameScreen />);
+    expect(within(opponent()).getByText('Rival')).toBeInTheDocument();
+  });
+
   test('the discard count opens your discard pile', () => {
     mutate((s) => {
       s.players[0].discard = s.players[0].deck.splice(0, 2);
