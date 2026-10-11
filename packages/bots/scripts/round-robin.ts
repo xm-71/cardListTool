@@ -45,15 +45,18 @@ if (hardMode) {
   const byDeck = new Map(DECKS.map(([n]) => [n, { wins: 0, games: 0 }]));
   let hardWins = 0;
   let played = 0;
-  let hardSeed = 1;
+  let hardSeed = 1 + Number((process.env.HARD_SHARD ?? '0/1').split('/')[0]) * 100000;
   const play = (d0: DeckList, d1: DeckList, hardSeat: 0 | 1, hard: ReturnType<typeof createHardBot>) => {
     const decks: [DeckList, DeckList] = [d0, d1];
     const medium = createMediumBot(registry, decks, (1 - hardSeat) as 0 | 1);
     const bots = (hardSeat === 0 ? [hard, medium] : [medium, hard]) as [typeof bot, typeof bot];
     return runMatch({ engine, decks, seed: hardSeed++, bots });
   };
-  for (const [n0, d0] of DECKS)
-    for (const [n1, d1] of DECKS)
+  // HARD_SHARD=k/n runs every n-th first deck, so shards can run in parallel and be summed.
+  const [shard, shards] = (process.env.HARD_SHARD ?? '0/1').split('/').map(Number) as [number, number];
+  for (const [i0, [n0, d0]] of DECKS.entries())
+    for (const [n1, d1] of DECKS) {
+      if (i0 % shards !== shard) continue;
       for (let g = 0; g < perPair; g++) {
         const hardSeat = (g % 2) as 0 | 1;
         const decks: [DeckList, DeckList] = [d0, d1];
@@ -68,12 +71,19 @@ if (hardMode) {
           mine.wins++;
         }
       }
+    }
   const pct = (100 * hardWins) / played;
   for (const [name, { wins, games }] of byDeck)
-    console.log(`${name.padEnd(20)} Hard ${((100 * wins) / Math.max(1, games)).toFixed(1).padStart(5)}%  (${wins}/${games})`);
-  console.log(`Hard vs Medium: ${pct.toFixed(1)}% (${hardWins}/${played})  target >= ${WIN_TARGET}%  ${pct >= WIN_TARGET ? 'PASS' : 'FAIL'}`);
+    console.log(
+      `${name.padEnd(20)} Hard ${((100 * wins) / Math.max(1, games)).toFixed(1).padStart(5)}%  (${wins}/${games})`,
+    );
+  console.log(
+    `Hard vs Medium: ${pct.toFixed(1)}% (${hardWins}/${played})  target >= ${WIN_TARGET}%  ${pct >= WIN_TARGET ? 'PASS' : 'FAIL'}`,
+  );
 
-  // Think time with the real clock and default options.
+  console.log(`TALLY ${hardWins} ${played}`);
+  // Think time with the real clock and default options (first shard only).
+  if (shard !== 0) process.exit(0);
   const times: number[] = [];
   for (let g = 0; g < 6; g++) {
     const [, d0] = DECKS[(g * 2) % DECKS.length]!;

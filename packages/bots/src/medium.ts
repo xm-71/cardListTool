@@ -13,7 +13,6 @@ import { evaluate } from './evaluate.ts';
 import { dedupe, pickBest, PROMOTE, rolloutTurn } from './search.ts';
 import type { Bot } from './types.ts';
 
-
 /**
  * Medium bot: for each candidate move, plays it on several guessed versions of the hidden
  * cards, finishes the turn with the Easy policy, scores the result and picks the best average.

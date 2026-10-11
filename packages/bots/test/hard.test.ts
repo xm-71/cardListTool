@@ -77,22 +77,24 @@ describe('hard bot', () => {
   test('answers a promotion prompt for its own seat during the opponent reply', () => {
     // A plain Basic is on the Bench, so the Knockout in the reply raises a promotion prompt for Hard's seat.
     const { s, me } = threatened('t-basic');
-    const out = createHardBot(registry, decks, me, frozen({ maxRounds: 1 }))(
-      engine.viewFor(s, me),
-      legalFor(s, me),
-      3,
-    );
+    const out = createHardBot(
+      registry,
+      decks,
+      me,
+      frozen({ maxRounds: 1 }),
+    )(engine.viewFor(s, me), legalFor(s, me), 3);
     expect(legalFor(s, me)).toContainEqual(out.action);
   });
 
   test('stops at maxRounds when the clock never moves', () => {
     const { s, me } = threatened();
     const rounds: number[] = [];
-    createHardBot(registry, decks, me, frozen({ maxRounds: 3, onRound: (n) => rounds.push(n) }))(
-      engine.viewFor(s, me),
-      legalFor(s, me),
-      5,
-    );
+    createHardBot(
+      registry,
+      decks,
+      me,
+      frozen({ maxRounds: 3, onRound: (n) => rounds.push(n) }),
+    )(engine.viewFor(s, me), legalFor(s, me), 5);
     expect(rounds).toEqual([1, 2, 3]);
   });
 
@@ -132,11 +134,12 @@ describe('hard bot', () => {
     const { s, me } = threatened();
     const rounds: number[] = [];
     const only: Action[] = [{ type: 'endTurn' }];
-    const out = createHardBot(registry, decks, me, frozen({ onRound: (n) => rounds.push(n) }))(
-      engine.viewFor(s, me),
-      only,
-      5,
-    );
+    const out = createHardBot(
+      registry,
+      decks,
+      me,
+      frozen({ onRound: (n) => rounds.push(n) }),
+    )(engine.viewFor(s, me), only, 5);
     expect(out.action).toEqual({ type: 'endTurn' });
     expect(rounds).toEqual([]);
   });

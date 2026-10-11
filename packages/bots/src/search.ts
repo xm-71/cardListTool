@@ -1,10 +1,4 @@
-import {
-  nextRandom,
-  type Action,
-  type Engine,
-  type GameState,
-  type PlayerId,
-} from '@ptcg/engine';
+import { nextRandom, type Action, type Engine, type GameState, type PlayerId } from '@ptcg/engine';
 import type { Bot } from './types.ts';
 
 /** Message of the engine's promotion prompt after a Knockout. */
@@ -49,7 +43,10 @@ export function pickBest(totals: Map<Action, number>, rngIn: number): { action: 
 }
 
 /** Collapse actions that differ only by which copy of the same card they use. */
-export function dedupe(actions: Action[], view: { you: { hand: { uid: string; defId: string }[] } }): Action[] {
+export function dedupe(
+  actions: Action[],
+  view: { you: { hand: { uid: string; defId: string }[] } },
+): Action[] {
   const defOf = new Map(view.you.hand.map((c) => [c.uid, c.defId]));
   const seen = new Set<string>();
   const out: Action[] = [];
