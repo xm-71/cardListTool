@@ -19,6 +19,11 @@ const SIZES = {
   pile: 'w-12 lg:w-[min(3.5rem,6vh)]',
   /** Attached Energy under a Pokémon. */
   chip: 'w-6 lg:w-[min(1.5rem,3.2vh)]',
+  // Face-off board (phones): widths come from CSS variables set on the board.
+  foBench: 'w-[var(--fo-bench)]',
+  foOpp: 'w-[var(--fo-opp)]',
+  foYou: 'w-[var(--fo-you)]',
+  foHand: 'w-[var(--fo-hand)]',
 } as const;
 export type CardSize = keyof typeof SIZES;
 
@@ -31,21 +36,25 @@ interface Props {
   selected?: boolean;
   /** Disable long-press zoom (e.g. inside the zoom itself). */
   noPreview?: boolean;
+  /** A spot the card the player is holding can be played onto: it glows. */
+  target?: boolean;
 }
 
-export function CardView({ card, size = 'md', onClick, highlighted, selected, noPreview }: Props) {
+export function CardView({ card, size = 'md', onClick, highlighted, selected, noPreview, target }: Props) {
   const def = defOf(card);
   const [failed, setFailed] = useState(false);
   const zoom = usePreview((s) => s.zoom);
   const press = useLongPress(() => zoom(card));
   const quality = size === 'lg' || size === 'panel' ? 'high' : 'low';
-  const ring = selected
-    ? 'ring-4 ring-yellow'
-    : highlighted
-      ? 'ring-4 ring-red'
-      : onClick
-        ? 'hover:ring-4 hover:ring-yellow'
-        : '';
+  const ring = target
+    ? 'ring-4 ring-yellow shadow-[0_0_14px_4px_var(--color-yellow)] motion-safe:animate-pulse'
+    : selected
+      ? 'ring-4 ring-yellow'
+      : highlighted
+        ? 'ring-4 ring-red'
+        : onClick
+          ? 'hover:ring-4 hover:ring-yellow'
+          : '';
   // A tiny Energy card that can't load is shown as its coloured dot.
   if (failed && size === 'chip' && def.category === 'Energy') {
     return <EnergyDot type={def.provides[0] ?? 'Colorless'} title={def.name} />;
@@ -73,7 +82,14 @@ export function CardView({ card, size = 'md', onClick, highlighted, selected, no
       }
     : undefined;
   return onClick ? (
-    <button type="button" className={className} onClick={click} data-uid={card.uid} {...hover}>
+    <button
+      type="button"
+      className={className}
+      onClick={click}
+      data-uid={card.uid}
+      data-target={target ? '' : undefined}
+      {...hover}
+    >
       {body}
     </button>
   ) : (

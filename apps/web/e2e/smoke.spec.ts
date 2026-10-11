@@ -472,12 +472,46 @@ test('phone: the Shop shows packs above the fold and a crowded board fits one sc
     expect(c.left).toBeGreaterThanOrEqual(0);
     expect(c.right).toBeLessThanOrEqual(390);
   }
-  // Tapping the Active opens its sheet with its attacks (one more tap uses one).
+  // Face-off: the opponent's Active is big, and every hand card is on screen without tapping anything.
+  const oppActive = (await page
+    .getByRole('region', { name: 'Opponent' })
+    .locator('[data-uid]')
+    .nth(4)
+    .boundingBox())!;
+  expect(oppActive.width, "opponent's Active width").toBeGreaterThanOrEqual(100);
+  const handCards = await page
+    .getByRole('region', { name: 'Your hand' })
+    .locator('[data-uid]')
+    .evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect()).map((r) => ({ l: r.left, r: r.right, b: r.bottom })),
+    );
+  expect(handCards.length).toBeGreaterThanOrEqual(7);
+  for (const c of handCards) {
+    expect(c.l).toBeGreaterThanOrEqual(0);
+    expect(c.r).toBeLessThanOrEqual(390);
+    expect(c.b).toBeLessThanOrEqual(844 + 20);
+  }
+  // Tapping the Active opens its actions with its attacks (one more tap uses one).
   await page.getByRole('region', { name: /^You$/ }).locator('[data-uid]').first().click();
-  const sheet = page.getByRole('dialog').last();
-  await expect(sheet.getByRole('menu')).toBeVisible();
-  expect(await sheet.getByRole('menuitem').count()).toBeGreaterThanOrEqual(1);
-  await sheet.getByRole('button', { name: 'Close' }).click();
+  const menu = page.getByRole('menu');
+  await expect(menu).toBeVisible();
+  expect(await menu.getByRole('menuitem').count()).toBeGreaterThanOrEqual(1);
+  await page.screenshot({ path: 'test-results/board-phone-menu.png' });
+  await menu.getByRole('button', { name: 'Close' }).click();
+  // A small phone (iPhone SE) still fits on one screen.
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: 'test-results/board-phone-se.png' });
+  const se = await page.evaluate(() => ({
+    h: document.documentElement.scrollHeight,
+    w: document.documentElement.scrollWidth,
+  }));
+  const handBottom = await page
+    .getByRole('region', { name: 'Your hand' })
+    .evaluate((e) => e.getBoundingClientRect().bottom);
+  expect(handBottom, 'SE hand fully on screen').toBeLessThanOrEqual(667 + 2);
+  expect(se.h, 'SE height').toBeLessThanOrEqual(667);
+  expect(se.w, 'SE width').toBeLessThanOrEqual(375);
 });
 
 test('desktop 1280×800: the Active and Bench cards are big, and the whole board fits', async ({ page }) => {

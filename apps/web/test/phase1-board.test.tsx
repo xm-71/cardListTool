@@ -1,8 +1,7 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { GameScreen } from '../src/screens/GameScreen.tsx';
 import { useGame } from '../src/game/store.ts';
-import { useNav } from '../src/nav/useNav.ts';
 import { botCfg, finishSetupInStore, turnOf } from './helpers.ts';
 
 const media = (matches: boolean) =>
@@ -20,57 +19,6 @@ beforeEach(() => {
   turnOf(0);
 });
 afterEach(() => vi.unstubAllGlobals());
-
-describe('on a phone', () => {
-  beforeEach(() => media(true));
-
-  test('Hand, End turn and Menu live in the bottom bar, once each', () => {
-    render(<GameScreen />);
-    const bar = screen.getByRole('toolbar', { name: 'Game controls' });
-    expect(screen.getAllByRole('button', { name: 'End turn' })).toHaveLength(1);
-    expect(within(bar).getByRole('button', { name: 'End turn' })).toBeInTheDocument();
-    expect(within(bar).getByRole('button', { name: /^Hand \d+$/ })).toBeInTheDocument();
-    expect(within(bar).getByRole('button', { name: 'Menu' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Concede' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Quit to home' })).toBeNull();
-  });
-
-  test('the bar End turn ends the turn', () => {
-    render(<GameScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'End turn' }));
-    expect(useGame.getState().state!.current).toBe(1);
-  });
-
-  test('Menu has Concede (which asks first) and Quit to home', () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    render(<GameScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Concede' }));
-    expect(confirm).toHaveBeenCalled();
-    expect(useGame.getState().state!.result).toBeNull();
-    confirm.mockReturnValue(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Concede' }));
-    expect(useGame.getState().state!.result).not.toBeNull();
-  });
-
-  test('Quit to home from the menu leaves the game', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    useNav.getState().go('duel');
-    render(<GameScreen />);
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Quit to home' }));
-    expect(useGame.getState().state).toBeNull();
-    expect(useNav.getState().route).toBe('menu');
-  });
-
-  test('no bar while a prompt is open (the prompt has its own Done)', () => {
-    useGame.getState().reset();
-    useGame.getState().start(botCfg(1));
-    render(<GameScreen />);
-    expect(screen.queryByRole('toolbar', { name: 'Game controls' })).toBeNull();
-  });
-});
 
 describe('on a wide screen', () => {
   beforeEach(() => media(false));

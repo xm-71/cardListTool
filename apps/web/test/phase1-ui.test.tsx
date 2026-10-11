@@ -1,7 +1,7 @@
 import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { PACKS } from '@ptcg/economy';
-import { ActionBar } from '../src/ui/ActionBar.tsx';
+import { GameMenu } from '../src/ui/GameMenu.tsx';
 import { Sheet } from '../src/ui/Sheet.tsx';
 import { useIsPhone } from '../src/ui/useIsPhone.ts';
 import { PackArt } from '../src/ui/pack/PackArt.tsx';
@@ -57,33 +57,17 @@ describe('Sheet', () => {
   });
 });
 
-describe('ActionBar', () => {
-  const setup = (over: Partial<Parameters<typeof ActionBar>[0]> = {}) => {
+describe('GameMenu', () => {
+  const setup = (over: Partial<Parameters<typeof GameMenu>[0]> = {}) => {
     const props = {
-      handCount: 5,
-      onHand: vi.fn(),
-      onEndTurn: vi.fn(),
       onConcede: vi.fn(),
       onQuit: vi.fn(),
       log: <section aria-label="Game log">entries</section>,
       ...over,
     };
-    render(<ActionBar {...props} />);
+    render(<GameMenu {...props} />);
     return props;
   };
-
-  test('Hand opens the hand, End turn ends the turn', () => {
-    const p = setup();
-    fireEvent.click(screen.getByRole('button', { name: 'Hand 5' }));
-    expect(p.onHand).toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'End turn' }));
-    expect(p.onEndTurn).toHaveBeenCalled();
-  });
-
-  test('End turn is missing when it is not legal', () => {
-    setup({ onEndTurn: undefined });
-    expect(screen.queryByRole('button', { name: 'End turn' })).toBeNull();
-  });
 
   test('Menu opens a Game menu sheet with the log, Concede and Quit to home', () => {
     const p = setup();
