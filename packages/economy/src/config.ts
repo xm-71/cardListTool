@@ -4,8 +4,8 @@ import type { GameResult, PlayerId } from '@ptcg/engine';
 export const CREDITS = {
   start: 500,
   packPrice: 150,
-  win: { easy: 100, medium: 200 },
-  loss: { easy: 30, medium: 50 },
+  win: { easy: 100, medium: 200, hard: 300 },
+  loss: { easy: 30, medium: 50, hard: 70 },
 } as const;
 
 export type Difficulty = keyof typeof CREDITS.win;

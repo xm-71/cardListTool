@@ -12,7 +12,7 @@ export type GameContext =
 export interface GameConfig {
   mode: 'bot' | 'hotseat';
   /** Bot strength (bot mode only). */
-  difficulty?: 'easy' | 'medium';
+  difficulty?: 'easy' | 'medium' | 'hard';
   /** Seat 0's deck. In bot mode seat 0 is the human. */
   humanDeck: DeckList;
   /** Seat 1's deck (the bot, or Player 2 in hotseat). */

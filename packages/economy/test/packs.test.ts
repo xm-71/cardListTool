@@ -99,6 +99,8 @@ describe('creditsFor', () => {
     ['win vs Medium', r(0), 'medium', 200],
     ['loss vs Easy', r(1), 'easy', 30],
     ['loss vs Medium', r(1), 'medium', 50],
+    ['win vs Hard', r(0), 'hard', 300],
+    ['loss vs Hard', r(1), 'hard', 70],
     ['draw counts as a loss', r('draw', 'noPokemon'), 'medium', 50],
     ['human concede', r(1, 'concede'), 'medium', 0],
     ['bot concede counts as a win', r(0, 'concede'), 'easy', 100],

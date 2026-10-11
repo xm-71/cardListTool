@@ -8,11 +8,12 @@ import { useProfile } from '../profile/useProfile.ts';
 import { DeckChoice } from '../ui/DeckChoice.tsx';
 import { Box, Button } from '../ui/retro/index.ts';
 
-type Opponent = 'easy' | 'medium' | 'hotseat';
+type Opponent = 'easy' | 'medium' | 'hard' | 'hotseat';
 
 const OPPONENTS = [
   ['easy', 'Easy bot'],
   ['medium', 'Medium bot'],
+  ['hard', 'Hard bot'],
   ['hotseat', 'Hotseat (2 players, 1 device)'],
 ] as const;
 
