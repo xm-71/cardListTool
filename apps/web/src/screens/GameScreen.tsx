@@ -8,9 +8,12 @@ import { actorOf, useGame } from '../game/store.ts';
 import { useNav } from '../nav/useNav.ts';
 import { CardDetails } from '../ui/CardDetails.tsx';
 import { GameLog } from '../ui/GameLog.tsx';
+import { Ticker } from '../ui/Ticker.tsx';
+import { opponentName, type Names } from '../game/describe.ts';
 import { FaceOffBoard } from '../ui/faceoff/FaceOffBoard.tsx';
 import { GameMenu } from '../ui/GameMenu.tsx';
 import { Hand } from '../ui/Hand.tsx';
+import { Sheet } from '../ui/Sheet.tsx';
 import { PromptPanel } from '../ui/PromptPanel.tsx';
 import { SelectionPanel } from '../ui/SelectionPanel.tsx';
 import { Side } from '../ui/Side.tsx';
@@ -31,6 +34,8 @@ export function GameScreen({ viewer: viewerProp }: Props) {
   const human = useGame((s) => s.human);
   const dispatch = useGame((s) => s.dispatch);
   const reset = useGame((s) => s.reset);
+  const config = useGame((s) => s.config);
+  const [logOpen, setLogOpen] = useState(false);
   const [details, setDetails] = useState<CardInstance | null>(null);
   const [pick, setPick] = useState<Pick>({ sel: null, auto: false });
   const viewer = viewerProp ?? human;
@@ -67,6 +72,11 @@ export function GameScreen({ viewer: viewerProp }: Props) {
 
   if (!state || !view) return null;
   const opp: PlayerId = viewer === 0 ? 1 : 0;
+  const names: Names = {
+    viewer,
+    opponent: config ? opponentName(config, viewer) : 'Opponent',
+    ownerOf: (uid) => state.cards[uid]?.owner,
+  };
 
   const act = (a: Action) => {
     setPick({ sel: defaultSelection(view, viewer), auto: true });
@@ -168,8 +178,10 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           view={view}
           viewer={viewer}
           legal={legal}
-          status={statusLine}
-          opponentName="Opponent"
+          ticker={
+            <Ticker status={statusLine} names={names} onLog={() => setLogOpen(true)} className="flex-1" />
+          }
+          opponentName={names.opponent}
           benchSize={engine.ruleset.benchSize}
           onAct={act}
           onEndTurn={canEndTurn && !view.result ? () => act({ type: 'endTurn' }) : undefined}
@@ -178,10 +190,17 @@ export function GameScreen({ viewer: viewerProp }: Props) {
             <GameMenu
               onConcede={canConcede ? concede : undefined}
               onQuit={quit}
-              log={<GameLog log={view.log} me={viewer} />}
+              log={<GameLog log={view.log} me={viewer} names={names} />}
             />
           }
         />
+        {logOpen && (
+          <Sheet title="Battle log" onClose={() => setLogOpen(false)}>
+            <div className="flex max-h-[60dvh] flex-col">
+              <GameLog log={view.log} me={viewer} names={names} />
+            </div>
+          </Sheet>
+        )}
         {overlays}
       </>
     );
@@ -190,6 +209,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
   return (
     <div className="play-mat grid min-h-full grid-cols-1 gap-3 p-3 lg:h-dvh lg:min-h-0 lg:grid-cols-[1fr_20rem] lg:gap-2 lg:overflow-hidden lg:p-2">
       <main className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:gap-2">
+        <Ticker status={statusLine} names={names} />
         {/* Only the board scrolls (when the window is too short), so the hand never leaves the screen. */}
         <div className="flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:justify-between lg:gap-2 lg:overflow-y-auto">
           {side('Opponent', opp, view.opponent, true)}
@@ -220,7 +240,7 @@ export function GameScreen({ viewer: viewerProp }: Props) {
             End turn
           </button>
         )}
-        <GameLog log={view.log} me={viewer} />
+        <GameLog log={view.log} me={viewer} names={names} />
         <div className="flex gap-2">
           {canConcede && (
             <button
