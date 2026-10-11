@@ -3,11 +3,12 @@ import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useNav } from '../nav/useNav.ts';
 import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
 import { THEMES, type Theme } from '../settings/theme.ts';
-import { useSettings } from '../settings/useSettings.ts';
+import { ANIMATION_SPEEDS, useSettings, type AnimationSpeed } from '../settings/useSettings.ts';
 import { Box, Button } from '../ui/retro/index.ts';
 import { OfflineSettings } from './OfflineSettings.tsx';
 
 const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
+const SPEED_LABEL: Record<AnimationSpeed, string> = { normal: 'Normal', fast: 'Fast', off: 'Off' };
 
 export function Options() {
   const sound = useSettings((s) => s.sound);
@@ -16,6 +17,8 @@ export function Options() {
   const setSkipTitle = useSettings((s) => s.setSkipTitle);
   const theme = useSettings((s) => s.theme);
   const setTheme = useSettings((s) => s.setTheme);
+  const animations = useSettings((s) => s.animations);
+  const setAnimations = useSettings((s) => s.setAnimations);
   const current = useProfile((s) => s.profile.playerName);
   const setName = useProfile((s) => s.setName);
   const replayIntro = useProfile((s) => s.replayIntro);
@@ -57,6 +60,23 @@ export function Options() {
                     className="size-5"
                   />
                   {THEME_LABEL[t]}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div role="radiogroup" aria-label="Battle animations" className="flex flex-col gap-2">
+            <span className="font-pixel text-xs">Battle animations</span>
+            <div className="flex flex-wrap gap-4">
+              {ANIMATION_SPEEDS.map((a) => (
+                <label key={a} className="flex items-center gap-2 font-pixel text-[10px]">
+                  <input
+                    type="radio"
+                    name="animations"
+                    checked={animations === a}
+                    onChange={() => setAnimations(a)}
+                    className="size-5"
+                  />
+                  {SPEED_LABEL[a]}
                 </label>
               ))}
             </div>

@@ -44,7 +44,7 @@ export function FoSlot({ slot, size, onClick, target, highlighted, selected }: P
     </div>
   );
   return (
-    <div className="flex flex-col items-center gap-0.5">
+    <div data-slot-id={slot.stack[0]!.uid} className="flex flex-col items-center gap-0.5">
       <div className="relative">
         <CardView
           card={topCard(slot)}

@@ -24,7 +24,7 @@ export function SlotView({ slot, size = 'md', onClick, highlighted, selected }: 
     ...(slot.conditions.burned ? ['Burned'] : []),
   ];
   return (
-    <div className="relative flex flex-col items-center gap-1">
+    <div data-slot-id={slot.stack[0]!.uid} className="relative flex flex-col items-center gap-1">
       <div className="relative">
         <CardView
           card={topCard(slot)}

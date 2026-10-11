@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Action, CardInstance, PlayerId, SlotRef } from '@ptcg/engine';
 import { actionsForCard, actionsForSlot } from '../game/actions.ts';
+import { useAnim, useShownState } from '../game/animation/director.ts';
 import { engine } from '../game/catalog.ts';
 import { defaultSelection, panelModel, sameSelection, type Selection } from '../game/selection.ts';
 import { actorOf, useGame } from '../game/store.ts';
@@ -27,7 +28,6 @@ interface Pick {
 }
 
 export function GameScreen({ viewer: viewerProp }: Props) {
-  const state = useGame((s) => s.state);
   const human = useGame((s) => s.human);
   const dispatch = useGame((s) => s.dispatch);
   const reset = useGame((s) => s.reset);
@@ -35,11 +35,14 @@ export function GameScreen({ viewer: viewerProp }: Props) {
   const [pick, setPick] = useState<Pick>({ sel: null, auto: false });
   const viewer = viewerProp ?? human;
   const phone = useIsPhone();
+  // The board draws the state whose moves have finished animating; nothing can be done while they play.
+  const state = useShownState(viewer);
+  const busy = useAnim((s) => s.busy);
 
   const view = useMemo(() => (state ? engine.viewFor(state, viewer) : null), [state, viewer]);
   const legal = useMemo(
-    () => (state && actorOf(state) === viewer ? engine.getLegalActions(state, viewer) : []),
-    [state, viewer],
+    () => (state && !busy && actorOf(state) === viewer ? engine.getLegalActions(state, viewer) : []),
+    [state, viewer, busy],
   );
   const myTurn = !!view && !view.prompt && legal.length > 0;
   const turn = view?.turn;
@@ -192,7 +195,13 @@ export function GameScreen({ viewer: viewerProp }: Props) {
           {side('Opponent', opp, view.opponent, true)}
           {side('You', viewer, view.you, false)}
         </div>
-        <Hand cards={view.you.hand} playable={playable} selectedUid={selectedHand} onCard={selectHand} />
+        <Hand
+          owner={viewer}
+          cards={view.you.hand}
+          playable={playable}
+          selectedUid={selectedHand}
+          onCard={selectHand}
+        />
       </main>
       <div className="flex min-h-0 flex-col gap-3 lg:gap-2">
         <div

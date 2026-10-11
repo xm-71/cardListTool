@@ -168,7 +168,10 @@ export function dealAttackDamage(
   amount = Math.max(0, amount);
   targetSlot.damage += amount;
   if (amount > 0) info.damaged.push(target);
-  log(s, 'damage', `${slotDef(ctx.env, s, targetSlot).name} takes ${amount} damage`, { amount });
+  log(s, 'damage', `${slotDef(ctx.env, s, targetSlot).name} takes ${amount} damage`, {
+    amount,
+    anim: { kind: 'damage', target: targetSlot.stack[0]!, amount },
+  });
   return amount;
 }
 
@@ -185,7 +188,10 @@ export function attack(ctx: EffectCtx, attackIndex: number, benchIndex?: number)
   const script = ctx.env.registry.scripts[def.id]?.attacks?.[attackIndex];
   ctx.source = { kind: 'attack', slot: attackerRef, attackIndex };
   attackInfo.set(ctx, { attacker: attackerRef, attackerIsEx: def.isEx, damaged: [] });
-  log(s, 'attack', `${def.name} uses ${atk.name}`, { player: me });
+  log(s, 'attack', `${def.name} uses ${atk.name}`, {
+    player: me,
+    anim: { kind: 'attack', by: attacker.stack[0]! },
+  });
 
   if (benchIndex !== undefined || resolveConfusion(ctx)) {
     const scripted = script?.damage ? script.damage(ctx) : atk.damage;
@@ -286,7 +292,13 @@ export function checkKnockouts(ctx: EffectCtx): void {
         }
       }
     }
-    return { ref, taker: other(ref.player), prizes: Math.max(0, prizes), name: def.name };
+    return {
+      ref,
+      taker: other(ref.player),
+      prizes: Math.max(0, prizes),
+      name: def.name,
+      base: getSlot(s, ref)!.stack[0]!,
+    };
   });
   // Move Knocked Out Pokémon to the discard pile; remove Bench slots from the highest index down.
   const ordered = [...knocked].sort(
@@ -301,13 +313,17 @@ export function checkKnockouts(ctx: EffectCtx): void {
     else p.bench.splice(ref.index, 1);
   }
   for (const award of prizeAwards) {
-    log(s, 'knockout', `${award.name} is Knocked Out`, { player: award.ref.player });
+    log(s, 'knockout', `${award.name} is Knocked Out`, {
+      player: award.ref.player,
+      anim: { kind: 'knockout', target: award.base },
+    });
     const taker = s.players[award.taker];
     const taken = taker.prizes.splice(0, award.prizes);
     taker.hand.push(...taken);
     if (taken.length)
       log(s, 'prize', `Player ${award.taker + 1} takes ${taken.length} Prize card(s)`, {
         player: award.taker,
+        anim: { kind: 'prize', player: award.taker, count: taken.length },
       });
   }
   const won = ([0, 1] as PlayerId[]).map((p) => {
@@ -333,6 +349,9 @@ export function checkKnockouts(ctx: EffectCtx): void {
     const index = (pick as { index: number }).index;
     p.active = p.bench.splice(index, 1)[0]!;
     p.active.becameActiveTurn = s.turn;
-    log(s, 'promote', `Player ${player + 1} promotes ${slotDef(env, s, p.active).name}`, { player });
+    log(s, 'promote', `Player ${player + 1} promotes ${slotDef(env, s, p.active).name}`, {
+      player,
+      anim: { kind: 'promote', target: p.active.stack[0]!, player },
+    });
   }
 }

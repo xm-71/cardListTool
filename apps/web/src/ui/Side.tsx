@@ -65,6 +65,7 @@ export function Side({
         <div
           key={`space-${i}`}
           data-bench-space
+          data-bench-space-of={player}
           className={`hidden lg:block aspect-[63/88] w-14 border-2 border-dashed border-ink/30 lg:w-[min(6rem,9vh)]`}
         />
       ))}
@@ -96,11 +97,11 @@ export function Side({
       {mirrored ? (
         <>
           {bench}
-          {active}
+          <div data-active-of={player}>{active}</div>
         </>
       ) : (
         <>
-          {active}
+          <div data-active-of={player}>{active}</div>
           {bench}
         </>
       )}
@@ -111,7 +112,7 @@ export function Side({
   const header = (
     <div className="pointer-events-none absolute inset-x-2 top-2 z-10 flex items-center justify-between font-pixel text-[9px] uppercase">
       <span className="border-2 border-ink bg-paper px-2 py-1">{label}</span>
-      {handCount !== undefined && <span>{handCount} cards in hand</span>}
+      {handCount !== undefined && <span data-hand-of={player}>{handCount} cards in hand</span>}
     </div>
   );
 
@@ -122,10 +123,15 @@ export function Side({
     >
       {header}
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
-        <PrizeGrid count={side.prizeCount} total={engine.ruleset.prizeCount} />
+        <div data-prizes-of={player}>
+          <PrizeGrid count={side.prizeCount} total={engine.ruleset.prizeCount} />
+        </div>
         {middle}
         <div className="flex flex-col items-center gap-2">
-          <div className="card-back retro-shadow relative flex aspect-[63/88] w-14 flex-col items-center justify-end border-4 border-ink pb-1 text-paper-fixed lg:w-[min(3.5rem,6vh)]">
+          <div
+            data-deck-of={player}
+            className="card-back retro-shadow relative flex aspect-[63/88] w-14 flex-col items-center justify-end border-4 border-ink pb-1 text-paper-fixed lg:w-[min(3.5rem,6vh)]"
+          >
             <span className="relative z-10 font-pixel text-[10px] [text-shadow:2px_2px_var(--color-ink-fixed)]">
               {side.deckCount}
             </span>

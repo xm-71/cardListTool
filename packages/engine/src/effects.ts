@@ -6,6 +6,7 @@ import { coinFlip, shuffle } from './rng.ts';
 import { clearActiveEffects, defOf, getSlot, maxHp, newSlot, other, slotDef } from './state.ts';
 import type {
   EffectSource,
+  EventAnim,
   GameState,
   MarkerKind,
   Origin,
@@ -57,8 +58,8 @@ export class EffectCtx {
     return slot;
   }
 
-  log(text: string, type = 'effect'): void {
-    this.state.log.push({ type, player: this.me, text });
+  log(text: string, type = 'effect', anim?: EventAnim): void {
+    this.state.log.push({ type, player: this.me, text, ...(anim ? { anim } : {}) });
   }
 
   /** "During your next turn, this Pokémon can't use <attack>." */
@@ -92,7 +93,11 @@ export class EffectCtx {
   damageSelf(amount: number): void {
     const slot = this.slot({ player: this.me, zone: 'active' });
     slot.damage += amount;
-    this.log(`${slotDef(this.env, this.state, slot).name} does ${amount} damage to itself`);
+    this.log(`${slotDef(this.env, this.state, slot).name} does ${amount} damage to itself`, 'effect', {
+      kind: 'damage',
+      target: slot.stack[0]!,
+      amount,
+    });
   }
 
   /** Make a card's passive hooks apply for its owner for the rest of this turn. */
@@ -138,6 +143,7 @@ export class EffectCtx {
       type: 'coinFlip',
       player: this.me,
       text: heads ? 'Coin flip: heads' : 'Coin flip: tails',
+      anim: { kind: 'coin', heads },
     });
     return heads;
   }
@@ -169,7 +175,7 @@ export class EffectCtx {
     const bench = this.state.players[player].bench;
     bench.push(newSlot(uid, this.state.turn));
     const ref: SlotRef = { player, zone: 'bench', index: bench.length - 1 };
-    this.log(`${this.def(uid).name} is put onto the Bench`);
+    this.log(`${this.def(uid).name} is put onto the Bench`, 'effect', { kind: 'bench', uid, player });
     const stadium = this.state.stadium;
     if (stadium && player === this.state.current) {
       this.env.registry.scripts[this.state.cards[stadium.uid]!.defId]?.stadium?.onBenchFromHand?.(this, ref);
@@ -204,7 +210,15 @@ export class EffectCtx {
   attachEnergy(uid: string, ref: SlotRef): void {
     this.take(uid);
     this.slot(ref).energy.push(uid);
-    this.log(`${this.def(uid).name} is attached to ${slotDef(this.env, this.state, this.slot(ref)).name}`);
+    this.log(
+      `${this.def(uid).name} is attached to ${slotDef(this.env, this.state, this.slot(ref)).name}`,
+      'effect',
+      {
+        kind: 'energy',
+        uid,
+        target: this.slot(ref).stack[0]!,
+      },
+    );
   }
 
   discardEnergy(ref: SlotRef, uids: string[]): void {
@@ -226,6 +240,7 @@ export class EffectCtx {
       type: 'evolve',
       player: ref.player,
       text: `${from} evolves into ${this.def(uid).name}`,
+      anim: { kind: 'evolve', uid, target: slot.stack[0]! },
     });
   }
 
@@ -233,7 +248,15 @@ export class EffectCtx {
   applyCondition(ref: SlotRef, c: Condition): void {
     const slot = this.slot(ref);
     applyCondition(slot, c);
-    this.log(`${slotDef(this.env, this.state, slot).name} is now ${c[0]!.toUpperCase()}${c.slice(1)}`);
+    this.log(
+      `${slotDef(this.env, this.state, slot).name} is now ${c[0]!.toUpperCase()}${c.slice(1)}`,
+      'effect',
+      {
+        kind: 'condition',
+        target: slot.stack[0]!,
+        condition: c,
+      },
+    );
   }
 
   heal(ref: SlotRef, hp: number): void {
@@ -242,7 +265,14 @@ export class EffectCtx {
   }
 
   placeCounters(ref: SlotRef, n: number): void {
-    this.slot(ref).damage += n * 10;
+    const slot = this.slot(ref);
+    slot.damage += n * 10;
+    this.state.log.push({
+      type: 'counters',
+      player: this.me,
+      text: `${slotDef(this.env, this.state, slot).name} gets ${n} damage counter${n === 1 ? '' : 's'}`,
+      anim: { kind: 'damage', target: slot.stack[0]!, amount: n * 10 },
+    });
   }
 
   /**
