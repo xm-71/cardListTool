@@ -56,6 +56,8 @@ export type MarkerKind =
   | 'increaseOutgoing'
   /** Prevent all damage done to the Pokémon by attacks. */
   | 'preventDamage'
+  /** Prevent all effects of the opponent's attacks done to the Pokémon (conditions, counters, Energy discard…). */
+  | 'preventEffects'
   /** The Pokémon's attacks cost `amount` more {C}. */
   | 'attackCostMore'
   /** The Pokémon's Retreat Cost is `amount` more. */

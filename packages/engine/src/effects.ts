@@ -3,7 +3,16 @@ import { applyCondition, type Condition } from './conditions.ts';
 import type { Env } from './env.ts';
 import { IllegalActionError } from './errors.ts';
 import { coinFlip, shuffle } from './rng.ts';
-import { clearActiveEffects, defOf, getSlot, maxHp, newSlot, other, slotDef } from './state.ts';
+import {
+  activeMarkers,
+  clearActiveEffects,
+  defOf,
+  getSlot,
+  maxHp,
+  newSlot,
+  other,
+  slotDef,
+} from './state.ts';
 import type {
   EffectSource,
   EventAnim,
@@ -62,8 +71,21 @@ export class EffectCtx {
     this.state.log.push({ type, player: this.me, text, ...(anim ? { anim } : {}) });
   }
 
+  /**
+   * "Prevent all effects of attacks done to this Pokémon": while the Pokémon carries a preventEffects marker, the
+   * opponent's attacks can't change it (their damage is handled in combat). Logs and returns true when it is protected.
+   */
+  private shielded(ref: SlotRef): boolean {
+    if (this.source?.kind !== 'attack' || this.source.slot.player === ref.player) return false;
+    const slot = getSlot(this.state, ref);
+    if (!slot || !activeMarkers(this.state, slot).some((m) => m.kind === 'preventEffects')) return false;
+    this.log(`${slotDef(this.env, this.state, slot).name} is protected from the attack's effects`);
+    return true;
+  }
+
   /** "During your next turn, this Pokémon can't use <attack>." */
   lockAttack(ref: SlotRef, attackName: string): void {
+    if (this.shielded(ref)) return;
     this.slot(ref).attackLocks[attackName] = this.state.turn + 2;
   }
 
@@ -73,6 +95,7 @@ export class EffectCtx {
    * Markers that have already expired are dropped.
    */
   addMarker(ref: SlotRef, kind: MarkerKind, amount = 0, turns = 1): void {
+    if (this.shielded(ref)) return;
     const slot = this.slot(ref);
     const live = slot.markers.filter((m) => m.untilTurn >= this.state.turn);
     slot.markers = [...live, { kind, amount, untilTurn: this.state.turn + turns }];
@@ -91,12 +114,14 @@ export class EffectCtx {
 
   /** Shuffle the Pokémon at `ref` and every card attached to it into its owner's deck. */
   shuffleSlotIntoDeck(ref: SlotRef): void {
+    if (this.shielded(ref)) return;
     this.removeSlot(ref, 'deck');
     this.shuffleDeck(ref.player);
   }
 
   /** Put the Pokémon at `ref` and every card attached to it into its owner's hand. */
   returnSlotToHand(ref: SlotRef): void {
+    if (this.shielded(ref)) return;
     this.removeSlot(ref, 'hand');
   }
 
@@ -226,6 +251,7 @@ export class EffectCtx {
 
   /** Move attached Energy cards from a Pokémon to their owner's hand or discard pile. */
   detachEnergy(ref: SlotRef, uids: string[], zone: 'hand' | 'discard'): void {
+    if (this.shielded(ref)) return;
     const slot = this.slot(ref);
     for (const uid of uids) {
       removeFrom(slot.energy, uid);
@@ -272,6 +298,7 @@ export class EffectCtx {
 
   /** Give the Pokémon at `ref` a Special Condition. */
   applyCondition(ref: SlotRef, c: Condition): void {
+    if (this.shielded(ref)) return;
     const slot = this.slot(ref);
     applyCondition(slot, c);
     this.log(
@@ -293,6 +320,7 @@ export class EffectCtx {
   placeCounters(ref: SlotRef, n: number): void {
     // The Pokémon may already have left play (e.g. an attacker that returned itself to the hand).
     if (!getSlot(this.state, ref)) return;
+    if (this.shielded(ref)) return;
     const stadium = this.state.stadium;
     const fromOpponent =
       ref.player !== this.me && (this.source?.kind === 'attack' || this.source?.kind === 'ability');
@@ -321,6 +349,7 @@ export class EffectCtx {
    * if the owner has none left.
    */
   discardSlot(ref: SlotRef): void {
+    if (this.shielded(ref)) return;
     const slot = this.slot(ref);
     const p = this.state.players[ref.player];
     const name = slotDef(this.env, this.state, slot).name;
@@ -332,6 +361,7 @@ export class EffectCtx {
 
   /** Knock out the Pokémon at `ref` by effect (not damage from an attack): it takes enough damage to be Knocked Out. */
   knockOut(ref: SlotRef): void {
+    if (this.shielded(ref)) return;
     const slot = this.slot(ref);
     slot.damage = Math.max(slot.damage, maxHp(this.env, this.state, ref));
   }

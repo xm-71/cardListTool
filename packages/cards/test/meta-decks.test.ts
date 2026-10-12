@@ -597,6 +597,33 @@ describe('card text fidelity (meta card audit)', () => {
     expect(s.players[opp].hand.length).toBe(hand + 2 + 1);
   });
 
+  test("Dunsparce's Dig (heads) prevents the effects of attacks too, not just damage", () => {
+    const volcanion = 'me01-025';
+    let checked = false;
+    for (let seed = 1; seed <= 20 && !checked; seed++) {
+      const {
+        s: s0,
+        me,
+        opp,
+      } = game({ [M.dunsparce]: 2, [M.darkness]: 6 }, { [volcanion]: 2, [M.fire]: 6 }, { seed: seed });
+      swapActiveTo(s0, me, M.dunsparce);
+      attachFromDeck(s0, me, M.darkness);
+      attachFromDeck(s0, me, M.darkness);
+      swapActiveTo(s0, opp, volcanion);
+      attachFromDeck(s0, opp, M.fire);
+      let s = attack(s0, 1); // Dig
+      if (!s.players[me].active!.markers.some((m) => m.kind === 'preventDamage')) continue; // tails
+      checked = true;
+      expect(s.current).toBe(opp);
+      const before = s.log.length;
+      s = attack(s); // Singe: "Your opponent's Active Pokémon is now Burned."
+      // (Checked in the log: a Pokémon Checkup flip could cure a Burn that did land.)
+      expect(s.log.slice(before).map((e) => e.text)).not.toContain('Dunsparce is now Burned');
+      expect(s.players[me].active!.conditions.burned).toBe(false);
+    }
+    expect(checked).toBe(true);
+  });
+
   test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
     const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
     swapActiveTo(s0, me, M.budew);
