@@ -168,7 +168,7 @@ New `screens/BattleFrontier.tsx` plus components in `ui/frontier/`:
 ### Bots
 
 - Frontier opponents use the existing bots: Easy, Medium, and Hard from the Hard bot spec.
-- `packages/bots` gets a Frontier simulation test that plays N seeded runs end to end with bots on both sides and random
+- A Frontier simulation test (in `apps/web/test`, because the Frontier modules live in `apps/web`) plays N seeded runs end to end with bots on both sides and random
   offers and cuts. After every pick it checks that the deck is legal, and it checks that no game has invariant
   violations. Medium and Hard use fixed rounds so the test stays fast.
 
