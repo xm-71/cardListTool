@@ -4,7 +4,9 @@ import { defAt } from '../util.ts';
 export const name = 'Crustle';
 export const set = 'sv10';
 export const script: CardScript = {
-  // Mysterious Rock Inn: prevent all damage done to this Pokémon by attacks from your opponent's Pokémon ex.
+  // Mysterious Rock Inn: prevent all damage done to this Pokémon by attacks from your opponent's Pokémon ex
+  // (on the Bench too).
+  incomingDamageOnBench: true,
   modifyIncomingDamage(q) {
     const self =
       q.holder.player === q.defender.player &&

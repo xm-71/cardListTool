@@ -176,6 +176,20 @@ export function dealAttackDamage(
       )
         amount = 0;
     }
+  } else if (target.player !== info.attacker.player && !opts.ignoreDefenderEffects) {
+    // Weakness and Resistance never apply to a Benched Pokémon, but its own damage-preventing effects do.
+    for (const h of scriptsInPlay(ctx.env, s, target.player)) {
+      if (!h.script.incomingDamageOnBench || !h.script.modifyIncomingDamage || !sameSlot(h.ref, target))
+        continue;
+      amount = h.script.modifyIncomingDamage({
+        state: s,
+        holder: h.ref,
+        attacker: info.attacker,
+        defender: target,
+        amount,
+        registry: ctx.env.registry,
+      });
+    }
   }
   amount = Math.max(0, amount);
   targetSlot.damage += amount;

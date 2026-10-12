@@ -549,6 +549,30 @@ describe('card text fidelity (meta card audit)', () => {
     expect(s.cards[s.players[me].active!.stack.at(-1)!]!.defId).toBe(M.alakazam);
   });
 
+  test("Crustle's Mysterious Rock Inn also protects it on the Bench from an ex's attack", () => {
+    const fez = 'sv06.5-038';
+    // The opponent's Fezandipiti ex attacks; my Crustle sits on the Bench.
+    const { s: s0, me, opp } = game({ [fez]: 2, [M.darkness]: 6 }, { [M.crustle]: 2 });
+    swapActiveTo(s0, me, fez);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, M.darkness);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.crustle));
+    let s = attack(s0);
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    expect(s.players[opp].bench[0]!.damage).toBe(0);
+  });
+
+  test('a Benched Pokémon without such an effect still takes the damage', () => {
+    const fez = 'sv06.5-038';
+    const { s: s0, me, opp } = game({ [fez]: 2, [M.darkness]: 6 }, { [M.dwebble]: 2 });
+    swapActiveTo(s0, me, fez);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, M.darkness);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dwebble));
+    let s = attack(s0);
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    const hp = (registry.defs[M.dwebble] as { hp: number }).hp;
+    expect(s.players[opp].bench[0]?.damage ?? hp).toBeGreaterThanOrEqual(Math.min(100, hp));
+  });
+
   test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
     const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
     swapActiveTo(s0, me, M.budew);

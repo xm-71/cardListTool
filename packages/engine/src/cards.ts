@@ -120,6 +120,11 @@ export interface CardScript {
   }): EnergyType | null;
   modifyOutgoingDamage?(q: DamageQuery): number;
   modifyIncomingDamage?(q: DamageQuery): number;
+  /**
+   * `modifyIncomingDamage` also applies to its holder while Benched ("prevent all damage done to this Pokémon" is
+   * not limited to the Active Spot). Other incoming-damage effects only apply to the Active Pokémon.
+   */
+  incomingDamageOnBench?: boolean;
   modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number; registry: CardRegistry }): number;
   modifyPrizes?(q: {
     state: GameState;
