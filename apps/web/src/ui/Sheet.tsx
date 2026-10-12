@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { useDialog } from './binder/useDialog.ts';
 
 interface Props {
   title: string;
@@ -8,22 +9,13 @@ interface Props {
   className?: string;
 }
 
-/** A bottom sheet: a dialog that slides over the screen, closes with ×, Escape or a tap outside, and gives focus back. */
+/**
+ * A bottom sheet: a dialog that slides over the screen, closes with ×, Escape or a tap outside. Focus moves into it,
+ * Tab stays inside it, and focus goes back to whatever opened it.
+ */
 export function Sheet({ title, onClose, children, className = '' }: Props) {
-  const opener = useRef<Element | null>(document.activeElement);
-  const close = useRef(onClose);
-  close.current = onClose;
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close.current();
-    };
-    window.addEventListener('keydown', onKey);
-    const back = opener.current;
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      if (back instanceof HTMLElement) back.focus();
-    };
-  }, []);
+  const ref = useRef<HTMLDivElement>(null);
+  useDialog(ref, onClose);
   return (
     <div
       data-testid="sheet-backdrop"
@@ -31,7 +23,9 @@ export function Sheet({ title, onClose, children, className = '' }: Props) {
       onClick={onClose}
     >
       <div
+        ref={ref}
         role="dialog"
+        aria-modal="true"
         aria-label={title}
         className={`retro-box sheet-in flex w-full max-w-xl flex-col gap-3 overflow-auto p-4 pb-[max(1rem,env(safe-area-inset-bottom))] ${className}`}
         onClick={(e) => e.stopPropagation()}

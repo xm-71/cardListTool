@@ -49,7 +49,7 @@ describe('Sheet', () => {
     const dialog = screen.getByRole('dialog', { name: 'Game menu' });
     expect(within(dialog).getByText('content')).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     fireEvent.click(screen.getByTestId('sheet-backdrop'));
     expect(onClose).toHaveBeenCalledTimes(3);
     fireEvent.click(dialog);

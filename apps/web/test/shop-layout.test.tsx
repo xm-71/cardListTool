@@ -120,7 +120,7 @@ describe('phone: a list of packs with a pack sheet', () => {
     const sheet = screen.getByRole('dialog', { name: 'Base Set' });
     expect(within(sheet).getByText(packContents('base1'))).toBeInTheDocument();
     expect(within(sheet).getByText(`34 / ${base1.length} collected`)).toBeInTheDocument();
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: 'Base Set' })).toBeNull();
   });
 

@@ -42,10 +42,10 @@ beforeEach(() => useSettings.getState().setSound(false));
 const tile = (name: string) =>
   within(screen.getByRole('list', { name: 'Badge case' })).getByRole('listitem', { name });
 
-test('the main menu has Gym Challenge after Duel, and Collector mode hides it', async () => {
+test('the main menu has Gym Challenge after Duel', async () => {
   await launch('menu');
   const items = within(screen.getByRole('menu', { name: 'Main menu' })).getAllByRole('menuitem');
-  expect(items.map((i) => i.textContent?.replace('▶', '').trim()).slice(0, 2)).toEqual([
+  expect(items.map((i) => i.getAttribute('aria-label')).slice(0, 2)).toEqual([
     'Duel',
     'Gym Challenge',
   ]);
@@ -53,13 +53,10 @@ test('the main menu has Gym Challenge after Duel, and Collector mode hides it', 
   expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
 });
 
-test('Collector mode hides Gym Challenge and sends the route back to the menu', async () => {
+test('Collector mode closes the Gym and sends the route back to the menu', async () => {
   await launch('gym', { collectorMode: true });
   await waitFor(() => expect(screen.getByRole('menu', { name: 'Main menu' })).toBeInTheDocument());
-  const labels = within(screen.getByRole('menu', { name: 'Main menu' }))
-    .getAllByRole('menuitem')
-    .map((i) => i.textContent);
-  expect(labels.join()).not.toMatch(/Gym/);
+  expect(screen.getByRole('menuitem', { name: 'Gym Challenge' })).toBeDisabled();
 });
 
 test('a new player can only challenge Brock', async () => {
