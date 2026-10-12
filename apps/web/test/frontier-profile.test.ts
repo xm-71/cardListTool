@@ -31,9 +31,10 @@ const after = (n: number): FrontierRun => {
 let seed = 1000;
 /** Plays the current fight to `outcome` through the store. */
 async function fight(outcome: 'win' | 'loss' | 'draw') {
-  await store().beginFrontierMatch();
+  const game = seed++;
+  await store().beginFrontierMatch(game);
   return store().recordFrontier({
-    seed: seed++,
+    seed: game,
     fight: run().fight,
     won: outcome === 'win',
     draw: outcome === 'draw',
@@ -94,7 +95,7 @@ describe('Frontier in the profile', () => {
 
   test("recordFrontier counts a result once per game seed, and ignores a result whose fight is not the run's current fight or when no match is in progress", async () => {
     await init({ frontier: { run: after(2), hallOfFame: [] } });
-    await store().beginFrontierMatch();
+    await store().beginFrontierMatch(1);
     const loss = await store().recordFrontier({ seed: 1, fight: 2, won: false, draw: false });
     expect(loss).toMatchObject({ counted: true, outcome: 'loss', lives: 1, phase: 'hub' });
     // The same game again: nothing changes.
@@ -107,7 +108,7 @@ describe('Frontier in the profile', () => {
       true,
     );
     // A stale fight number (another tab).
-    await store().beginFrontierMatch();
+    await store().beginFrontierMatch(3);
     expect((await store().recordFrontier({ seed: 3, fight: 1, won: false, draw: false }))?.counted).not.toBe(
       true,
     );
@@ -161,5 +162,27 @@ describe('Frontier in the profile', () => {
     expect(run().phase).toBe('over');
     expect(await store().endFrontierRun(null)).toEqual({ credits: 300 });
     expect(profile().credits).toBe(300);
+  });
+});
+
+describe('Frontier results from another tab', () => {
+  test('a game that started before a retry of the same fight does not count for the retry', async () => {
+    await init({ frontier: { run: after(2), hallOfFame: [] } });
+    // Tab A starts fight 2 with game seed 501...
+    await store().beginFrontierMatch(501);
+    // ...tab B opens the Frontier (settling it as a loss) and starts fight 2 again with game seed 502.
+    await store().settleUnfinishedFrontierMatch();
+    await store().beginFrontierMatch(502);
+    expect(run()).toMatchObject({ fight: 2, lives: 1, inMatch: true });
+    // Tab A's game ends in a win: it belongs to the old attempt, so nothing changes.
+    expect((await store().recordFrontier({ seed: 501, fight: 2, won: true, draw: false }))?.counted).toBe(
+      false,
+    );
+    expect(run()).toMatchObject({ fight: 2, wins: 2, phase: 'hub', inMatch: true });
+    // Tab B's own game counts.
+    expect((await store().recordFrontier({ seed: 502, fight: 2, won: true, draw: false }))?.counted).toBe(
+      true,
+    );
+    expect(run()).toMatchObject({ wins: 3, phase: 'reward' });
   });
 });

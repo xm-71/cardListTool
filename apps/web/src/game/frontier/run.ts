@@ -25,6 +25,8 @@ export interface FrontierRun {
   offers: Offer[] | null;
   /** A fight has started and not been recorded: leaving it counts as a loss. */
   inMatch?: boolean;
+  /** The game seed of the fight in progress: only that game's result counts (not an older attempt's, from another tab). */
+  matchSeed?: number;
   cleared?: boolean;
 }
 
@@ -90,14 +92,15 @@ export function chooseStarter(r: FrontierRun, id: string): FrontierRun {
   };
 }
 
-export function beginFight(r: FrontierRun): FrontierRun {
+export function beginFight(r: FrontierRun, matchSeed?: number): FrontierRun {
   need(r, 'hub');
-  return { ...r, inMatch: true };
+  return { ...r, inMatch: true, ...(matchSeed === undefined ? {} : { matchSeed }) };
 }
 
 export function recordResult(r: FrontierRun, outcome: 'win' | 'loss' | 'draw'): FrontierRun {
   need(r, 'hub');
-  const base = { ...r, inMatch: false };
+  const base: FrontierRun = { ...r, inMatch: false };
+  delete base.matchSeed;
   if (outcome === 'draw') return base;
   if (outcome === 'loss') {
     const lives = r.lives - 1;

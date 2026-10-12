@@ -5,6 +5,8 @@ import { deckRuleProblems } from '@ptcg/economy';
 export type RunCards = { id: string; count: number }[];
 
 const MAX_COPIES = 4;
+/** autoCut leaves at least this much basic Energy while other cards can be cut. */
+const MIN_ENERGY = 10;
 
 /** Problems with a run deck under the Frontier's deck rules; `[]` means it is legal. */
 export const runDeckProblems = (cards: RunCards, registry: CardRegistry): string[] =>
@@ -24,8 +26,8 @@ const isBasicPokemon = (d: CardDef) => d.category === 'Pokemon' && d.stage === '
 
 /**
  * A legal cut of `n` cards from `cards` + `add`, or null. It removes, in order of preference: copies that break a rule,
- * basic Energy, Trainers, Evolution Pokémon, then Basic Pokémon (never the last one); the added cards come last, and
- * with `keepAdded` they are never cut.
+ * basic Energy above 10, Trainers, Evolution Pokémon, Basic Pokémon (never the last one), then any basic Energy; the
+ * added cards come last, and with `keepAdded` they are never cut.
  */
 export function autoCut(
   cards: RunCards,
@@ -56,12 +58,16 @@ export function autoCut(
     // Rule-breaking copies come first, from any card the cut may touch.
     const fix = live((id) => keepAdded && added.has(id), breaking)[0];
     if (fix) return fix;
-    const basics = [...counts].reduce((s, [id, k]) => s + (isBasicPokemon(def(id)) ? k : 0), 0);
+    const total = (test: (d: CardDef) => boolean) =>
+      [...counts].reduce((sum, [id, k]) => sum + (test(def(id)) ? k : 0), 0);
+    const basics = total(isBasicPokemon);
+    // Basic Energy goes first only while plenty is left; a deck needs Energy to attack.
     return (
-      live(skip, isBasicEnergy)[0] ??
+      (total(isBasicEnergy) > MIN_ENERGY ? live(skip, isBasicEnergy)[0] : undefined) ??
       live(skip, (d) => d.category === 'Trainer')[0] ??
       live(skip, (d) => d.category === 'Pokemon' && d.stage !== 'Basic')[0] ??
-      (basics > 1 ? live(skip, isBasicPokemon)[0] : undefined)
+      (basics > 1 ? live(skip, isBasicPokemon)[0] : undefined) ??
+      live(skip, isBasicEnergy)[0]
     );
   };
 

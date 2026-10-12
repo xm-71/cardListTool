@@ -100,6 +100,7 @@ function normalizeRun(raw: unknown): FrontierRun | null {
     opponents: r.opponents!.map((o) => ({ ...o })),
     offers: r.offers ? r.offers.map((o) => structuredClone(o)) : null,
     ...(r.inMatch === true ? { inMatch: true } : {}),
+    ...(isInt(r.matchSeed, 0, 2 ** 32) ? { matchSeed: r.matchSeed } : {}),
     ...(r.cleared === true ? { cleared: true } : {}),
   };
 }

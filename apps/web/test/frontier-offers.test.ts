@@ -124,3 +124,24 @@ describe('offers', () => {
     }
   });
 });
+
+describe('autoCut and Energy', () => {
+  test('autoCut keeps at least 10 basic Energy while other cards can be cut', () => {
+    const basicEnergy = (cards: RunCards) =>
+      cards.reduce((n, c) => {
+        const d = registry.defs[c.id]!;
+        return n + (d.category === 'Energy' && d.energyKind === 'Basic' ? c.count : 0);
+      }, 0);
+    for (const d of starters) {
+      let deck = cardsOf(d.id);
+      const start = basicEnergy(deck);
+      // Seven package takes in a row, each with the automatic cut.
+      for (let seed = 1; seed <= 7; seed++) {
+        const pkg = packages(offersFor({ seed, fight: seed - 1, deck }, pool, registry))[0]!;
+        const cut = autoCut(deck, pkg.cards, size(pkg.cards), registry, true)!;
+        deck = applyChange(deck, pkg.cards, cut);
+      }
+      expect(basicEnergy(deck), d.id).toBeGreaterThanOrEqual(Math.min(start, 10));
+    }
+  });
+});
