@@ -68,7 +68,7 @@ export function CutPicker({ deck, add, count, tuneup = false, onConfirm, onCance
                         disabled={n === 0}
                         onClick={() => change(c.id, -1)}
                       >
-                        +
+                        Undo
                       </Button>
                       <Button
                         variant="plain"
@@ -76,7 +76,7 @@ export function CutPicker({ deck, add, count, tuneup = false, onConfirm, onCance
                         disabled={n >= c.count || total >= count}
                         onClick={() => change(c.id, 1)}
                       >
-                        −
+                        Cut
                       </Button>
                     </li>
                   );
