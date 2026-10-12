@@ -43,7 +43,7 @@ test('the main menu has keyboard focus when it appears', async () => {
   await launch({ introDone: true });
   await user.keyboard('{Enter}');
   await screen.findByRole('menu', { name: 'Main menu' });
-  await user.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}{Enter}'); // Duel, Gym Challenge, Battle Frontier, then Shop
+  await user.keyboard('{ArrowLeft}{Enter}'); // from the Duel Hall across the square to the Poké Mart
   expect(useNav.getState().route).toBe('shop');
 });
 

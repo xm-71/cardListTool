@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { App } from '../src/App.tsx';
 import { useGame } from '../src/game/store.ts';
@@ -79,7 +79,7 @@ test('Delete asks to confirm first', () => {
   expect(onDelete).toHaveBeenCalledTimes(1);
 });
 
-test('in Collector mode the menu shows the most recently edited binder', async () => {
+test("in Collector mode My House's Trainer Card shows the most recently edited binder", async () => {
   useGame.getState().reset();
   useProfile.getState().reset();
   useNav.setState({ route: 'menu' });
@@ -92,8 +92,10 @@ test('in Collector mode the menu shows the most recently edited binder', async (
       true,
     );
   render(<App botClient={{ choose: () => new Promise<never>(() => {}) }} botDelayMs={0} />);
-  await waitFor(() => expect(screen.getByText('Newest')).toBeInTheDocument());
-  expect(screen.queryByText('Old one')).toBeNull();
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'My House' }));
+  const card = screen.getByRole('dialog', { name: 'Trainer Card' });
+  expect(within(card).getByText('Newest')).toBeInTheDocument();
+  expect(within(card).queryByText('Old one')).toBeNull();
 });
 
 test('patterns are dark on light colours and light on dark ones', () => {

@@ -259,7 +259,7 @@ test('collector mode: a free pack goes into a new binder, kept after a reload', 
   await collector.click();
   await expect(collector).toBeChecked();
   await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByRole('menuitem', { name: 'Duel' })).toHaveCount(0);
+  await expect(page.getByRole('menuitem', { name: 'Duel' })).toBeDisabled();
   await page.screenshot({ path: 'test-results/collector-menu.png', fullPage: true });
 
   await page.getByRole('menuitem', { name: 'Shop' }).click();

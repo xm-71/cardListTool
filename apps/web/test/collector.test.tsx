@@ -18,10 +18,12 @@ async function launch(route: Route, profile: Partial<Profile> = {}) {
   render(<App botClient={never} botDelayMs={0} />);
 }
 
+/** The buildings that can be entered. */
 const menuItems = () =>
   within(screen.getByRole('menu', { name: 'Main menu' }))
     .getAllByRole('menuitem')
-    .map((i) => i.textContent?.replace('▶', '').trim());
+    .filter((i) => !(i as HTMLButtonElement).disabled)
+    .map((i) => i.getAttribute('aria-label'));
 
 beforeEach(() => useSettings.getState().setSound(false));
 
@@ -33,9 +35,9 @@ test('Options has a Collector mode switch that saves to the profile', async () =
   await waitFor(() => expect(useProfile.getState().profile.collectorMode).toBe(true));
 });
 
-test('with Collector mode on, the menu shows only Shop, Binder and Options', async () => {
+test('with Collector mode on, only the Shop, Binder, Options and My House are open', async () => {
   await launch('menu', { collectorMode: true });
-  expect(menuItems()).toEqual(['Shop', 'Binder', 'Options']);
+  expect(menuItems()).toEqual(['Shop', 'Binder', 'Options', 'My House']);
 });
 
 test('turning Collector mode off brings Duel and Decks back', async () => {
@@ -49,6 +51,7 @@ test('turning Collector mode off brings Duel and Decks back', async () => {
     'Binder',
     'Decks',
     'Options',
+    'My House',
   ]);
 });
 

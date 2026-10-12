@@ -40,20 +40,17 @@ beforeEach(() => useSettings.getState().setSound(false));
 test('the main menu has Battle Frontier after Gym Challenge', async () => {
   await launch('menu');
   const items = within(screen.getByRole('menu', { name: 'Main menu' })).getAllByRole('menuitem');
-  const labels = items.map((i) => i.textContent?.replace('▶', '').trim());
+  const labels = items.map((i) => i.getAttribute('aria-label'));
   expect(labels.slice(0, 3)).toEqual(['Duel', 'Gym Challenge', 'Battle Frontier']);
   fireEvent.click(items[2]!);
   expect(await screen.findByRole('button', { name: 'Start run' })).toBeInTheDocument();
 });
 
-test('Collector mode hides Battle Frontier and sends the route back to the menu', async () => {
+test('Collector mode closes Battle Frontier and sends the route back to the menu', async () => {
   await launch('frontier', { collectorMode: true });
   await waitFor(() => expect(screen.getByRole('menu', { name: 'Main menu' })).toBeInTheDocument());
   expect(screen.queryByRole('button', { name: 'Start run' })).toBeNull();
-  const collector = within(screen.getByRole('menu', { name: 'Main menu' }))
-    .getAllByRole('menuitem')
-    .map((i) => i.textContent);
-  expect(collector.join()).not.toMatch(/Frontier/);
+  expect(screen.getByRole('menuitem', { name: 'Battle Frontier' })).toBeDisabled();
 });
 
 test('with no run, the screen offers Start run; starting shows the 3 starter deck tiles', async () => {
