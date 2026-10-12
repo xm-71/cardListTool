@@ -234,3 +234,30 @@ describe('deckRuleProblems', () => {
     expect(deckRuleProblems(sixty([{ id: PSYCHIC, count: 60 }]), registry)).toEqual(['No Basic Pokémon']);
   });
 });
+
+describe('ACE SPEC Energy', () => {
+  const ENRICHING = 'sv08-191';
+  const SECRET_BOX = 'sv06-163';
+  test('an ACE SPEC Special Energy (Enriching Energy) counts toward the 1 ACE SPEC limit', () => {
+    const deck = (cards: DeckList['cards']): DeckList => ({ name: 'ace', cards });
+    const two = deck([
+      { id: GASTLY, count: 4 },
+      { id: ENRICHING, count: 2 },
+      { id: PSYCHIC, count: 54 },
+    ]);
+    expect(deckRuleProblems(two, registry)).toContain('More than 1 ACE SPEC');
+    const mixed = deck([
+      { id: GASTLY, count: 4 },
+      { id: ENRICHING, count: 1 },
+      { id: SECRET_BOX, count: 1 },
+      { id: PSYCHIC, count: 54 },
+    ]);
+    expect(deckRuleProblems(mixed, registry)).toContain('More than 1 ACE SPEC');
+    const one = deck([
+      { id: GASTLY, count: 4 },
+      { id: ENRICHING, count: 1 },
+      { id: PSYCHIC, count: 55 },
+    ]);
+    expect(deckRuleProblems(one, registry)).toEqual([]);
+  });
+});

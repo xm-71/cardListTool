@@ -53,6 +53,10 @@ export interface EnergyDef extends CardDefBase {
 
 export type CardDef = PokemonDef | TrainerDef | EnergyDef;
 
+/** An ACE SPEC card (at most 1 per deck): ACE SPEC Trainers, and ACE SPEC Special Energy such as Enriching Energy. */
+export const isAceSpec = (def: CardDef): boolean =>
+  (def.category === 'Trainer' && def.isAceSpec) || def.rarity === 'ACE SPEC Rare';
+
 export interface DamageQuery {
   state: GameState;
   /** The slot whose card (Pokémon or attached Tool) carries the hook being evaluated. */

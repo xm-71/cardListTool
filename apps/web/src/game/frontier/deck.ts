@@ -1,4 +1,4 @@
-import type { CardDef, CardRegistry } from '@ptcg/engine';
+import { isAceSpec, type CardDef, type CardRegistry } from '@ptcg/engine';
 import { deckRuleProblems } from '@ptcg/economy';
 
 /** A run deck's contents. */
@@ -21,7 +21,7 @@ export function applyChange(cards: RunCards, add: RunCards, cut: RunCards): RunC
 }
 
 const isBasicEnergy = (d: CardDef) => d.category === 'Energy' && d.energyKind === 'Basic';
-const isAce = (d: CardDef) => d.category === 'Trainer' && d.isAceSpec;
+const isAce = (d: CardDef) => isAceSpec(d);
 const isBasicPokemon = (d: CardDef) => d.category === 'Pokemon' && d.stage === 'Basic';
 
 /**
