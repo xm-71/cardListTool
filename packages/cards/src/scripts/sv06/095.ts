@@ -36,8 +36,10 @@ export const script: CardScript = {
             message: 'How many damage counters?',
           }),
         );
-        ctx.heal(from!, n * 10);
+        // Counters only move if they land: a protected Bench (Battle Cage) keeps them where they are.
+        const before = ctx.slot(to!).damage;
         ctx.placeCounters(to!, n);
+        ctx.heal(from!, ctx.slot(to!).damage - before);
       },
     },
   },

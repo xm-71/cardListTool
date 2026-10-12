@@ -510,3 +510,59 @@ describe('Crustle deck', () => {
     expect(s.players[me].active!.stack[0]).toBe(mine);
   });
 });
+
+describe('card text fidelity (meta card audit)', () => {
+  const ERI = 'sv05-146';
+
+  test("Munkidori's Adrena-Brain moves nothing when the counters can't be placed (Battle Cage on the opponent's Bench)", () => {
+    const { s: s0, me, opp } = game({ [M.munkidori]: 2, [M.darkness]: 4 }, { [M.battleCage]: 2 });
+    swapActiveTo(s0, me, M.munkidori);
+    attachFromDeck(s0, me, M.darkness);
+    s0.players[me].active!.damage = 50;
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dreepy));
+    const cage = giveCard(s0, opp, M.battleCage);
+    s0.players[opp].hand = s0.players[opp].hand.filter((u) => u !== cage);
+    s0.stadium = { uid: cage, owner: opp };
+    let s = act(engine, s0, ability(me, 'Adrena-Brain'));
+    s = pickSlot(s, active(me));
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    s = answer(s, '3');
+    expect(s.players[opp].bench[0]!.damage).toBe(0);
+    // Nothing was placed, so nothing is taken off Munkidori either.
+    expect(s.players[me].active!.damage).toBe(50);
+  });
+
+  test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
+    const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
+    swapActiveTo(s0, me, M.budew);
+    giveCard(s0, opp, M.luckyHelmet);
+    const s = attack(s0);
+    expect(s.current).toBe(opp);
+    const tools = engine
+      .getLegalActions(s, opp)
+      .filter((a) => a.type === 'playTrainer' && s.cards[a.uid]!.defId === M.luckyHelmet);
+    expect(tools).toEqual([]);
+  });
+
+  test('Eri can discard Pokémon Tools (they are Item cards)', () => {
+    const { s: s0, me, opp } = game({ [ERI]: 2 }, { [M.luckyHelmet]: 2 });
+    giveCard(s0, opp, M.luckyHelmet);
+    const s = act(engine, s0, { type: 'playTrainer', uid: inHand(s0, me, ERI) });
+    const offered = (s.prompt?.options ?? []).map((o) => o.uid && s.cards[o.uid]!.defId);
+    expect(offered).toContain(M.luckyHelmet);
+  });
+
+  test("Special Red Card shuffles the opponent's hand before putting it on the bottom of their deck", () => {
+    let shuffled = false;
+    for (let seed = 1; seed <= 6 && !shuffled; seed++) {
+      const { s: s0, me, opp } = game({ [M.redCard]: 2 }, { [M.redCard]: 2 }, { seed });
+      s0.players[opp].prizes.splice(3);
+      const hand = [...s0.players[opp].hand];
+      const s = act(engine, s0, { type: 'playTrainer', uid: inHand(s0, me, M.redCard) });
+      const bottom = s.players[opp].deck.slice(-hand.length);
+      expect([...bottom].sort()).toEqual([...hand].sort());
+      if (bottom.join() !== hand.join()) shuffled = true;
+    }
+    expect(shuffled).toBe(true);
+  });
+});
