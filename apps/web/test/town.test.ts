@@ -126,6 +126,14 @@ describe('what the dialog box says', () => {
     );
   });
 
+  test('once the Champion is beaten, the Gym says so', () => {
+    const ids = ['brock', 'misty', 'surge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni'];
+    const hall = [{ date: '2026-10-01', playerName: 'ASH', deckName: 'X', cover: 'x' }];
+    expect(describeBuilding('gym', profile({ gym: gym(ids, hall) }), '')).toBe(
+      'Champion! Rematch the Elite Four any time.',
+    );
+  });
+
   test('the Frontier describes the run in progress, or how a run works', () => {
     expect(describeBuilding('frontier', profile({ frontier: frontierAfter(2) }), '')).toBe(
       'Run in progress: fight 3 of 8, 2 lives left.',

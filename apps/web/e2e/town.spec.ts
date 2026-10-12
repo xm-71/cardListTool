@@ -43,6 +43,13 @@ test.describe('on a phone', () => {
     expect(await overflow(page), 'the town scrolls sideways').toBeLessThanOrEqual(0);
     const menu = page.getByRole('menu', { name: 'Main menu' });
     for (const item of await menu.getByRole('menuitem').all()) await expect(item).toBeInViewport();
+    // Signs stay readable, and each Frontier floor is big enough to see lit or dark.
+    const sizes = await page.locator('.town-name, .town-tag').evaluateAll((els) =>
+      els.map((e) => parseFloat(getComputedStyle(e).fontSize)),
+    );
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(7);
+    for (const floor of await page.getByTestId('floor').all())
+      expect((await floor.boundingBox())!.height).toBeGreaterThanOrEqual(5);
     await page.screenshot({ path: 'test-results/town-phone.png', fullPage: true });
 
     const gym = page.getByRole('menuitem', { name: 'Gym Challenge' });

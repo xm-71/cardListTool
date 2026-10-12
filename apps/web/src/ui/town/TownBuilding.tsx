@@ -8,13 +8,13 @@ interface Props {
   status: TownStatus;
   active: boolean;
   closed: boolean;
-  onHover(): void;
+  onPointerEnter(e: PointerEvent): void;
   onPointerDown(e: PointerEvent): void;
   onClick(): void;
 }
 
 /** One building on the town square: a menu item drawn as a pixel house, with its progress marker. */
-export function TownBuilding({ building: b, status, active, closed, onHover, onPointerDown, onClick }: Props) {
+export function TownBuilding({ building: b, status, active, closed, onPointerEnter, onPointerDown, onClick }: Props) {
   const tower = b.id === 'frontier';
   const wins = status.frontier?.wins ?? 0;
   return (
@@ -25,7 +25,7 @@ export function TownBuilding({ building: b, status, active, closed, onHover, onP
       aria-label={b.label}
       disabled={closed}
       data-active={active}
-      onMouseEnter={() => !closed && onHover()}
+      onPointerEnter={(e) => !closed && onPointerEnter(e)}
       onPointerDown={onPointerDown}
       onClick={onClick}
       className={`town-b ${tower ? 'town-tower' : ''}`}

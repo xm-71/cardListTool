@@ -39,6 +39,7 @@ export function MainMenu() {
   const [active, setActive] = useState<BuildingId>(collector ? 'shop' : 'duel');
   const current = open(active) ? active : 'shop';
   const [card, setCard] = useState(false);
+  /** The last press was a finger or a pen: a tap on another building previews it before going in. */
   const touch = useRef(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => ref.current?.focus(), []);
@@ -80,7 +81,7 @@ export function MainMenu() {
             tabIndex={0}
             onKeyDown={onKeyDown}
             data-motion={motion ? 'on' : 'off'}
-            className="town play-mat outline-none focus-visible:outline-4 focus-visible:outline-offset-[-8px] focus-visible:outline-yellow"
+            className="town play-mat outline-none focus-visible:outline-4 focus-visible:outline-offset-[-8px] focus-visible:outline-ink"
           >
             {BUILDINGS.map((b) => (
               <TownBuilding
@@ -89,9 +90,9 @@ export function MainMenu() {
                 status={status}
                 active={b.id === current}
                 closed={!open(b.id)}
-                onHover={() => !touch.current && select(b.id)} // a touch also fires a hover before the tap
+                onPointerEnter={(e) => e.pointerType === 'mouse' && select(b.id)}
                 onPointerDown={(e) => {
-                  touch.current = e.pointerType === 'touch';
+                  touch.current = e.pointerType !== 'mouse';
                 }}
                 onClick={() => onClick(b.id)}
               />

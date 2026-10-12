@@ -146,10 +146,33 @@ test('the Trainer Card closes with Escape and gives the town its keys back', asy
   fireEvent.keyDown(menu(), { key: 'ArrowLeft' });
   expect(active()).toBe(item('My House'));
   fireEvent.keyDown(menu(), { key: 'Enter' });
-  expect(screen.getByRole('dialog', { name: 'Trainer Card' })).toBeInTheDocument();
-  fireEvent.keyDown(window, { key: 'Escape' });
+  const card = screen.getByRole('dialog', { name: 'Trainer Card' });
+  // Focus moves into the card, and the town ignores keys while it is open.
+  expect(card.contains(document.activeElement)).toBe(true);
+  fireEvent.keyDown(menu(), { key: 'ArrowRight' });
+  expect(active()).toBe(item('My House'));
+  fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
   expect(screen.queryByRole('dialog', { name: 'Trainer Card' })).toBeNull();
   expect(useNav.getState().route).toBe('menu');
+  expect(menu()).toHaveFocus();
+  fireEvent.keyDown(menu(), { key: 'ArrowRight' });
+  expect(active()).toBe(item('Gym Challenge'));
+});
+
+test('a mouse hover selects a building; a finger or pen passing over does not', async () => {
+  await launch();
+  fireEvent.pointerEnter(item('Options'), { pointerType: 'touch' });
+  expect(active()).toBe(item('Duel'));
+  fireEvent.pointerEnter(item('Options'), { pointerType: 'mouse' });
+  expect(active()).toBe(item('Options'));
+});
+
+test('a pen tap previews first, like a finger', async () => {
+  await launch();
+  fireEvent.pointerDown(item('Binder'), { pointerType: 'pen' });
+  fireEvent.click(item('Binder'));
+  expect(useNav.getState().route).toBe('menu');
+  expect(active()).toBe(item('Binder'));
 });
 
 test('in Collector mode the Trainer Card has no battle buttons', async () => {

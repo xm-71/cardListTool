@@ -1,7 +1,7 @@
 import { CREDITS } from '@ptcg/economy';
 import type { Route } from '../nav/useNav.ts';
 import type { CustomBinder, Profile } from '../profile/types.ts';
-import { FIGHTS } from './frontier/run.ts';
+import { FIGHTS, LIVES } from './frontier/run.ts';
 import { LEADERS, nextGymIndex } from './gym.ts';
 
 /** The main menu's town square: eight buildings around a fountain. Everything here is pure. */
@@ -114,13 +114,16 @@ export function describeBuilding(id: BuildingId, p: Profile, tip: string): strin
       return 'One game against a bot. Medium and Hard bots pay more credits.';
     case 'gym': {
       const next = LEADERS[nextGymIndex(p.gym.badges)];
-      if (!next) return `All ${LEADERS.length} badges! The Elite Four are waiting.`;
+      if (!next)
+        return s.champion
+          ? 'Champion! Rematch the Elite Four any time.'
+          : `All ${LEADERS.length} badges! The Elite Four are waiting.`;
       return `${s.badges} of ${LEADERS.length} badges. Next up: ${next.name}, ${next.type} type.`;
     }
     case 'frontier':
       return s.frontier
         ? `Run in progress: fight ${s.frontier.fight + 1} of ${FIGHTS}, ${s.frontier.lives} ${s.frontier.lives === 1 ? 'life' : 'lives'} left.`
-        : `${FIGHTS} fights, 2 lives. Build your deck as you go.`;
+        : `${FIGHTS} fights, ${LIVES} lives. Build your deck as you go.`;
     case 'shop':
       return p.collectorMode
         ? 'Packs are free in Collector mode.'
