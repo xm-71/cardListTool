@@ -72,7 +72,10 @@ export function FrontierHall() {
       ) : (
         <ol aria-label="Frontier Hall of Fame" className="flex flex-col gap-2">
           {hall.map((e, i) => (
-            <li key={i} className="flex items-center gap-3 border-b-2 border-ink/20 pb-2 text-xl">
+            <li
+              key={i}
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b-2 border-ink/20 pb-2 text-xl"
+            >
               {registry.defs[e.cover] && (
                 <img src={`${registry.defs[e.cover]!.image}/low.webp`} alt="" className="w-10" />
               )}

@@ -96,3 +96,20 @@ test('no normal Duel credits are paid for a frontier game', async () => {
   await waitFor(() => expect(run().phase).toBe('reward'));
   expect(useProfile.getState().profile.credits).toBe(0);
 });
+
+test('pressing Fight twice starts one game, and that game is the one the run waits for', async () => {
+  await launch();
+  await act(() => Promise.all([startFrontierMatch(), startFrontierMatch()]).then(() => undefined));
+  const seed = useGame.getState().config!.seed;
+  expect(run()).toMatchObject({ inMatch: true, matchSeed: seed });
+  act(() => useGame.getState().dispatch(1, { type: 'concede' }));
+  await waitFor(() => expect(run().phase).toBe('reward'));
+});
+
+test('a fight is not started when the run could not begin it (e.g. it just ended)', async () => {
+  await launch({ frontier: { run: { ...hubRun(), lives: 1, inMatch: true, matchSeed: 5 }, hallOfFame: [] } });
+  // The screen settles the unfinished fight as a loss (the last life) while Fight is pressed.
+  await act(() => startFrontierMatch());
+  await waitFor(() => expect(run().phase).toBe('over'));
+  expect(useGame.getState().config).toBeNull();
+});

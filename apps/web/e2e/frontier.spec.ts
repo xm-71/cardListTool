@@ -73,7 +73,11 @@ test('a run: start, pick a starter, win fight 1, take an offer, reload to fight 
 
   const confirm = picker.getByRole('button', { name: 'Confirm cut' });
   for (let i = 0; i < 4 && !(await confirm.isEnabled()); i++)
-    await picker.getByRole('button', { name: /^Cut .*Energy$/ }).and(page.locator(':enabled')).first().click();
+    await picker
+      .getByRole('button', { name: /^Cut .*Energy$/ })
+      .and(page.locator(':enabled'))
+      .first()
+      .click();
   await confirm.click();
   await expect(page.getByText('Fight 2 of 8')).toBeVisible();
 
@@ -82,4 +86,28 @@ test('a run: start, pick a starter, win fight 1, take an offer, reload to fight 
   await page.getByRole('menuitem', { name: 'Battle Frontier' }).click();
   await expect(page.getByText('Fight 2 of 8')).toBeVisible();
   await expect(page.getByText('Lives: 2')).toBeVisible();
+});
+
+test('the Frontier Hall of Fame fits a phone screen', async ({ page }) => {
+  await toMenu(page);
+  await page.evaluate(() => {
+    const w = window as unknown as {
+      __profile: { setState(f: (s: { profile: object }) => object): void };
+    };
+    const entry = {
+      date: '2026-10-12',
+      playerName: 'WWWWWWWWWW',
+      deckName: 'Mega Charizard X ex',
+      cover: 'me02-056',
+      livesLeft: 2,
+    };
+    w.__profile.setState((s) => ({
+      profile: { ...s.profile, frontier: { run: null, hallOfFame: [entry, entry] } },
+    }));
+  });
+  await page.getByRole('menuitem', { name: 'Battle Frontier' }).click();
+  await expect(page.getByRole('list', { name: 'Frontier Hall of Fame' })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expectNoHorizontalScroll(page, 'the Hall of Fame');
+  await page.screenshot({ path: 'test-results/frontier-hall-phone.png', fullPage: true });
 });
