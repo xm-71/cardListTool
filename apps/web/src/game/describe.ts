@@ -16,6 +16,7 @@ export function opponentName(config: Pick<GameConfig, 'mode' | 'context'>, viewe
   const ctx = config.context;
   if (ctx?.kind === 'gym') return LEADERS.find((l) => l.id === ctx.leaderId)?.name ?? 'Rival';
   if (ctx?.kind === 'elite') return ELITE[ctx.stage]?.name ?? 'Rival';
+  if (ctx?.kind === 'frontier') return ctx.opponent;
   if (config.mode === 'hotseat') return `Player ${viewer === 0 ? 2 : 1}`;
   return 'Rival';
 }

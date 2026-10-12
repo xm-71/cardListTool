@@ -9,7 +9,7 @@ import { PackOpening } from './PackOpening.tsx';
 import { Button } from './retro/index.ts';
 
 interface Props {
-  context: GameContext;
+  context: Exclude<GameContext, { kind: 'frontier' }>;
   result: GameResult;
   human: PlayerId;
   /** What the game paid; undefined while it is being saved. */

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { PlayerId } from '@ptcg/engine';
-import { useGameAward, useGymResult } from './game/awards.ts';
+import { useFrontierResult, useGameAward, useGymResult } from './game/awards.ts';
 import { createWorkerBotClient, type BotClient } from './game/botClient.ts';
 import { actorOf, useGame } from './game/store.ts';
 import { useBotDriver } from './game/useBotDriver.ts';
 import { GameScreen } from './screens/GameScreen.tsx';
 import { useNav, type Route } from './nav/useNav.ts';
 import { Binder } from './screens/Binder.tsx';
+import { BattleFrontier } from './screens/BattleFrontier.tsx';
 import { GymChallenge } from './screens/GymChallenge.tsx';
 import { DeckBuilder } from './screens/DeckBuilder.tsx';
 import { DuelSetup } from './screens/DuelSetup.tsx';
@@ -19,9 +20,11 @@ import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
 import { CardZoom } from './ui/CardZoom.tsx';
+import { FrontierGameOver } from './ui/FrontierGameOver.tsx';
 import { GymGameOver } from './ui/GymGameOver.tsx';
 import { validateGymDeck } from '@ptcg/economy';
 import { deckSources, registry } from './game/catalog.ts';
+import { startFrontierMatch } from './game/frontierMatch.ts';
 import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
 import { useShownState } from './game/animation/director.ts';
@@ -64,14 +67,16 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   const start = useGame((s) => s.start);
   const resetGame = useGame((s) => s.reset);
   const reset = () => {
-    const toGym = !!useGame.getState().config?.context;
+    const kind = useGame.getState().config?.context?.kind;
     resetGame();
-    useNav.getState().go(toGym ? 'gym' : 'menu');
+    useNav.getState().go(kind === 'frontier' ? 'frontier' : kind ? 'gym' : 'menu');
   };
   // Hotseat: the seat that has confirmed it is looking at the screen.
   const [confirmed, setConfirmed] = useState<{ game: number; seat: PlayerId } | null>(null);
   const credits = useGameAward();
   const gymPayout = useGymResult();
+  const frontierPayout = useFrontierResult();
+  const frontierRun = useProfile((s) => s.profile.frontier.run);
 
   if (error) return <ErrorScreen error={error} onHome={reset} />;
   if (!state || !config)
@@ -95,7 +100,18 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
     <>
       <GameScreen viewer={viewer} />
       <CardZoom />
-      {state.result && config.context && (
+      {state.result && config.context?.kind === 'frontier' && (
+        <FrontierGameOver
+          context={config.context}
+          result={state.result}
+          human={human}
+          run={frontierRun}
+          payout={frontierPayout}
+          onBack={reset}
+          onRetry={() => void startFrontierMatch()}
+        />
+      )}
+      {state.result && config.context && config.context.kind !== 'frontier' && (
         <GymGameOver
           context={config.context}
           result={state.result}
@@ -141,6 +157,7 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
   menu: MainMenu,
   duel: DuelSetup,
   gym: GymChallenge,
+  frontier: BattleFrontier,
   shop: Shop,
   binder: Binder,
   decks: DeckBuilder,
@@ -148,7 +165,7 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
 };
 
 /** Screens Collector mode hides; a route that lands on one goes back to the menu. */
-const BATTLE_ROUTES: readonly Route[] = ['duel', 'gym', 'decks'];
+const BATTLE_ROUTES: readonly Route[] = ['duel', 'gym', 'frontier', 'decks'];
 
 function Screens() {
   const route = useNav((s) => s.route);

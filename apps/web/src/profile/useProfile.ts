@@ -128,8 +128,11 @@ interface ProfileState {
   /** Starts a Battle Frontier run (does nothing while a run, even a finished unclaimed one, exists). */
   startFrontierRun(): Promise<void>;
   chooseFrontierStarter(id: string): Promise<void>;
-  /** A Frontier fight with game seed `seed` is starting: leaving it before it ends will count as a loss. */
-  beginFrontierMatch(seed: number): Promise<void>;
+  /**
+   * A Frontier fight with game seed `seed` is starting: leaving it before it ends will count as a loss. Resolves to the
+   * saved run when this call began the fight, or null when it could not (a fight already in progress, or no fight).
+   */
+  beginFrontierMatch(seed: number): Promise<FrontierRun | null>;
   /**
    * Records a finished Frontier fight once per game seed, and only for the run's current fight while it is in
    * progress (a result from another tab for a fight the run has left is ignored).
@@ -315,7 +318,13 @@ export const useProfile = create<ProfileState>()((set, get) => {
       await changeRun((r) => (r.phase === 'starter' ? chooseStarter(r, id) : null));
     },
     async beginFrontierMatch(seed) {
-      await changeRun((r) => (r.phase === 'hub' && !r.inMatch ? beginFight(r, seed) : null));
+      const began = await change((p) => {
+        const r = p.frontier.run;
+        if (!r || r.phase !== 'hub' || r.inMatch) return null;
+        const run = beginFight(r, seed);
+        return { next: { ...p, frontier: { ...p.frontier, run } }, result: run };
+      });
+      return began ?? null;
     },
     async recordFrontier({ seed, fight, won, draw }) {
       const outcome = draw ? 'draw' : won ? 'win' : 'loss';
