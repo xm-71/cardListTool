@@ -573,6 +573,30 @@ describe('card text fidelity (meta card audit)', () => {
     expect(s.players[opp].bench[0]?.damage ?? hp).toBeGreaterThanOrEqual(Math.min(100, hp));
   });
 
+  test('Lucky Helmet still draws 2 when the attack that damaged its Active Pokémon then switches it out', () => {
+    const rhyhorn = 'sv03.5-111';
+    const fighting = 'mee-006';
+    const {
+      s: s0,
+      me,
+      opp,
+    } = game({ [rhyhorn]: 2, [fighting]: 6 }, { [M.megaKangaskhan]: 2, [M.luckyHelmet]: 2 });
+    swapActiveTo(s0, me, rhyhorn);
+    attachFromDeck(s0, me, fighting);
+    attachFromDeck(s0, me, fighting);
+    swapActiveTo(s0, opp, M.megaKangaskhan);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dreepy));
+    const helmet = inHand(s0, opp, M.luckyHelmet);
+    s0.players[opp].hand = s0.players[opp].hand.filter((u) => u !== helmet);
+    s0.players[opp].active!.tool = helmet;
+    const hand = s0.players[opp].hand.length;
+    let s = attack(s0); // Push Down: 20 damage, then the opponent switches
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    expect(s.cards[s.players[opp].active!.stack[0]!]!.defId).toBe(M.dreepy);
+    // 2 from Lucky Helmet, then the draw that starts their turn.
+    expect(s.players[opp].hand.length).toBe(hand + 2 + 1);
+  });
+
   test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
     const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
     swapActiveTo(s0, me, M.budew);

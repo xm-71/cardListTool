@@ -12,6 +12,8 @@ export interface AttackInfo {
   attacker: SlotRef;
   attackerIsEx: boolean;
   damaged: SlotRef[];
+  /** Pokémon damaged while in the Active Spot ("is in the Active Spot and is damaged"), followed through switches. */
+  damagedActive: SlotRef[];
 }
 
 const attackInfo = new WeakMap<EffectCtx, AttackInfo>();
@@ -31,6 +33,7 @@ export function followSwitch(ctx: EffectCtx, player: PlayerId, benchIndex: numbe
   };
   info.attacker = move(info.attacker);
   info.damaged = info.damaged.map(move);
+  info.damagedActive = info.damagedActive.map(move);
 }
 
 export function canUseAttack(
@@ -193,7 +196,10 @@ export function dealAttackDamage(
   }
   amount = Math.max(0, amount);
   targetSlot.damage += amount;
-  if (amount > 0) info.damaged.push(target);
+  if (amount > 0) {
+    info.damaged.push(target);
+    if (target.zone === 'active') info.damagedActive.push(target);
+  }
   log(s, 'damage', `${slotDef(ctx.env, s, targetSlot).name} takes ${amount} damage`, {
     amount,
     anim: { kind: 'damage', target: targetSlot.stack[0]!, amount },
@@ -213,7 +219,7 @@ export function attack(ctx: EffectCtx, attackIndex: number, benchIndex?: number)
   const atk = def.attacks[attackIndex]!;
   const script = ctx.env.registry.scripts[def.id]?.attacks?.[attackIndex];
   ctx.source = { kind: 'attack', slot: attackerRef, attackIndex };
-  attackInfo.set(ctx, { attacker: attackerRef, attackerIsEx: def.isEx, damaged: [] });
+  attackInfo.set(ctx, { attacker: attackerRef, attackerIsEx: def.isEx, damaged: [], damagedActive: [] });
   log(s, 'attack', `${def.name} uses ${atk.name}`, {
     player: me,
     anim: { kind: 'attack', by: attacker.stack[0]! },
@@ -274,8 +280,9 @@ export function useAttackAs(ctx: EffectCtx, defId: string, attackIndex: number):
 /** Tools such as Punk Helmet react when the Pokémon holding them is damaged in the Active Spot. */
 function afterDamaged(ctx: EffectCtx): void {
   const info = currentAttack(ctx)!;
-  for (const target of info.damaged) {
-    if (target.zone !== 'active' || target.player === info.attacker.player) continue;
+  // Checked when the damage was done: an attack that then switches the Pokémon out still triggers it.
+  for (const target of info.damagedActive) {
+    if (target.player === info.attacker.player) continue;
     for (const h of scriptsInPlay(ctx.env, ctx.state, target.player)) {
       if (sameSlot(h.ref, target) && h.script.afterDamagedInActive)
         h.script.afterDamagedInActive(ctx, target, info.attacker);
