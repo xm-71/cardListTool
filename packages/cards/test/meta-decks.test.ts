@@ -532,6 +532,23 @@ describe('card text fidelity (meta card audit)', () => {
     expect(s.players[me].active!.damage).toBe(50);
   });
 
+  test("Alakazam's Psychic Draw is offered when it evolves through Rare Candy", () => {
+    const rareCandy = 'me01-125';
+    const { s: s0, me } = game({ [M.abra]: 2, [M.alakazam]: 2, [rareCandy]: 2 }, {}, { turn: 3 });
+    swapActiveTo(s0, me, M.abra);
+    s0.players[me].active!.enteredTurn = 0;
+    giveCard(s0, me, M.alakazam);
+    const candy = inHand(s0, me, rareCandy);
+    const before = s0.players[me].hand.length;
+    let s = act(engine, s0, { type: 'playTrainer', uid: candy });
+    s = pickSlot(s, active(me));
+    s = pickCard(s, M.alakazam);
+    expect(s.prompt?.message).toBe("Use Alakazam's Ability?");
+    s = answer(s, 'yes');
+    expect(s.players[me].hand).toHaveLength(before - 2 + 3);
+    expect(s.cards[s.players[me].active!.stack.at(-1)!]!.defId).toBe(M.alakazam);
+  });
+
   test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
     const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
     swapActiveTo(s0, me, M.budew);

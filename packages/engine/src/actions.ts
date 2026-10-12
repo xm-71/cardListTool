@@ -37,7 +37,7 @@ function baseHandler(origin: Origin): EffectFn {
     case 'attachEnergy':
       return (ctx) => attachEnergy(ctx, origin.uid, origin.target);
     case 'evolve':
-      return (ctx) => evolve(ctx, origin.uid, origin.target);
+      return (ctx) => evolveFromHand(ctx, origin.uid, origin.target);
     case 'retreat':
       return (ctx) => retreat(ctx, origin.benchIndex);
     case 'attack':
@@ -90,7 +90,11 @@ function attachEnergy(ctx: EffectCtx, uid: string, target: SlotRef): void {
   ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onAttachFromHand?.(ctx, target);
 }
 
-function evolve(ctx: EffectCtx, uid: string, target: SlotRef): void {
+/**
+ * Evolves `target` with card `uid` played from the hand, then offers that card's "when you play this Pokémon from your
+ * hand to evolve" Ability. Rare Candy goes through here too: it plays the Stage 2 from the hand.
+ */
+export function evolveFromHand(ctx: EffectCtx, uid: string, target: SlotRef): void {
   ctx.evolve(target, uid);
   const hook = ctx.env.registry.scripts[ctx.state.cards[uid]!.defId]?.onEvolveFromHand;
   if (!hook) return;
