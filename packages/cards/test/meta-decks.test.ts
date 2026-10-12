@@ -624,6 +624,47 @@ describe('card text fidelity (meta card audit)', () => {
     expect(checked).toBe(true);
   });
 
+  test("Dunsparce's Dig (heads) also stops the opponent's attacks from switching it out", () => {
+    const rhyhorn = 'sv03.5-111';
+    const fighting = 'mee-006';
+    let checked = false;
+    for (let seed = 1; seed <= 20 && !checked; seed++) {
+      const {
+        s: s0,
+        me,
+        opp,
+      } = game({ [M.dunsparce]: 2, [M.darkness]: 6 }, { [rhyhorn]: 2, [fighting]: 6 }, { seed });
+      swapActiveTo(s0, me, M.dunsparce);
+      attachFromDeck(s0, me, M.darkness);
+      attachFromDeck(s0, me, M.darkness);
+      benchFromHand(s0, me, giveCard(s0, me, M.dreepy));
+      swapActiveTo(s0, opp, rhyhorn);
+      attachFromDeck(s0, opp, fighting);
+      attachFromDeck(s0, opp, fighting);
+      let s = attack(s0, 1); // Dig
+      if (!s.players[me].active!.markers.some((m) => m.kind === 'preventDamage')) continue; // tails
+      checked = true;
+      s = attack(s); // Push Down
+      if (s.prompt?.player === me) s = pickSlot(s, { player: me, zone: 'bench', index: 0 });
+      expect(s.cards[s.players[me].active!.stack[0]!]!.defId).toBe(M.dunsparce);
+    }
+    expect(checked).toBe(true);
+  });
+
+  test("Magneton's Junk Magnet can take Pokémon Tools (they are Item cards)", () => {
+    const magneton = 'sv03.5-082';
+    const { s: s0, me } = game({ [magneton]: 2, [M.luckyHelmet]: 2, [M.lightning]: 6 }, {});
+    swapActiveTo(s0, me, magneton);
+    const cost = (registry.defs[magneton] as { attacks: { cost: unknown[] }[] }).attacks[0]!.cost;
+    for (let i = 0; i < cost.length; i++) attachFromDeck(s0, me, M.lightning);
+    const helmet = inHand(s0, me, M.luckyHelmet);
+    s0.players[me].hand = s0.players[me].hand.filter((u) => u !== helmet);
+    s0.players[me].discard.push(helmet);
+    const s = attack(s0);
+    const offered = (s.prompt?.options ?? []).map((o) => o.uid && s.cards[o.uid]!.defId);
+    expect(offered).toContain(M.luckyHelmet);
+  });
+
   test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
     const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
     swapActiveTo(s0, me, M.budew);

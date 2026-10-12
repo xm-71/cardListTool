@@ -371,6 +371,7 @@ export class EffectCtx {
     const p = this.state.players[player];
     const incoming = p.bench[benchIndex];
     if (!incoming || !p.active) throw new Error('Nothing to switch');
+    if (this.shielded({ player, zone: 'active' })) return;
     clearActiveEffects(p.active); // effects on the Active end when it moves to the Bench
     p.bench[benchIndex] = p.active;
     p.active = incoming;

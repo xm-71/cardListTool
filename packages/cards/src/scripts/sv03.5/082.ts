@@ -4,12 +4,12 @@ export const name = 'Magneton';
 export const set = 'sv03.5';
 export const script: CardScript = {
   attacks: {
-    // Junk Magnet: put up to 2 Item cards from your discard pile into your hand.
+    // Junk Magnet: put up to 2 Item cards (Pokémon Tools included) from your discard pile into your hand.
     0: {
       effect(ctx) {
         const items = ctx.state.players[ctx.me].discard.filter((uid) => {
           const d = ctx.def(uid);
-          return d.category === 'Trainer' && d.trainerType === 'Item';
+          return d.category === 'Trainer' && (d.trainerType === 'Item' || d.trainerType === 'Tool');
         });
         const picks = ctx.chooseCards({
           player: ctx.me,
