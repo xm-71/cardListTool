@@ -3,6 +3,7 @@ import type { CardRegistry, DeckList } from '@ptcg/engine';
 import { buildRegistry, isPlayable, setCards } from '@ptcg/cards';
 import {
   deckFormat,
+  deckRuleProblems,
   isDeckUsable,
   isGymLegal,
   isStandardLegal,
@@ -194,5 +195,42 @@ describe('Gym format', () => {
   test('deckFormat is standard until a card needs the Gym format', () => {
     expect(deckFormat(deck([{ id: 'me01-131', count: 4 }]), registry)).toBe('standard');
     expect(deckFormat(withWeedle(), registry)).toBe('gym');
+  });
+});
+
+describe('deckRuleProblems', () => {
+  const sixty = (cards: DeckList['cards']): DeckList => ({ name: 'rules', cards });
+  test('flags size, a 5th copy by name, a 2nd ACE SPEC and no Basic, and ignores format and ownership', () => {
+    const ok = sixty([
+      { id: GASTLY, count: 4 },
+      { id: 'me01-131', count: 4 },
+      { id: 'sv06-163', count: 1 },
+      { id: PSYCHIC, count: 51 },
+    ]);
+    // Nothing here is owned, and nothing is checked against a format.
+    expect(deckRuleProblems(ok, registry)).toEqual([]);
+    expect(
+      deckRuleProblems(
+        sixty([
+          { id: GASTLY, count: 4 },
+          { id: PSYCHIC, count: 55 },
+        ]),
+        registry,
+      ),
+    ).toEqual(['Deck has 59 cards (needs 60)']);
+    const fifth = sixty([
+      { id: GASTLY, count: 4 },
+      { id: 'me01-131', count: 4 },
+      { id: 'me99-131', count: 1 },
+      { id: PSYCHIC, count: 51 },
+    ]);
+    expect(deckRuleProblems(fifth, registry)).toEqual([expect.stringMatching(/^More than 4 /)]);
+    const twoAce = sixty([
+      { id: GASTLY, count: 4 },
+      { id: 'sv06-163', count: 2 },
+      { id: PSYCHIC, count: 54 },
+    ]);
+    expect(deckRuleProblems(twoAce, registry)).toEqual(['More than 1 ACE SPEC']);
+    expect(deckRuleProblems(sixty([{ id: PSYCHIC, count: 60 }]), registry)).toEqual(['No Basic Pokémon']);
   });
 });

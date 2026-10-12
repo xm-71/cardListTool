@@ -56,10 +56,18 @@ export function validateGymDeck(
   return validate(deck, registry, collection, isGymLegal, 'the Gym format');
 }
 
+/**
+ * Only the deck-building rules: 60 cards, at most 4 copies per name (basic Energy aside), at most 1 ACE SPEC, at least
+ * 1 Basic Pokémon, every card playable. No format legality and no ownership (Battle Frontier run decks).
+ */
+export function deckRuleProblems(deck: DeckList, registry: CardRegistry): string[] {
+  return validate(deck, registry, null, () => true, 'any format');
+}
+
 function validate(
   deck: DeckList,
   registry: CardRegistry,
-  collection: Readonly<Record<string, number>>,
+  collection: Readonly<Record<string, number>> | null,
   legal: (def: CardDef) => boolean,
   formatName: string,
 ): string[] {
@@ -84,7 +92,7 @@ function validate(
       problems.push(`${def.name} (${def.regulationMark ?? 'no mark'}) is not legal in ${formatName}`);
     }
     if (!isPlayable(def, registry)) problems.push(`${def.name} isn't playable yet`);
-    const own = collection[id] ?? 0;
+    const own = collection ? (collection[id] ?? 0) : Infinity;
     if (own < count) problems.push(`You own ${own} ${def.name} but the deck uses ${count}`);
   }
   for (const [name, count] of byName)
