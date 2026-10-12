@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GameResult, PlayerId } from '@ptcg/engine';
 import { creditsFor } from '@ptcg/economy';
+import type { FrontierPayout } from './frontier/save.ts';
 import { useProfile, type GymPayout } from '../profile/useProfile.ts';
 import { useGame, type GameConfig } from './store.ts';
 
@@ -38,7 +39,7 @@ export function useGymResult(): GymPayout | undefined {
   const context = config?.context;
   const seed = config?.seed;
   useEffect(() => {
-    if (!result || !config || !context || seed === undefined) return;
+    if (!result || !config || !context || context.kind === 'frontier' || seed === undefined) return;
     const won = result.winner === human;
     const draw = result.winner === 'draw';
     const profile = useProfile.getState();
@@ -61,6 +62,31 @@ export function useGymResult(): GymPayout | undefined {
     saved
       .then((payout) => setPaid((prev) => (prev?.seed === seed && prev.payout ? prev : { seed, payout })))
       .catch((e: unknown) => console.error('Could not save Gym Challenge progress', e));
+    // One save per finished game.
+  }, [result !== null, seed]);
+  return paid?.seed === seed ? paid?.payout : undefined;
+}
+
+/** What a finished Battle Frontier fight did to the run: undefined while saving (or for any other game). */
+export function useFrontierResult(): FrontierPayout | undefined {
+  const result = useGame((s) => s.state?.result ?? null);
+  const config = useGame((s) => s.config);
+  const human = useGame((s) => s.human);
+  const [paid, setPaid] = useState<{ seed: number; payout: FrontierPayout | undefined } | null>(null);
+  const context = config?.context;
+  const seed = config?.seed;
+  useEffect(() => {
+    if (!result || !config || context?.kind !== 'frontier' || seed === undefined) return;
+    useProfile
+      .getState()
+      .recordFrontier({
+        seed,
+        fight: context.fight,
+        won: result.winner === human,
+        draw: result.winner === 'draw',
+      })
+      .then((payout) => setPaid((prev) => (prev?.seed === seed && prev.payout ? prev : { seed, payout })))
+      .catch((e: unknown) => console.error('Could not save Battle Frontier progress', e));
     // One save per finished game.
   }, [result !== null, seed]);
   return paid?.seed === seed ? paid?.payout : undefined;
