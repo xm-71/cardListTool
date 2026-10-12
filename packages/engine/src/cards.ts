@@ -53,6 +53,10 @@ export interface EnergyDef extends CardDefBase {
 
 export type CardDef = PokemonDef | TrainerDef | EnergyDef;
 
+/** An ACE SPEC card (at most 1 per deck): ACE SPEC Trainers, and ACE SPEC Special Energy such as Enriching Energy. */
+export const isAceSpec = (def: CardDef): boolean =>
+  (def.category === 'Trainer' && def.isAceSpec) || def.rarity === 'ACE SPEC Rare';
+
 export interface DamageQuery {
   state: GameState;
   /** The slot whose card (Pokémon or attached Tool) carries the hook being evaluated. */
@@ -116,6 +120,11 @@ export interface CardScript {
   }): EnergyType | null;
   modifyOutgoingDamage?(q: DamageQuery): number;
   modifyIncomingDamage?(q: DamageQuery): number;
+  /**
+   * `modifyIncomingDamage` also applies to its holder while Benched ("prevent all damage done to this Pokémon" is
+   * not limited to the Active Spot). Other incoming-damage effects only apply to the Active Pokémon.
+   */
+  incomingDamageOnBench?: boolean;
   modifyRetreatCost?(q: { state: GameState; slot: SlotRef; cost: number; registry: CardRegistry }): number;
   modifyPrizes?(q: {
     state: GameState;

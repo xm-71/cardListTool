@@ -1,4 +1,4 @@
-import type { CardDef, CardRegistry, DeckList, PokemonDef } from '@ptcg/engine';
+import { isAceSpec, type CardDef, type CardRegistry, type DeckList, type PokemonDef } from '@ptcg/engine';
 import { GYM_DECKS, isPlayable } from '@ptcg/cards';
 import { DECKS, registry as catalogRegistry } from '../catalog.ts';
 
@@ -22,7 +22,7 @@ export function buildPool(decks: readonly DeckList[], registry: CardRegistry): F
   const add = (kind: FrontierPackage['kind'], cards: { id: string; count: number }[]) => {
     const defs = cards.map((c) => registry.defs[c.id]!);
     if (cards.some((c) => c.count < 1) || defs.some((d) => !isPlayable(d, registry))) return;
-    const tier: Tier = defs.some((d) => d.category === 'Trainer' && d.isAceSpec)
+    const tier: Tier = defs.some(isAceSpec)
       ? 'ace'
       : defs.some((d) => d.category === 'Pokemon' && (d.isEx || d.isMega))
         ? 'ex'
@@ -71,10 +71,12 @@ export function buildPool(decks: readonly DeckList[], registry: CardRegistry): F
     }
     for (const e of entries) {
       if (e.def.category === 'Trainer') {
-        if (e.def.isAceSpec) add('trainers', [{ id: e.id, count: 1 }]);
+        if (isAceSpec(e.def)) add('trainers', [{ id: e.id, count: 1 }]);
         else if (e.count >= 2) add('trainers', [{ id: e.id, count: 2 }]);
-      } else if (e.def.category === 'Energy' && e.def.energyKind === 'Special' && e.count >= 2) {
-        add('energy', [{ id: e.id, count: 2 }]);
+      } else if (e.def.category === 'Energy' && e.def.energyKind === 'Special') {
+        // An ACE SPEC Energy comes alone; other Special Energy in pairs.
+        if (isAceSpec(e.def)) add('energy', [{ id: e.id, count: 1 }]);
+        else if (e.count >= 2) add('energy', [{ id: e.id, count: 2 }]);
       }
     }
   }

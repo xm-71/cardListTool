@@ -10,7 +10,8 @@ export const script: CardScript = {
       ctx.reveal([...hand]);
       const items = hand.filter((u) => {
         const d = ctx.def(u);
-        return d.category === 'Trainer' && d.trainerType === 'Item';
+        // Pokémon Tools are Item cards too.
+        return d.category === 'Trainer' && (d.trainerType === 'Item' || d.trainerType === 'Tool');
       });
       if (items.length === 0) return;
       const picks = ctx.chooseCards({

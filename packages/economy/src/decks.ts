@@ -1,4 +1,4 @@
-import type { CardDef, CardRegistry, DeckList } from '@ptcg/engine';
+import { isAceSpec, type CardDef, type CardRegistry, type DeckList } from '@ptcg/engine';
 import { GYM_SET, isPlayable } from '@ptcg/cards';
 
 export const DECK_SIZE = 60;
@@ -87,7 +87,7 @@ function validate(
     if (def.category === 'Pokemon' && def.stage === 'Basic') hasBasic = true;
     if (isBasicEnergy(def)) continue;
     byName.set(def.name, (byName.get(def.name) ?? 0) + count);
-    if (def.category === 'Trainer' && def.isAceSpec) aceSpecs += count;
+    if (isAceSpec(def)) aceSpecs += count;
     if (!legal(def)) {
       problems.push(`${def.name} (${def.regulationMark ?? 'no mark'}) is not legal in ${formatName}`);
     }

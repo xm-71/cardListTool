@@ -1,4 +1,10 @@
-import type { CardRegistry, CardScript, EffectCtx, SlotRef } from '@ptcg/engine';
+import {
+  evolveFromHand,
+  type CardRegistry,
+  type CardScript,
+  type EffectCtx,
+  type SlotRef,
+} from '@ptcg/engine';
 import { inPlayRefs, pokemonDef, topDef } from '../util.ts';
 
 /** Stage 1 names by the Basic they evolve from, built once per registry (it holds 1000+ cards). */
@@ -58,7 +64,8 @@ export const script: CardScript = {
         max: 1,
         message: 'Choose a Stage 2 Pokémon',
       });
-      ctx.evolve(ref!, stage2!);
+      // Playing the Stage 2 from the hand: its "when you play this Pokémon from your hand to evolve" Ability applies.
+      evolveFromHand(ctx, stage2!, ref!);
     },
   },
 };

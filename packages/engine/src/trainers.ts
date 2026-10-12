@@ -47,6 +47,8 @@ export function trainerActions(env: Env, state: GameState, player: PlayerId): Ac
         out.push({ type: 'playTrainer', uid });
         break;
       case 'Tool':
+        // Pokémon Tools are Item cards: an Item lock stops them too.
+        if (p.itemLockedTurn === state.turn) continue;
         for (const target of slotRefs(state, player)) {
           if (getSlot(state, target)!.tool === null) out.push({ type: 'playTrainer', uid, target });
         }

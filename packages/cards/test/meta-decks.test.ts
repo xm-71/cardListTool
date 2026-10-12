@@ -510,3 +510,192 @@ describe('Crustle deck', () => {
     expect(s.players[me].active!.stack[0]).toBe(mine);
   });
 });
+
+describe('card text fidelity (meta card audit)', () => {
+  const ERI = 'sv05-146';
+
+  test("Munkidori's Adrena-Brain moves nothing when the counters can't be placed (Battle Cage on the opponent's Bench)", () => {
+    const { s: s0, me, opp } = game({ [M.munkidori]: 2, [M.darkness]: 4 }, { [M.battleCage]: 2 });
+    swapActiveTo(s0, me, M.munkidori);
+    attachFromDeck(s0, me, M.darkness);
+    s0.players[me].active!.damage = 50;
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dreepy));
+    const cage = giveCard(s0, opp, M.battleCage);
+    s0.players[opp].hand = s0.players[opp].hand.filter((u) => u !== cage);
+    s0.stadium = { uid: cage, owner: opp };
+    let s = act(engine, s0, ability(me, 'Adrena-Brain'));
+    s = pickSlot(s, active(me));
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    s = answer(s, '3');
+    expect(s.players[opp].bench[0]!.damage).toBe(0);
+    // Nothing was placed, so nothing is taken off Munkidori either.
+    expect(s.players[me].active!.damage).toBe(50);
+  });
+
+  test("Alakazam's Psychic Draw is offered when it evolves through Rare Candy", () => {
+    const rareCandy = 'me01-125';
+    const { s: s0, me } = game({ [M.abra]: 2, [M.alakazam]: 2, [rareCandy]: 2 }, {}, { turn: 3 });
+    swapActiveTo(s0, me, M.abra);
+    s0.players[me].active!.enteredTurn = 0;
+    giveCard(s0, me, M.alakazam);
+    const candy = inHand(s0, me, rareCandy);
+    const before = s0.players[me].hand.length;
+    let s = act(engine, s0, { type: 'playTrainer', uid: candy });
+    s = pickSlot(s, active(me));
+    s = pickCard(s, M.alakazam);
+    expect(s.prompt?.message).toBe("Use Alakazam's Ability?");
+    s = answer(s, 'yes');
+    expect(s.players[me].hand).toHaveLength(before - 2 + 3);
+    expect(s.cards[s.players[me].active!.stack.at(-1)!]!.defId).toBe(M.alakazam);
+  });
+
+  test("Crustle's Mysterious Rock Inn also protects it on the Bench from an ex's attack", () => {
+    const fez = 'sv06.5-038';
+    // The opponent's Fezandipiti ex attacks; my Crustle sits on the Bench.
+    const { s: s0, me, opp } = game({ [fez]: 2, [M.darkness]: 6 }, { [M.crustle]: 2 });
+    swapActiveTo(s0, me, fez);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, M.darkness);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.crustle));
+    let s = attack(s0);
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    expect(s.players[opp].bench[0]!.damage).toBe(0);
+  });
+
+  test('a Benched Pokémon without such an effect still takes the damage', () => {
+    const fez = 'sv06.5-038';
+    const { s: s0, me, opp } = game({ [fez]: 2, [M.darkness]: 6 }, { [M.dwebble]: 2 });
+    swapActiveTo(s0, me, fez);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, M.darkness);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dwebble));
+    let s = attack(s0);
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    const hp = (registry.defs[M.dwebble] as { hp: number }).hp;
+    expect(s.players[opp].bench[0]?.damage ?? hp).toBeGreaterThanOrEqual(Math.min(100, hp));
+  });
+
+  test('Lucky Helmet still draws 2 when the attack that damaged its Active Pokémon then switches it out', () => {
+    const rhyhorn = 'sv03.5-111';
+    const fighting = 'mee-006';
+    const {
+      s: s0,
+      me,
+      opp,
+    } = game({ [rhyhorn]: 2, [fighting]: 6 }, { [M.megaKangaskhan]: 2, [M.luckyHelmet]: 2 });
+    swapActiveTo(s0, me, rhyhorn);
+    attachFromDeck(s0, me, fighting);
+    attachFromDeck(s0, me, fighting);
+    swapActiveTo(s0, opp, M.megaKangaskhan);
+    benchFromHand(s0, opp, giveCard(s0, opp, M.dreepy));
+    const helmet = inHand(s0, opp, M.luckyHelmet);
+    s0.players[opp].hand = s0.players[opp].hand.filter((u) => u !== helmet);
+    s0.players[opp].active!.tool = helmet;
+    const hand = s0.players[opp].hand.length;
+    let s = attack(s0); // Push Down: 20 damage, then the opponent switches
+    s = pickSlot(s, { player: opp, zone: 'bench', index: 0 });
+    expect(s.cards[s.players[opp].active!.stack[0]!]!.defId).toBe(M.dreepy);
+    // 2 from Lucky Helmet, then the draw that starts their turn.
+    expect(s.players[opp].hand.length).toBe(hand + 2 + 1);
+  });
+
+  test("Dunsparce's Dig (heads) prevents the effects of attacks too, not just damage", () => {
+    const volcanion = 'me01-025';
+    let checked = false;
+    for (let seed = 1; seed <= 20 && !checked; seed++) {
+      const {
+        s: s0,
+        me,
+        opp,
+      } = game({ [M.dunsparce]: 2, [M.darkness]: 6 }, { [volcanion]: 2, [M.fire]: 6 }, { seed: seed });
+      swapActiveTo(s0, me, M.dunsparce);
+      attachFromDeck(s0, me, M.darkness);
+      attachFromDeck(s0, me, M.darkness);
+      swapActiveTo(s0, opp, volcanion);
+      attachFromDeck(s0, opp, M.fire);
+      let s = attack(s0, 1); // Dig
+      if (!s.players[me].active!.markers.some((m) => m.kind === 'preventDamage')) continue; // tails
+      checked = true;
+      expect(s.current).toBe(opp);
+      const before = s.log.length;
+      s = attack(s); // Singe: "Your opponent's Active Pokémon is now Burned."
+      // (Checked in the log: a Pokémon Checkup flip could cure a Burn that did land.)
+      expect(s.log.slice(before).map((e) => e.text)).not.toContain('Dunsparce is now Burned');
+      expect(s.players[me].active!.conditions.burned).toBe(false);
+    }
+    expect(checked).toBe(true);
+  });
+
+  test("Dunsparce's Dig (heads) also stops the opponent's attacks from switching it out", () => {
+    const rhyhorn = 'sv03.5-111';
+    const fighting = 'mee-006';
+    let checked = false;
+    for (let seed = 1; seed <= 20 && !checked; seed++) {
+      const {
+        s: s0,
+        me,
+        opp,
+      } = game({ [M.dunsparce]: 2, [M.darkness]: 6 }, { [rhyhorn]: 2, [fighting]: 6 }, { seed });
+      swapActiveTo(s0, me, M.dunsparce);
+      attachFromDeck(s0, me, M.darkness);
+      attachFromDeck(s0, me, M.darkness);
+      benchFromHand(s0, me, giveCard(s0, me, M.dreepy));
+      swapActiveTo(s0, opp, rhyhorn);
+      attachFromDeck(s0, opp, fighting);
+      attachFromDeck(s0, opp, fighting);
+      let s = attack(s0, 1); // Dig
+      if (!s.players[me].active!.markers.some((m) => m.kind === 'preventDamage')) continue; // tails
+      checked = true;
+      s = attack(s); // Push Down
+      if (s.prompt?.player === me) s = pickSlot(s, { player: me, zone: 'bench', index: 0 });
+      expect(s.cards[s.players[me].active!.stack[0]!]!.defId).toBe(M.dunsparce);
+    }
+    expect(checked).toBe(true);
+  });
+
+  test("Magneton's Junk Magnet can take Pokémon Tools (they are Item cards)", () => {
+    const magneton = 'sv03.5-082';
+    const { s: s0, me } = game({ [magneton]: 2, [M.luckyHelmet]: 2, [M.lightning]: 6 }, {});
+    swapActiveTo(s0, me, magneton);
+    const cost = (registry.defs[magneton] as { attacks: { cost: unknown[] }[] }).attacks[0]!.cost;
+    for (let i = 0; i < cost.length; i++) attachFromDeck(s0, me, M.lightning);
+    const helmet = inHand(s0, me, M.luckyHelmet);
+    s0.players[me].hand = s0.players[me].hand.filter((u) => u !== helmet);
+    s0.players[me].discard.push(helmet);
+    const s = attack(s0);
+    const offered = (s.prompt?.options ?? []).map((o) => o.uid && s.cards[o.uid]!.defId);
+    expect(offered).toContain(M.luckyHelmet);
+  });
+
+  test('Pokémon Tools are Items: they cannot be played while Items are locked', () => {
+    const { s: s0, me, opp } = game({ [M.budew]: 2 }, { [M.luckyHelmet]: 4 });
+    swapActiveTo(s0, me, M.budew);
+    giveCard(s0, opp, M.luckyHelmet);
+    const s = attack(s0);
+    expect(s.current).toBe(opp);
+    const tools = engine
+      .getLegalActions(s, opp)
+      .filter((a) => a.type === 'playTrainer' && s.cards[a.uid]!.defId === M.luckyHelmet);
+    expect(tools).toEqual([]);
+  });
+
+  test('Eri can discard Pokémon Tools (they are Item cards)', () => {
+    const { s: s0, me, opp } = game({ [ERI]: 2 }, { [M.luckyHelmet]: 2 });
+    giveCard(s0, opp, M.luckyHelmet);
+    const s = act(engine, s0, { type: 'playTrainer', uid: inHand(s0, me, ERI) });
+    const offered = (s.prompt?.options ?? []).map((o) => o.uid && s.cards[o.uid]!.defId);
+    expect(offered).toContain(M.luckyHelmet);
+  });
+
+  test("Special Red Card shuffles the opponent's hand before putting it on the bottom of their deck", () => {
+    let shuffled = false;
+    for (let seed = 1; seed <= 6 && !shuffled; seed++) {
+      const { s: s0, me, opp } = game({ [M.redCard]: 2 }, { [M.redCard]: 2 }, { seed });
+      s0.players[opp].prizes.splice(3);
+      const hand = [...s0.players[opp].hand];
+      const s = act(engine, s0, { type: 'playTrainer', uid: inHand(s0, me, M.redCard) });
+      const bottom = s.players[opp].deck.slice(-hand.length);
+      expect([...bottom].sort()).toEqual([...hand].sort());
+      if (bottom.join() !== hand.join()) shuffled = true;
+    }
+    expect(shuffled).toBe(true);
+  });
+});
