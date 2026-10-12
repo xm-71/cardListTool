@@ -38,6 +38,7 @@ test('a new profile starts with 500 credits and nothing else', () => {
     binders: [],
     collectorMode: false,
     gym: { badges: [], run: null, hallOfFame: [] },
+    frontier: { run: null, hallOfFame: [] },
   });
 });
 
@@ -189,6 +190,7 @@ describe('intro fields', () => {
       binders: [],
       collectorMode: false,
       gym: { badges: [], run: null, hallOfFame: [] },
+      frontier: { run: null, hallOfFame: [] },
     });
   });
 

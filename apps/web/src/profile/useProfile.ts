@@ -12,6 +12,22 @@ import {
   type Payout,
   type RunDeck,
 } from '../game/gym.ts';
+import type { EnergyType } from '@ptcg/engine';
+import { DECKS } from '../game/catalog.ts';
+import type { RunCards } from '../game/frontier/deck.ts';
+import {
+  abandon,
+  beginFight,
+  chooseStarter,
+  keepableCards,
+  newRun,
+  payout,
+  recordResult,
+  skipOffer,
+  takeOffer,
+  type FrontierRun,
+} from '../game/frontier/run.ts';
+import { addToHall, type FrontierPayout } from '../game/frontier/save.ts';
 import { MAX_BINDERS } from './binders.ts';
 import { newProfile, type CustomBinder, type CustomDeck, type Profile, type ProfileStore } from './types.ts';
 
@@ -109,6 +125,29 @@ interface ProfileState {
   beginEliteMatch(stage: number): Promise<void>;
   /** Ends a run whose match was started but never finished (the player quit or reloaded). */
   abandonUnfinishedRun(): Promise<void>;
+  /** Starts a Battle Frontier run (does nothing while a run, even a finished unclaimed one, exists). */
+  startFrontierRun(): Promise<void>;
+  chooseFrontierStarter(id: string): Promise<void>;
+  /** A Frontier fight is starting: leaving it before it ends will count as a loss. */
+  beginFrontierMatch(): Promise<void>;
+  /**
+   * Records a finished Frontier fight once per game seed, and only for the run's current fight while it is in
+   * progress (a result from another tab for a fight the run has left is ignored).
+   */
+  recordFrontier(o: {
+    seed: number;
+    fight: number;
+    won: boolean;
+    draw: boolean;
+  }): Promise<FrontierPayout | undefined>;
+  takeFrontierOffer(index: number, cut: RunCards, energyTypes?: EnergyType[]): Promise<void>;
+  skipFrontierOffer(): Promise<void>;
+  /** Ends the run as a loss; it is claimed (and paid) with `endFrontierRun`. */
+  abandonFrontierRun(): Promise<void>;
+  /** Claims a finished run: pays its credits, adds the kept card, records a clear in the Hall of Fame. */
+  endFrontierRun(keepCardId: string | null): Promise<{ credits: number } | undefined>;
+  /** A Frontier fight that was started but never recorded (quit or reload) counts as a loss. */
+  settleUnfinishedFrontierMatch(): Promise<void>;
   saveDeck(deck: CustomDeck): Promise<void>;
   deleteDeck(id: string): Promise<void>;
   /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
@@ -159,6 +198,13 @@ export const useProfile = create<ProfileState>()((set, get) => {
     queue = run.catch(() => undefined);
     return run;
   };
+  /** Applies `fn` to the saved Frontier run (no-op when there is none or `fn` returns null). */
+  const changeRun = (fn: (r: FrontierRun) => FrontierRun | null) =>
+    change((p) => {
+      const r = p.frontier.run;
+      const next = r ? fn(r) : null;
+      return next ? { next: { ...p, frontier: { ...p.frontier, run: next } }, result: undefined } : null;
+    });
   return {
     profile: newProfile(),
     persistent: false,
@@ -257,6 +303,76 @@ export const useProfile = create<ProfileState>()((set, get) => {
         const gym = beginMatch(p.gym, stage);
         return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
       });
+    },
+    async startFrontierRun() {
+      await change((p) =>
+        p.frontier.run
+          ? null
+          : { next: { ...p, frontier: { ...p.frontier, run: newRun(randomSeed()) } }, result: undefined },
+      );
+    },
+    async chooseFrontierStarter(id) {
+      await changeRun((r) => (r.phase === 'starter' ? chooseStarter(r, id) : null));
+    },
+    async beginFrontierMatch() {
+      await changeRun((r) => (r.phase === 'hub' && !r.inMatch ? beginFight(r) : null));
+    },
+    async recordFrontier({ seed, fight, won, draw }) {
+      const outcome = draw ? 'draw' : won ? 'win' : 'loss';
+      return change((p) => {
+        const r = p.frontier.run;
+        if (p.awardedGames.includes(seed)) return null;
+        const awardedGames = [...p.awardedGames, seed].slice(-AWARD_HISTORY);
+        if (!r || r.phase !== 'hub' || !r.inMatch || r.fight !== fight) {
+          const stale: FrontierPayout = {
+            counted: false,
+            outcome,
+            lives: r?.lives ?? 0,
+            phase: r?.phase ?? 'over',
+          };
+          return { next: { ...p, awardedGames }, result: stale };
+        }
+        const run = recordResult(r, outcome);
+        return {
+          next: { ...p, awardedGames, frontier: { ...p.frontier, run } },
+          result: { counted: true, outcome, lives: run.lives, phase: run.phase },
+        };
+      });
+    },
+    async takeFrontierOffer(index, cut, energyTypes) {
+      await changeRun((r) => takeOffer(r, index, cut, energyTypes));
+    },
+    async skipFrontierOffer() {
+      await changeRun((r) => skipOffer(r));
+    },
+    async abandonFrontierRun() {
+      await changeRun((r) => (r.phase === 'over' ? null : abandon(r)));
+    },
+    async endFrontierRun(keepCardId) {
+      return change((p) => {
+        const r = p.frontier.run;
+        if (!r || r.phase !== 'over') return null;
+        const credits = payout(r);
+        const collection = { ...p.collection };
+        if (keepCardId && keepableCards(r).includes(keepCardId))
+          collection[keepCardId] = (collection[keepCardId] ?? 0) + 1;
+        const hallOfFame = r.cleared
+          ? addToHall(p.frontier.hallOfFame, {
+              date: new Date().toISOString().slice(0, 10),
+              playerName: p.playerName ?? 'PLAYER',
+              deckName: DECKS.find((d) => d.id === r.starterId)?.name ?? 'Frontier deck',
+              cover: r.cover,
+              livesLeft: r.lives,
+            })
+          : p.frontier.hallOfFame;
+        return {
+          next: { ...p, credits: p.credits + credits, collection, frontier: { run: null, hallOfFame } },
+          result: { credits },
+        };
+      });
+    },
+    async settleUnfinishedFrontierMatch() {
+      await changeRun((r) => (r.phase === 'hub' && r.inMatch ? recordResult(r, 'loss') : null));
     },
     async abandonUnfinishedRun() {
       await change((p) => {

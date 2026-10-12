@@ -1,4 +1,5 @@
 import { CREDITS } from '@ptcg/economy';
+import { emptyFrontier, normalizeFrontier, type FrontierProgress } from '../game/frontier/save.ts';
 import { emptyGym, normalizeGym, type GymProgress } from '../game/gym.ts';
 import { MAX_BINDERS, normalizeBinder } from './binders.ts';
 
@@ -50,6 +51,8 @@ export interface Profile {
   collectorMode: boolean;
   /** Kanto Gym Challenge progress. */
   gym: GymProgress;
+  /** Battle Frontier run and Hall of Fame. */
+  frontier: FrontierProgress;
 }
 
 /** Where a profile lives. IndexedDB today; a server once accounts exist. */
@@ -71,6 +74,7 @@ export function newProfile(): Profile {
     binders: [],
     collectorMode: false,
     gym: emptyGym(),
+    frontier: emptyFrontier(),
   };
 }
 
@@ -88,5 +92,6 @@ export function normalizeProfile(raw: Partial<Profile> & { version: 1 }): Profil
     binders,
     collectorMode: raw.collectorMode === true,
     gym: normalizeGym(raw.gym),
+    frontier: normalizeFrontier(raw.frontier),
   };
 }
