@@ -1,10 +1,10 @@
-import { createEasyBot, createMediumBot, type Bot } from '@ptcg/bots';
+import { createEasyBot, createHardBot, createMediumBot, type Bot } from '@ptcg/bots';
 import type { Action, DeckList, PlayerId, PlayerView } from '@ptcg/engine';
 import { registry } from './catalog.ts';
 
 /** Everything a bot needs to know about the game it plays in. */
 export interface BotSetup {
-  difficulty: 'easy' | 'medium';
+  difficulty: 'easy' | 'medium' | 'hard';
   /** Decklists for seat 0 and seat 1 (public in this game: both are picked on the home screen). */
   decks: [DeckList, DeckList];
   seat: PlayerId;
@@ -27,9 +27,11 @@ export function botFor(): (setup: BotSetup) => Bot {
     let bot = cache.get(key);
     if (!bot) {
       bot =
-        setup.difficulty === 'medium'
-          ? createMediumBot(registry, setup.decks, setup.seat)
-          : createEasyBot(registry);
+        setup.difficulty === 'hard'
+          ? createHardBot(registry, setup.decks, setup.seat)
+          : setup.difficulty === 'medium'
+            ? createMediumBot(registry, setup.decks, setup.seat)
+            : createEasyBot(registry);
       cache.set(key, bot);
     }
     return bot;

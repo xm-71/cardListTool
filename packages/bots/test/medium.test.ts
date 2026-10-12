@@ -160,3 +160,21 @@ describe('bots never concede', () => {
     expect(() => easy(engine.viewFor(s, s.current), [{ type: 'concede' }], 1)).toThrow(/concede/);
   });
 });
+
+describe('medium bot refactor guard', () => {
+  test('plays exactly as before the search.ts refactor', () => {
+    const decks: [DeckList, DeckList] = [megaGengarDeck, megaDiancieDeck];
+    const out = [2001, 2002, 2003].map((seed) => {
+      const mediumSeat = (seed % 2) as 0 | 1;
+      const medium = createMediumBot(registry, decks, mediumSeat, 2);
+      const bots: [typeof easy, typeof easy] = mediumSeat === 0 ? [medium, easy] : [easy, medium];
+      const r = runMatch({ engine, decks, seed, bots });
+      return [r.actions, r.turns, r.result?.winner];
+    });
+    expect(out).toEqual([
+      [169, 33, 1],
+      [131, 20, 0],
+      [219, 39, 1],
+    ]);
+  }, 120_000);
+});

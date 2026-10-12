@@ -2,9 +2,11 @@ import { act as rtlAct, fireEvent, render, screen, waitFor, within } from '@test
 import { beforeEach, describe, expect, test } from 'vitest';
 import type { SlotView as SlotViewData } from '@ptcg/engine';
 import { megaLucarioDeck, megaVenusaurDeck } from '@ptcg/cards';
+import { createEngine } from '@ptcg/engine';
 import { App } from '../src/App.tsx';
+import { registry } from '../src/game/catalog.ts';
 import type { BotClient, BotSetup } from '../src/game/botClient.ts';
-import { createSyncBotClient } from '../src/game/botClient.ts';
+import { botFor, createSyncBotClient } from '../src/game/botClient.ts';
 import { useGame } from '../src/game/store.ts';
 import { SlotView } from '../src/ui/SlotView.tsx';
 
@@ -100,6 +102,54 @@ describe('Home deck picker', () => {
     );
     expect(seen[0]).toMatchObject({ difficulty: 'medium', seat: 1 });
     expect(seen[0]!.decks).toHaveLength(2);
+  }, 20000);
+
+  test('choosing the Hard bot sends difficulty "hard", decks and seat to the bot', async () => {
+    const seen: BotSetup[] = [];
+    const sync = createSyncBotClient();
+    const spy: BotClient = {
+      choose: (view, legal, rng, setup) => {
+        seen.push(setup);
+        // Answer with the cheap bot: this test is about what is sent, not how long Hard thinks.
+        return sync.choose(view, legal, rng, { ...setup, difficulty: 'easy' });
+      },
+    };
+    render(<App startAt="duel" botClient={spy} botDelayMs={0} />);
+    fireEvent.click(screen.getByLabelText('Hard bot'));
+    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
+    await waitFor(
+      () => {
+        const st = useGame.getState().state!;
+        if (st.prompt?.player === 0) {
+          const pr = st.prompt;
+          rtlAct(() =>
+            useGame.getState().dispatch(0, {
+              type: 'answer',
+              optionId: pr.selected.length >= pr.min ? 'done' : pr.options[0]!.id,
+            }),
+          );
+        } else if (st.phase === 'main' && st.current === 0 && !st.prompt) {
+          rtlAct(() => useGame.getState().dispatch(0, { type: 'endTurn' }));
+        }
+        expect(seen.length).toBeGreaterThan(0);
+      },
+      { timeout: 15000 },
+    );
+    expect(seen[0]).toMatchObject({ difficulty: 'hard', seat: 1 });
+    expect(seen[0]!.decks).toHaveLength(2);
+  }, 20000);
+
+  test('botFor builds a Hard bot that picks a legal move', () => {
+    const engine = createEngine(registry);
+    const decks: [typeof megaLucarioDeck, typeof megaLucarioDeck] = [megaLucarioDeck, megaLucarioDeck];
+    let s = engine.createGame({ decks, seed: 3 });
+    const player = s.prompt ? s.prompt.player : s.current;
+    const legal = engine.getLegalActions(s, player);
+    const bot = botFor()({ difficulty: 'hard', decks, seat: player });
+    const out = bot(engine.viewFor(s, player), legal, 5);
+    expect(legal).toContainEqual(out.action);
+    s = engine.applyAction(s, player, out.action).state;
+    expect(s).toBeDefined();
   }, 20000);
 });
 

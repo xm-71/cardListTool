@@ -49,7 +49,7 @@ export interface Opponent {
   /** Type shown on the tile. */
   type: string;
   deck: GymDeckId;
-  difficulty: 'easy' | 'medium';
+  difficulty: 'easy' | 'medium' | 'hard';
   intro: string;
   win: string;
   lose: string;

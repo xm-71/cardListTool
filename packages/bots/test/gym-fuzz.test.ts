@@ -20,6 +20,7 @@ import {
   metaSlowkingDeck,
 } from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
+import { createHardBot } from '../src/hard.ts';
 import { runMatch } from '../src/runMatch.ts';
 
 const registry = buildRegistry();
@@ -73,6 +74,27 @@ describe('Gym decks play Easy-bot games to completion against the starter and th
               );
             }
           }
+    },
+    240_000,
+  );
+});
+
+describe('Hard-piloted Gym decks play to completion', () => {
+  test.each(Object.entries(GYM_DECKS).map(([id, deck], i) => [id, deck, i] as const))(
+    '%s piloted by Hard finishes a game with no invariant violations',
+    async (id, deck, i) => {
+      await yieldToWorker();
+      const [name, opp] = OPPONENTS[i % OPPONENTS.length]!;
+      const seat = (i % 2) as 0 | 1;
+      const decks = (seat === 0 ? [deck, opp] : [opp, deck]) as [DeckList, DeckList];
+      const hard = createHardBot(registry, decks, seat, { maxRounds: 1, now: () => 0 });
+      const bots: [typeof bot, typeof bot] = seat === 0 ? [hard, bot] : [bot, hard];
+      const r = runMatch({ engine, decks, seed: 9000 + i, bots });
+      if (r.violations.length || !r.result || r.result.reason === 'concede') {
+        throw new Error(
+          `Hard with ${id} vs ${name} (seat ${seat}): result=${JSON.stringify(r.result)} actions=${r.actions} violations=${r.violations.slice(0, 3).join('; ')}`,
+        );
+      }
     },
     240_000,
   );
