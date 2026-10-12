@@ -89,7 +89,7 @@ test('picking a starter shows the hub: lives, the 1-8 fight track with a boss ma
 test('the boss card names the Frontier Brain', async () => {
   await launch('frontier', { frontier: { run: hub(7), hallOfFame: [] } });
   const card = await screen.findByRole('region', { name: 'Next opponent' });
-  expect(within(card).getByText(new RegExp(run()!.opponents[7]!.brain!))).toBeInTheDocument();
+  expect(within(card).getByText(`Frontier Brain ${run()!.opponents[7]!.brain!}`)).toBeInTheDocument();
   expect(within(card).getByText(/Hard bot/)).toBeInTheDocument();
 });
 

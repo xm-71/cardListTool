@@ -7,6 +7,8 @@ import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
 import { FightTrack } from '../ui/frontier/FightTrack.tsx';
 import { OpponentCard } from '../ui/frontier/OpponentCard.tsx';
+import { RewardPanel } from '../ui/frontier/RewardPanel.tsx';
+import { FrontierHall, RunEnd } from '../ui/frontier/RunEnd.tsx';
 import { RunDeckView } from '../ui/frontier/RunDeckView.tsx';
 import { Box, Button } from '../ui/retro/index.ts';
 
@@ -27,13 +29,18 @@ export function BattleFrontier() {
         </p>
       </Box>
       {!run ? (
-        <NoRun />
+        <>
+          <NoRun />
+          <FrontierHall />
+        </>
       ) : run.phase === 'starter' ? (
         <StarterPick run={run} />
       ) : run.phase === 'hub' ? (
         <Hub run={run} />
+      ) : run.phase === 'reward' ? (
+        <RewardPanel key={run.fight} run={run} />
       ) : (
-        <p className="text-xl">{run.phase === 'reward' ? 'Choose your reward.' : 'The run is over.'}</p>
+        <RunEnd run={run} />
       )}
     </ScreenFrame>
   );

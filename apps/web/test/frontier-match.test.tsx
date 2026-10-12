@@ -73,7 +73,7 @@ test('a finished frontier game shows the Frontier panel, not the Gym game-over s
   await act(() => startFrontierMatch());
   act(() => useGame.getState().dispatch(1, { type: 'concede' }));
   const over = await screen.findByRole('dialog', { name: 'Game over' });
-  expect(within(over).getByRole('button', { name: /Battle Frontier/ })).toBeInTheDocument();
+  expect(within(over).getByRole('button', { name: 'Continue' })).toBeInTheDocument();
   expect(within(over).queryByText(/Badge/)).toBeNull();
 });
 

@@ -20,12 +20,13 @@ import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
 import { CardZoom } from './ui/CardZoom.tsx';
+import { FrontierGameOver } from './ui/FrontierGameOver.tsx';
 import { GymGameOver } from './ui/GymGameOver.tsx';
 import { validateGymDeck } from '@ptcg/economy';
 import { deckSources, registry } from './game/catalog.ts';
+import { startFrontierMatch } from './game/frontierMatch.ts';
 import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
-import { Button } from './ui/retro/index.ts';
 import { useShownState } from './game/animation/director.ts';
 
 interface Props {
@@ -75,6 +76,7 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
   const credits = useGameAward();
   const gymPayout = useGymResult();
   const frontierPayout = useFrontierResult();
+  const frontierRun = useProfile((s) => s.profile.frontier.run);
 
   if (error) return <ErrorScreen error={error} onHome={reset} />;
   if (!state || !config)
@@ -99,16 +101,15 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
       <GameScreen viewer={viewer} />
       <CardZoom />
       {state.result && config.context?.kind === 'frontier' && (
-        <div
-          role="dialog"
-          aria-label="Game over"
-          className="fixed inset-0 z-40 flex items-center justify-center bg-ink-fixed/70 p-6"
-        >
-          <div className="retro-box flex flex-col items-center gap-4 p-6 text-center">
-            <p className="text-2xl">{frontierPayout === undefined ? 'Saving…' : 'The fight is over.'}</p>
-            <Button onClick={reset}>Back to Battle Frontier</Button>
-          </div>
-        </div>
+        <FrontierGameOver
+          context={config.context}
+          result={state.result}
+          human={human}
+          run={frontierRun}
+          payout={frontierPayout}
+          onBack={reset}
+          onRetry={() => void startFrontierMatch()}
+        />
       )}
       {state.result && config.context && config.context.kind !== 'frontier' && (
         <GymGameOver

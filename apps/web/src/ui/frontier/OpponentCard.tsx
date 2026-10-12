@@ -1,5 +1,5 @@
 import { registry } from '../../game/catalog.ts';
-import type { FrontierOpponent } from '../../game/frontier/opponents.ts';
+import { FRONTIER_BRAINS, type FrontierOpponent } from '../../game/frontier/opponents.ts';
 
 const BOT = { easy: 'Easy bot', medium: 'Medium bot', hard: 'Hard bot' } as const;
 
@@ -25,6 +25,7 @@ export function OpponentCard({ opponent, fight }: { opponent: FrontierOpponent; 
           {opponent.type} · {BOT[opponent.difficulty]}
         </p>
       </div>
+      {opponent.brain && <q className="w-full text-xl">{FRONTIER_BRAINS[opponent.id]?.intro}</q>}
     </section>
   );
 }
