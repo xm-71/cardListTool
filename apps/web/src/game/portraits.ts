@@ -45,7 +45,7 @@ function shade(hex: string, amount = 0.82): string {
   return `#${ch(16)}${ch(8)}${ch(0)}`;
 }
 
-/** The 13 characters: 8 gym leaders, the Elite Four and the Champion. */
+/** The characters: the 8 Kanto gym leaders, the Elite Four and the Champion, and the Johto gym leaders. */
 export const LOOKS: Record<string, Look> = {
   brock: {
     bg: '#b88a52',
@@ -208,6 +208,54 @@ export const LOOKS: Record<string, Look> = {
     accent: '#f0c030',
     topStyle: 'shirt',
     extras: ['necklace'],
+  },
+  falkner: {
+    bg: '#8ec8f0',
+    skin: '#e8b890',
+    hair: '#2a3a5a',
+    hairStyle: 'slick',
+    eyes: 'bright',
+    eyeColor: '#2a5a9a',
+    mouth: 'smile',
+    top: '#f8f0d0',
+    trim: '#d84848',
+    topStyle: 'vest',
+  },
+  bugsy: {
+    bg: '#9acd5a',
+    skin: '#f0c8a0',
+    hair: '#7aa832',
+    hairStyle: 'bob',
+    eyes: 'glasses',
+    mouth: 'smile',
+    top: '#4f8a3c',
+    trim: '#e8e060',
+    topStyle: 'shirt',
+  },
+  whitney: {
+    bg: '#f4a8c8',
+    skin: '#f3c9a0',
+    hair: '#f06fa0',
+    hairStyle: 'long',
+    eyes: 'bright',
+    eyeColor: '#c8407a',
+    mouth: 'smile',
+    top: '#f8d0e0',
+    trim: '#e8508c',
+    accent: '#f6e04a',
+    topStyle: 'dress',
+    extras: ['lashes', 'hairpin'],
+  },
+  morty: {
+    bg: '#8a6ab8',
+    skin: '#e0b890',
+    hair: '#e8d070',
+    hairStyle: 'spiky',
+    eyes: 'slit',
+    mouth: 'smirk',
+    top: '#5a3a8a',
+    trim: '#d8d8f8',
+    topStyle: 'robe',
   },
 };
 

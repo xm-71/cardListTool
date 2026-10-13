@@ -209,10 +209,97 @@ export const ELITE: readonly Opponent[] = [
   },
 ];
 
+/** Johto, unlocked by beating the Kanto Champion. Leaders are fought in this order, like Kanto's. */
+export type Region = 'kanto' | 'johto';
+
+export const JOHTO_LEADERS: readonly Opponent[] = [
+  {
+    id: 'falkner',
+    name: 'Falkner',
+    badge: 'Zephyr',
+    type: 'Flying',
+    deck: 'falkner',
+    difficulty: 'medium',
+    intro:
+      "I'm Falkner, the Violet City Gym Leader! People say Flying-type Pokémon are weak, but I'll show you the glory of the elegant bird Pokémon!",
+    win: "...I understand. I'll admit that you won fair and square. Take the Zephyr Badge!",
+    lose: 'Hmm, I knew it. Flying-type Pokémon are the best! Come back when your skills have improved!',
+  },
+  {
+    id: 'bugsy',
+    name: 'Bugsy',
+    badge: 'Hive',
+    type: 'Grass + Metal',
+    deck: 'bugsy',
+    difficulty: 'medium',
+    intro:
+      "I'm Bugsy! I never lose when it comes to Bug Pokémon. My research is going to make me the authority on Bug Pokémon!",
+    win: "Wow, amazing! You're an expert on Pokémon! My research isn't complete yet. OK, you win. Take the Hive Badge!",
+    lose: 'Bug Pokémon are fascinating, and you have a lot more to learn about them. Come back and try again!',
+  },
+  {
+    id: 'whitney',
+    name: 'Whitney',
+    badge: 'Plain',
+    type: 'Normal',
+    deck: 'whitney',
+    difficulty: 'hard',
+    intro: "Hi! I'm Whitney! Everyone thinks my Pokémon are super cute! Are you going to be a crybaby?",
+    win: '...Sniff... What? Waaaaah! You meanie! All right, all right, take the Plain Badge!',
+    lose: "Yay, I won! Didn't I tell you my Pokémon were the best? Come back when you're tougher!",
+  },
+  {
+    id: 'morty',
+    name: 'Morty',
+    badge: 'Fog',
+    type: 'Darkness',
+    deck: 'morty',
+    difficulty: 'hard',
+    intro:
+      "I see a bright future for myself! I'm Morty, the Ecruteak Gym Leader. Let me show you the power I've gained from my training!",
+    win: "I'm not good enough yet... All right. The Fog Badge is yours.",
+    lose: 'I knew it. The Ghost Pokémon I trained with are far from done with you. Come back stronger!',
+  },
+];
+
+/** The four Johto leaders that come in a later update: shown as "Coming soon". */
+export const JOHTO_UPCOMING: readonly { id: string; name: string; type: string }[] = [
+  { id: 'chuck', name: 'Chuck', type: 'Fighting' },
+  { id: 'jasmine', name: 'Jasmine', type: 'Metal' },
+  { id: 'pryce', name: 'Pryce', type: 'Water' },
+  { id: 'clair', name: 'Clair', type: 'Dragon' },
+];
+
+/** Places in the Johto badge case: the built leaders plus the upcoming ones. */
+export const JOHTO_TOTAL = JOHTO_LEADERS.length + JOHTO_UPCOMING.length;
+
+export const leadersOf = (region: Region): readonly Opponent[] =>
+  region === 'johto' ? JOHTO_LEADERS : LEADERS;
+
+/** A Gym Leader of either region by id. */
+export const findLeader = (id: string): Opponent | undefined =>
+  LEADERS.find((l) => l.id === id) ?? JOHTO_LEADERS.find((l) => l.id === id);
+
+export const regionOf = (id: string): Region | null =>
+  LEADERS.some((l) => l.id === id) ? 'kanto' : JOHTO_LEADERS.some((l) => l.id === id) ? 'johto' : null;
+
+/** Johto opens once the Kanto Champion has been beaten (a Hall of Fame entry exists). */
+export const johtoUnlocked = (g: GymProgress): boolean => g.hallOfFame.length > 0;
+
+/** Johto badge rewards are Mega Evolution era packs. */
+export const JOHTO_PACK_SET = 'me02';
+
+/** Credits for a first Johto badge: 150, plus 25 for each later gym. Each also gives one Mega Evolution pack. */
+export const johtoBadgeReward = (gymIndex: number): Payout => ({
+  credits: 150 + 25 * gymIndex,
+  packs: 1,
+  set: JOHTO_PACK_SET,
+});
+
 export const CHAMPION_STAGE = ELITE.length - 1;
 
 /** Credits for a first badge: 100 for Brock, plus 25 for each later gym. Each also gives one 151 pack. */
-export const badgeReward = (gymIndex: number): { credits: number; packs: number } => ({
+export const badgeReward = (gymIndex: number): Payout => ({
   credits: 100 + 25 * gymIndex,
   packs: 1,
 });
@@ -221,27 +308,29 @@ export const badgeReward = (gymIndex: number): { credits: number; packs: number 
 export const championReward = (first: boolean): { credits: number; packs: number } =>
   first ? { credits: 1000, packs: 3 } : { credits: 300, packs: 1 };
 
-/** How many gyms have been beaten in order (the index of the next gym; 8 when all are beaten). */
-export function nextGymIndex(badges: readonly string[]): number {
+/** How many gyms of a region (Kanto by default) have been beaten in order (the index of the next gym). */
+export function nextGymIndex(badges: readonly string[], leaders: readonly Opponent[] = LEADERS): number {
   let i = 0;
-  while (i < LEADERS.length && badges.includes(LEADERS[i]!.id)) i++;
+  while (i < leaders.length && badges.includes(leaders[i]!.id)) i++;
   return i;
 }
 
 export type GymStatus = 'beaten' | 'next' | 'locked';
 
 export function gymStatus(badges: readonly string[], leaderId: string): GymStatus {
-  const index = LEADERS.findIndex((l) => l.id === leaderId);
-  if (index < 0) return 'locked';
+  const region = regionOf(leaderId);
+  if (!region) return 'locked';
+  const leaders = leadersOf(region);
   if (badges.includes(leaderId)) return 'beaten';
-  return index === nextGymIndex(badges) ? 'next' : 'locked';
+  return leaders.findIndex((l) => l.id === leaderId) === nextGymIndex(badges, leaders) ? 'next' : 'locked';
 }
 
 /** Only the next unbeaten gym, or any beaten one (a rematch), can be challenged. */
 export const canChallenge = (badges: readonly string[], leaderId: string): boolean =>
   gymStatus(badges, leaderId) !== 'locked';
 
-export const canStartElite = (badges: readonly string[]): boolean => nextGymIndex(badges) === LEADERS.length;
+export const canStartElite = (badges: readonly string[]): boolean =>
+  nextGymIndex(badges, LEADERS) === LEADERS.length;
 
 /** The most common Basic Energy type in a deck, or null when it has none. */
 export function mainEnergyType(
@@ -274,6 +363,8 @@ export function championDeckFor(main: EnergyType | null): GymDeckId {
 export interface Payout {
   credits: number;
   packs: number;
+  /** The set the packs come from; the 151 set when absent. */
+  set?: string;
 }
 
 /**
@@ -285,11 +376,14 @@ export function applyGymResult(
   leaderId: string,
   won: boolean,
 ): { next: GymProgress; reward: Payout | null } {
-  const index = LEADERS.findIndex((l) => l.id === leaderId);
-  if (!won || index < 0 || g.badges.includes(leaderId) || index !== nextGymIndex(g.badges)) {
+  const region = regionOf(leaderId);
+  const leaders = region ? leadersOf(region) : LEADERS;
+  const index = leaders.findIndex((l) => l.id === leaderId);
+  if (!won || !region || g.badges.includes(leaderId) || index !== nextGymIndex(g.badges, leaders)) {
     return { next: g, reward: null };
   }
-  return { next: { ...g, badges: [...g.badges, leaderId] }, reward: badgeReward(index) };
+  const reward = region === 'johto' ? johtoBadgeReward(index) : badgeReward(index);
+  return { next: { ...g, badges: [...g.badges, leaderId] }, reward };
 }
 
 /** Starts an Elite Four run with a locked deck (needs all 8 badges); an unfinished run is kept as it is. */
@@ -338,7 +432,7 @@ const isString = (x: unknown): x is string => typeof x === 'string';
 /** Fills in or repairs the saved challenge progress (older profiles have none). */
 export function normalizeGym(raw: unknown): GymProgress {
   const g = (raw ?? {}) as Partial<Record<keyof GymProgress, unknown>>;
-  const ids = new Set(LEADERS.map((l) => l.id));
+  const ids = new Set([...LEADERS, ...JOHTO_LEADERS].map((l) => l.id));
   const badges = Array.isArray(g.badges)
     ? [...new Set(g.badges.filter((b): b is string => isString(b) && ids.has(b)))]
     : [];

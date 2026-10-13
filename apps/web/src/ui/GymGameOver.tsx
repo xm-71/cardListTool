@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GameResult, PlayerId } from '@ptcg/engine';
 import { sfx } from '../audio/sfx.ts';
-import { CHAMPION_STAGE, ELITE, LEADERS } from '../game/gym.ts';
+import { CHAMPION_STAGE, ELITE, findLeader } from '../game/gym.ts';
 import type { GameContext } from '../game/store.ts';
 import type { GymPayout } from '../profile/useProfile.ts';
 import { CharacterPortrait } from './CharacterPortrait.tsx';
@@ -31,8 +31,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
     if (!draw) sfx(won ? 'win' : 'lose');
   }, [won, draw]);
 
-  const opponent =
-    context.kind === 'gym' ? LEADERS.find((l) => l.id === context.leaderId)! : ELITE[context.stage]!;
+  const opponent = context.kind === 'gym' ? findLeader(context.leaderId)! : ELITE[context.stage]!;
   const packs = payout?.packs ?? [];
   const hasMorePacks = opening < packs.length;
   // After a win the run moves to the next opponent; after a draw the same match is replayed.

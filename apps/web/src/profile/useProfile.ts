@@ -62,11 +62,11 @@ export interface GymPayout {
   counted?: boolean;
 }
 
-/** Opens `n` free 151 packs into `collection`, returning each pack's cards. */
-function openRewardPacks(n: number, collection: Record<string, number>): string[][] {
+/** Opens `n` free packs of `set` (the 151 set by default) into `collection`, returning each pack's cards. */
+function openRewardPacks(n: number, collection: Record<string, number>, set: string = GYM_SET): string[][] {
   const packs: string[][] = [];
   for (let i = 0; i < n; i++) {
-    const { cards } = openPack(GYM_SET, setCards(GYM_SET), randomSeed());
+    const { cards } = openPack(set, setCards(set), randomSeed());
     for (const id of cards) collection[id] = (collection[id] ?? 0) + 1;
     packs.push(cards);
   }
@@ -78,7 +78,7 @@ function pay(
   payout: Payout | null,
 ): { collection: Record<string, number>; credits: number; packs: string[][] } {
   const collection = { ...p.collection };
-  const packs = payout ? openRewardPacks(payout.packs, collection) : [];
+  const packs = payout ? openRewardPacks(payout.packs, collection, payout.set) : [];
   return { collection, credits: p.credits + (payout?.credits ?? 0), packs };
 }
 

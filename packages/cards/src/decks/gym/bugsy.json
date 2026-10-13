@@ -1,0 +1,20 @@
+{
+  "name": "Bugsy's Hive Deck",
+  "cards": [
+    { "id": "sv05-001", "count": 4 },
+    { "id": "sv05-111", "count": 3 },
+    { "id": "sv06-008", "count": 4 },
+    { "id": "sv07-002", "count": 4 },
+    { "id": "sv07-003", "count": 3 },
+    { "id": "me01-119", "count": 4 },
+    { "id": "me01-114", "count": 2 },
+    { "id": "me01-131", "count": 3 },
+    { "id": "me01-167", "count": 3 },
+    { "id": "me01-130", "count": 2 },
+    { "id": "me01-173", "count": 2 },
+    { "id": "me01-125", "count": 3 },
+    { "id": "me01-166", "count": 1 },
+    { "id": "mee-001", "count": 12 },
+    { "id": "mee-008", "count": 10 }
+  ]
+}

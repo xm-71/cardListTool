@@ -1,5 +1,5 @@
 import type { GameEvent, PlayerId } from '@ptcg/engine';
-import { ELITE, LEADERS } from './gym.ts';
+import { ELITE, findLeader } from './gym.ts';
 import type { GameConfig } from './store.ts';
 
 /** Who is who, for putting log lines in plain words from one player's side. */
@@ -14,7 +14,7 @@ export interface Names {
 /** The opponent's name: the Gym Leader or Elite Four member, the other seat in hotseat, else "Rival". */
 export function opponentName(config: Pick<GameConfig, 'mode' | 'context'>, viewer: PlayerId): string {
   const ctx = config.context;
-  if (ctx?.kind === 'gym') return LEADERS.find((l) => l.id === ctx.leaderId)?.name ?? 'Rival';
+  if (ctx?.kind === 'gym') return findLeader(ctx.leaderId)?.name ?? 'Rival';
   if (ctx?.kind === 'elite') return ELITE[ctx.stage]?.name ?? 'Rival';
   if (ctx?.kind === 'frontier') return ctx.opponent;
   if (config.mode === 'hotseat') return `Player ${viewer === 0 ? 2 : 1}`;

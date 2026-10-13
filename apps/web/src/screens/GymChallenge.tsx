@@ -6,12 +6,19 @@ import { resolveActiveDeck } from '../game/deckCase.ts';
 import {
   CHAMPION_STAGE,
   ELITE,
+  JOHTO_LEADERS,
+  JOHTO_TOTAL,
+  JOHTO_UPCOMING,
   LEADERS,
   badgeReward,
   canChallenge,
   canStartElite,
   gymStatus,
+  johtoBadgeReward,
+  johtoUnlocked,
+  regionOf,
   type Opponent,
+  type Region,
 } from '../game/gym.ts';
 import { runDeckSource, snapshotOf, startEliteMatch, startGymMatch } from '../game/gymMatch.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
@@ -28,7 +35,104 @@ let resumeSetup: Setup | null = null;
 
 const art = (cover: string) => `${registry.defs[cover]!.image}/low.webp`;
 
-/** The badge case, the Elite Four run and the Hall of Fame. */
+/** One tile per leader; `nextReward` is the first-win line for the gym that is next to be beaten. */
+function LeaderGrid({
+  label,
+  leaders,
+  upcoming = [],
+  reward,
+  onChallenge,
+}: {
+  label: string;
+  leaders: readonly Opponent[];
+  upcoming?: readonly { id: string; name: string; type: string }[];
+  reward(index: number): string;
+  onChallenge(leader: Opponent): void;
+}) {
+  const gym = useProfile((s) => s.profile.gym);
+  return (
+    <ul aria-label={label} className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {leaders.map((leader, i) => {
+        const status = gymStatus(gym.badges, leader.id);
+        return (
+          <li
+            key={leader.id}
+            aria-label={leader.name}
+            className={`retro-box flex flex-col items-center gap-2 p-3 text-center ${status === 'locked' ? 'opacity-60' : ''}`}
+          >
+            <CharacterPortrait id={leader.id} size={80} />
+            <h3 className="font-pixel text-[10px]">{leader.name}</h3>
+            <p className="text-lg">{leader.type}</p>
+            <p className={`font-pixel text-[8px] ${status === 'beaten' ? 'text-green-fg' : 'opacity-70'}`}>
+              {status === 'beaten' ? `★ ${leader.badge} Badge` : `${leader.badge} Badge`}
+            </p>
+            {status === 'next' && <p className="text-base opacity-70">First win: {reward(i)}</p>}
+            <Button
+              disabled={!canChallenge(gym.badges, leader.id)}
+              aria-label={
+                status === 'locked'
+                  ? undefined
+                  : `${status === 'beaten' ? 'Rematch' : 'Challenge'} ${leader.name}`
+              }
+              onClick={() => onChallenge(leader)}
+            >
+              {status === 'beaten' ? 'Rematch' : status === 'next' ? 'Challenge' : 'Locked'}
+            </Button>
+          </li>
+        );
+      })}
+      {upcoming.map((leader) => (
+        <li
+          key={leader.id}
+          aria-label={leader.name}
+          className="retro-box flex flex-col items-center gap-2 p-3 text-center opacity-60"
+        >
+          <div
+            aria-hidden
+            className="flex size-20 items-center justify-center border-4 border-ink font-pixel text-2xl"
+          >
+            ?
+          </div>
+          <h3 className="font-pixel text-[10px]">{leader.name}</h3>
+          <p className="text-lg">{leader.type}</p>
+          <p className="font-pixel text-[8px] opacity-70">Coming soon</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The Johto tab: locked until the Kanto Champion has been beaten. */
+function JohtoGyms({ onChallenge }: { onChallenge(leader: Opponent): void }) {
+  const gym = useProfile((s) => s.profile.gym);
+  if (!johtoUnlocked(gym)) {
+    return (
+      <Box title="Johto">
+        <p className="text-xl">Beat the Kanto Champion to travel to Johto.</p>
+      </Box>
+    );
+  }
+  const earned = JOHTO_LEADERS.filter((l) => gym.badges.includes(l.id)).length;
+  return (
+    <>
+      <Box title="Johto Gym Challenge">
+        <p className="text-xl">
+          Beat the Johto Gym Leaders in order to earn their badges. More leaders are on their way. Badges:{' '}
+          {earned} / {JOHTO_TOTAL}
+        </p>
+      </Box>
+      <LeaderGrid
+        label="Johto badge case"
+        leaders={JOHTO_LEADERS}
+        upcoming={JOHTO_UPCOMING}
+        reward={(i) => `${johtoBadgeReward(i).credits} credits + a Mega Evolution pack`}
+        onChallenge={onChallenge}
+      />
+    </>
+  );
+}
+
+/** The badge case, the Elite Four run and the Hall of Fame (Kanto), and the Johto badge case. */
 export function GymChallenge() {
   const gym = useProfile((s) => s.profile.gym);
   const abandonUnfinishedRun = useProfile((s) => s.abandonUnfinishedRun);
@@ -41,54 +145,56 @@ export function GymChallenge() {
     resumeSetup = null;
     return resumed;
   });
-  const earned = gym.badges.length;
+  const [region, setRegion] = useState<Region>(
+    setup?.kind === 'gym' ? (regionOf(setup.leader.id) ?? 'kanto') : 'kanto',
+  );
+  const earned = gym.badges.filter((id) => LEADERS.some((l) => l.id === id)).length;
 
   if (setup) return <MatchSetup setup={setup} onCancel={() => setSetup(null)} />;
+  const tabs = (
+    <div role="tablist" aria-label="Regions" className="flex gap-2">
+      {(
+        [
+          ['kanto', 'Kanto'],
+          ['johto', 'Johto'],
+        ] as const
+      ).map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={region === id}
+          onClick={() => setRegion(id)}
+          className={`border-4 border-ink px-4 py-2 font-pixel text-[10px] uppercase ${region === id ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+  const challenge = (leader: Opponent) => setSetup({ kind: 'gym', leader });
   return (
-    <ScreenFrame wide>
-      <Box title="Gym Challenge">
-        <p className="text-xl">
-          Beat the 8 Kanto Gym Leaders in order to earn their badges. With all 8 badges you can take on the
-          Elite Four and the Champion in one run. Badges: {earned} / {LEADERS.length}
-        </p>
-      </Box>
-      <ul aria-label="Badge case" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {LEADERS.map((leader, i) => {
-          const status = gymStatus(gym.badges, leader.id);
-          return (
-            <li
-              key={leader.id}
-              aria-label={leader.name}
-              className={`retro-box flex flex-col items-center gap-2 p-3 text-center ${status === 'locked' ? 'opacity-60' : ''}`}
-            >
-              <CharacterPortrait id={leader.id} size={80} />
-              <h3 className="font-pixel text-[10px]">{leader.name}</h3>
-              <p className="text-lg">{leader.type}</p>
-              <p className={`font-pixel text-[8px] ${status === 'beaten' ? 'text-green-fg' : 'opacity-70'}`}>
-                {status === 'beaten' ? `★ ${leader.badge} Badge` : `${leader.badge} Badge`}
-              </p>
-              {status === 'next' && (
-                <p className="text-base opacity-70">
-                  First win: {badgeReward(i).credits} credits + a 151 pack
-                </p>
-              )}
-              <Button
-                disabled={!canChallenge(gym.badges, leader.id)}
-                aria-label={
-                  status === 'locked'
-                    ? undefined
-                    : `${status === 'beaten' ? 'Rematch' : 'Challenge'} ${leader.name}`
-                }
-                onClick={() => setSetup({ kind: 'gym', leader })}
-              >
-                {status === 'beaten' ? 'Rematch' : status === 'next' ? 'Challenge' : 'Locked'}
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
-      <EliteFour onStart={() => setSetup({ kind: 'elite' })} />
-      <HallOfFame />
+    <ScreenFrame wide actions={tabs}>
+      {region === 'johto' ? (
+        <JohtoGyms onChallenge={challenge} />
+      ) : (
+        <>
+          <Box title="Gym Challenge">
+            <p className="text-xl">
+              Beat the 8 Kanto Gym Leaders in order to earn their badges. With all 8 badges you can take on
+              the Elite Four and the Champion in one run. Badges: {earned} / {LEADERS.length}
+            </p>
+          </Box>
+          <LeaderGrid
+            label="Badge case"
+            leaders={LEADERS}
+            reward={(i) => `${badgeReward(i).credits} credits + a 151 pack`}
+            onChallenge={challenge}
+          />
+          <EliteFour onStart={() => setSetup({ kind: 'elite' })} />
+          <HallOfFame />
+        </>
+      )}
     </ScreenFrame>
   );
 }

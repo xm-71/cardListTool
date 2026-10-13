@@ -30,10 +30,12 @@ async function get(path: string): Promise<unknown> {
 }
 
 const ids = new Set<string>();
-const deckDir = join(root, 'src/decks');
-for (const file of readdirSync(deckDir).filter((f) => f.endsWith('.json'))) {
-  const deck = JSON.parse(readFileSync(join(deckDir, file), 'utf8')) as DeckList;
-  for (const c of deck.cards) ids.add(c.id);
+// Premade decks and the Gym decks (src/decks/gym) both pull their cards in.
+for (const deckDir of [join(root, 'src/decks'), join(root, 'src/decks/gym')]) {
+  for (const file of readdirSync(deckDir).filter((f) => f.endsWith('.json'))) {
+    const deck = JSON.parse(readFileSync(join(deckDir, file), 'utf8')) as DeckList;
+    for (const c of deck.cards) ids.add(c.id);
+  }
 }
 
 const setIds = JSON.parse(readFileSync(join(root, 'src/sets.json'), 'utf8')) as string[];
