@@ -173011,6 +173011,40 @@
     "provides": ["Psychic"],
     "text": ""
   },
+  "sv05-001": {
+    "id": "sv05-001",
+    "name": "Scyther",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv05/001",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 90,
+    "types": ["Grass"],
+    "evolvesFrom": null,
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Cut Up",
+        "cost": ["Colorless"],
+        "damage": 10,
+        "damageSuffix": "",
+        "text": ""
+      },
+      {
+        "name": "Slashing Strike",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 60,
+        "damageSuffix": "",
+        "text": "During your next turn, this Pokémon can't use Slashing Strike."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
   "sv05-013": {
     "id": "sv05-013",
     "name": "Shaymin",
@@ -173043,6 +173077,40 @@
     ],
     "abilities": [],
     "isEx": false,
+    "isMega": false
+  },
+  "sv05-111": {
+    "id": "sv05-111",
+    "name": "Scizor ex",
+    "regulationMark": "H",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv05/111",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 270,
+    "types": ["Metal"],
+    "evolvesFrom": "Scyther",
+    "weakness": "Fire",
+    "resistance": "Grass",
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Steel Wing",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 70,
+        "damageSuffix": "",
+        "text": "During your opponent's next turn, this Pokémon takes 50 less damage from attacks (after applying Weakness and Resistance)."
+      },
+      {
+        "name": "Cross Breaker",
+        "cost": ["Metal", "Metal"],
+        "damage": 120,
+        "damageSuffix": "×",
+        "text": "Discard up to 2 {M} Energy from this Pokémon. This attack does 120 damage for each card you discarded in this way."
+      }
+    ],
+    "abilities": [],
+    "isEx": true,
     "isMega": false
   },
   "sv05-127": {
@@ -173181,6 +173249,99 @@
     "trainerType": "Item",
     "text": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot. If you do, switch your Active Pokémon with 1 of your Benched Pokémon.",
     "isAceSpec": true
+  },
+  "sv06-004": {
+    "id": "sv06-004",
+    "name": "Spinarak",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv06/004",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 60,
+    "types": ["Grass"],
+    "evolvesFrom": null,
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Bug Bite",
+        "cost": ["Grass"],
+        "damage": 20,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv06-005": {
+    "id": "sv06-005",
+    "name": "Ariados",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv06/005",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 90,
+    "types": ["Grass"],
+    "evolvesFrom": "Spinarak",
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "String Bind",
+        "cost": ["Grass"],
+        "damage": 10,
+        "damageSuffix": "+",
+        "text": "This attack does 30 more damage for each {C} in your opponent's Active Pokémon's Retreat Cost."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Big Net",
+        "text": "Your opponent's Active Evolution Pokémon's Retreat Cost is {C} more."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv06-008": {
+    "id": "sv06-008",
+    "name": "Heracross",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv06/008",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 120,
+    "types": ["Grass"],
+    "evolvesFrom": null,
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Body Slam",
+        "cost": ["Grass", "Colorless", "Colorless"],
+        "damage": 60,
+        "damageSuffix": "",
+        "text": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed."
+      },
+      {
+        "name": "Seismic Toss",
+        "cost": ["Grass", "Colorless", "Colorless", "Colorless"],
+        "damage": 130,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
   },
   "sv06-025": {
     "id": "sv06-025",
@@ -173540,6 +173701,65 @@
     "text": "Your opponent discards cards from their hand until they have 3 cards in their hand.",
     "isAceSpec": false
   },
+  "sv07-002": {
+    "id": "sv07-002",
+    "name": "Ledyba",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv07/002",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 60,
+    "types": ["Grass"],
+    "evolvesFrom": null,
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Headbutt Bounce",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv07-003": {
+    "id": "sv07-003",
+    "name": "Ledian",
+    "regulationMark": "H",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv07/003",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 90,
+    "types": ["Grass"],
+    "evolvesFrom": "Ledyba",
+    "weakness": "Fire",
+    "resistance": null,
+    "retreat": 0,
+    "attacks": [
+      {
+        "name": "Swift",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 70,
+        "damageSuffix": "",
+        "text": "This attack's damage isn't affected by Weakness or Resistance, or by any effects on your opponent's Active Pokémon."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Glittering Star Pattern",
+        "text": "When you play this Pokémon from your hand to evolve 1 of your Pokémon during your turn, you may switch in 1 of your opponent's Benched Pokémon that has 90 HP or less remaining to the Active Spot."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
   "sv07-057": {
     "id": "sv07-057",
     "name": "Slowpoke",
@@ -173632,38 +173852,6 @@
       }
     ],
     "abilities": [],
-    "isEx": false,
-    "isMega": false
-  },
-  "sv07-115": {
-    "id": "sv07-115",
-    "name": "Noctowl",
-    "regulationMark": "H",
-    "rarity": "Rare",
-    "image": "https://assets.tcgdex.net/en/sv/sv07/115",
-    "category": "Pokemon",
-    "stage": "Stage1",
-    "hp": 100,
-    "types": ["Colorless"],
-    "evolvesFrom": "Hoothoot",
-    "weakness": "Lightning",
-    "resistance": "Fighting",
-    "retreat": 1,
-    "attacks": [
-      {
-        "name": "Speed Wing",
-        "cost": ["Colorless", "Colorless"],
-        "damage": 60,
-        "damageSuffix": "",
-        "text": ""
-      }
-    ],
-    "abilities": [
-      {
-        "name": "Jewel Seeker",
-        "text": "Once during your turn, when you play this Pokémon from your hand to evolve 1 of your Pokémon, if you have any Tera Pokémon in play, you may search your deck for up to 2 Trainer cards, reveal them, and put them into your hand. Then, shuffle your deck."
-      }
-    ],
     "isEx": false,
     "isMega": false
   },

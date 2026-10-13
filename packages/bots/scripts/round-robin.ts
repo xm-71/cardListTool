@@ -129,6 +129,7 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   morty: [45, 65],
   whitney: [45, 65],
   falkner: [40, 60],
+  bugsy: [45, 65],
 };
 
 /** The first four gyms are piloted by the Easy bot in the game; every other Gym deck by the Medium bot. */

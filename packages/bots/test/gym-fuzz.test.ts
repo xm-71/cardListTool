@@ -49,8 +49,8 @@ const GAMES_PER_SEAT = Number(process.env.GYM_FUZZ_GAMES ?? 2);
 const yieldToWorker = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('Gym decks play Easy-bot games to completion against the starter and theme decks', () => {
-  test('there are 18 Gym decks', () => {
-    expect(Object.keys(GYM_DECKS)).toHaveLength(18);
+  test('there are 19 Gym decks', () => {
+    expect(Object.keys(GYM_DECKS)).toHaveLength(19);
   });
 
   test.each(Object.entries(GYM_DECKS))(
