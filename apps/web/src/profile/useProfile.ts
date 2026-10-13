@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { GYM_SET, setCards } from '@ptcg/cards';
-import { openPack, packPrice } from '@ptcg/economy';
+import { deckPrice, openPack, packPrice } from '@ptcg/economy';
 import { openIndexedDbStore } from './indexedDbStore.ts';
 import { createMemoryStore } from './memoryStore.ts';
 import {
@@ -13,7 +13,7 @@ import {
   type RunDeck,
 } from '../game/gym.ts';
 import type { EnergyType } from '@ptcg/engine';
-import { DECKS } from '../game/catalog.ts';
+import { DECKS, deckById, type DeckId } from '../game/catalog.ts';
 import type { RunCards } from '../game/frontier/deck.ts';
 import {
   abandon,
@@ -29,6 +29,7 @@ import {
 } from '../game/frontier/run.ts';
 import { addToHall, type FrontierPayout } from '../game/frontier/save.ts';
 import { MAX_BINDERS } from './binders.ts';
+import { FALLBACK_STARTER, grantDeck, isPremadeDeck, purchaseProblem } from './ownedDecks.ts';
 import { newProfile, type CustomBinder, type CustomDeck, type Profile, type ProfileStore } from './types.ts';
 
 /** How many awarded game seeds to remember. */
@@ -100,6 +101,8 @@ interface ProfileState {
   award(seed: number, amount: number): Promise<void>;
   /** Pays for and opens a pack; the cards are saved before this resolves. */
   buyPack(setId: string): Promise<string[]>;
+  /** Pays for a premade deck and adds it, with its 60 cards, in one save. Rejects when `purchaseProblem` says so. */
+  buyDeck(id: string): Promise<void>;
   /**
    * Records a finished gym match, once per game seed. A first win over the next gym pays its badge reward
    * (credits and a 151 pack, saved here); anything else pays `normalCredits`. Resolves to what was paid.
@@ -242,6 +245,15 @@ export const useProfile = create<ProfileState>()((set, get) => {
         return { next: { ...p, credits: p.credits - price, collection }, result: cards };
       });
       return cards!;
+    },
+    async buyDeck(id) {
+      await change((p) => {
+        const problem = purchaseProblem(p, id);
+        if (problem) throw new Error(problem);
+        const deck = deckById(id as DeckId);
+        const granted = grantDeck(p, deck.id);
+        return { next: { ...granted, credits: p.credits - deckPrice(deck.kind) }, result: undefined };
+      });
     },
     async recordGym({ seed, leaderId, won, normalCredits }) {
       return change((p) => {
@@ -400,15 +412,21 @@ export const useProfile = create<ProfileState>()((set, get) => {
       await change((p) => ({ next: { ...p, decks: p.decks.filter((d) => d.id !== id) }, result: undefined }));
     },
     async finishIntro(name, deck) {
-      await change((p) => ({
-        next: {
+      await change((p) => {
+        const starterDeck = deck ?? p.starterDeck ?? 'mega-gengar';
+        const next = {
           ...p,
           playerName: name.trim() ? cleanName(name) : (p.playerName ?? 'PLAYER'),
-          starterDeck: deck ?? p.starterDeck ?? 'mega-gengar',
+          starterDeck,
           introDone: true,
-        },
-        result: undefined,
-      }));
+        };
+        // The first intro gives the starter deck and its cards. Replaying it later only changes the default deck.
+        const owned =
+          p.ownedDecks.length > 0
+            ? next
+            : grantDeck(next, isPremadeDeck(starterDeck) ? starterDeck : FALLBACK_STARTER);
+        return { next: owned, result: undefined };
+      });
     },
     async saveBinder(binder) {
       await change((p) => {
