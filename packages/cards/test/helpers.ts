@@ -1,3 +1,7 @@
+import { expect } from 'vitest';
+import type { DeckList } from '@ptcg/engine';
+import { GYM_SET } from '../src/gym.ts';
+import { isPlayable } from '../src/playable.ts';
 import { createEngine, type GameState, type PlayerId } from '@ptcg/engine';
 import { act, started } from '@ptcg/engine/testing';
 import { buildRegistry } from '../src/registry.ts';
@@ -164,4 +168,29 @@ export function resolvePrompts(s: GameState): GameState {
     st = act(engine, st, { type: 'answer', optionId });
   }
   return st;
+}
+
+/**
+ * A Gym deck is 60 cards, every card playable by the engine and Gym-legal (Basic Energy, regulation mark H or
+ * later, or any 151 card), with at most 4 copies of each name (Basic Energy aside) and at most 1 ACE SPEC.
+ */
+export function assertGymDeck(deck: DeckList): void {
+  expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
+  const names = new Map<string, number>();
+  let aceSpecs = 0;
+  for (const c of deck.cards) {
+    const d = registry.defs[c.id]!;
+    expect(d, c.id).toBeDefined();
+    expect(isPlayable(d, registry), `${c.id} is playable`).toBe(true);
+    const basicEnergy = d.category === 'Energy' && d.energyKind === 'Basic';
+    expect(
+      basicEnergy || (d.regulationMark !== null && d.regulationMark >= 'H') || c.id.startsWith(`${GYM_SET}-`),
+      `${c.id} is Gym-legal`,
+    ).toBe(true);
+    if (basicEnergy) continue;
+    names.set(d.name, (names.get(d.name) ?? 0) + c.count);
+    if (d.category !== 'Energy' && 'isAceSpec' in d && d.isAceSpec) aceSpecs += c.count;
+  }
+  for (const [name, n] of names) expect(n, name).toBeLessThanOrEqual(4);
+  expect(aceSpecs).toBeLessThanOrEqual(1);
 }

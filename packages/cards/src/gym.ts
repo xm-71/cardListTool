@@ -11,6 +11,7 @@ import giovanni from './decks/gym/giovanni.json';
 import koga from './decks/gym/koga.json';
 import lorelei from './decks/gym/lorelei.json';
 import lance from './decks/gym/lance.json';
+import morty from './decks/gym/morty.json';
 import misty from './decks/gym/misty.json';
 import sabrina from './decks/gym/sabrina.json';
 import surge from './decks/gym/surge.json';
@@ -32,6 +33,7 @@ export const GYM_DECKS = {
   bruno,
   agatha,
   lance,
+  morty,
   'blue-fire': blueFire,
   'blue-water': blueWater,
   'blue-grass': blueGrass,

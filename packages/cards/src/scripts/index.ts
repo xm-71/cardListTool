@@ -186,6 +186,7 @@ import * as sv08_076 from './sv08/076.ts';
 import * as sv09_056 from './sv09/056.ts';
 import * as me01_115 from './me01/115.ts';
 import * as sv05_157 from './sv05/157.ts';
+import * as sv05_155 from './sv05/155.ts';
 import * as me01_123 from './me01/123.ts';
 import * as sv09_098 from './sv09/098.ts';
 import * as sv06_5_039 from './sv06.5/039.ts';
@@ -243,6 +244,7 @@ export const scriptModules: { name: string; set?: string; script: CardScript }[]
   sv09_056,
   me01_115,
   sv05_157,
+  sv05_155,
   me01_123,
   sv09_098,
   sv06_5_039,

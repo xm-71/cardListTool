@@ -173133,6 +173133,17 @@
     "text": "Your opponent reveals their hand, and you discard up to 2 Item cards you find there.",
     "isAceSpec": false
   },
+  "sv05-155": {
+    "id": "sv05-155",
+    "name": "Morty's Conviction",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv05/155",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "You can use this card only if you discard another card from your hand.\n\nDraw a card for each of your opponent's Benched Pokémon.",
+    "isAceSpec": false
+  },
   "sv05-157": {
     "id": "sv05-157",
     "name": "Prime Catcher",
@@ -173490,17 +173501,6 @@
     ],
     "isEx": false,
     "isMega": false
-  },
-  "sv06.5-054": {
-    "id": "sv06.5-054",
-    "name": "Academy at Night",
-    "regulationMark": "H",
-    "rarity": "Uncommon",
-    "image": "https://assets.tcgdex.net/en/sv/sv06.5/054",
-    "category": "Trainer",
-    "trainerType": "Stadium",
-    "text": "Once during each player's turn, that player may put a card from their hand on top of their deck.",
-    "isAceSpec": false
   },
   "sv06.5-064": {
     "id": "sv06.5-064",
