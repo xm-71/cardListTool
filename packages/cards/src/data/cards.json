@@ -173045,6 +173045,33 @@
     "isEx": false,
     "isMega": false
   },
+  "sv05-127": {
+    "id": "sv05-127",
+    "name": "Noctowl",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv05/127",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 110,
+    "types": ["Colorless"],
+    "evolvesFrom": "Hoothoot",
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Talon Hunt",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 70,
+        "damageSuffix": "",
+        "text": "You may search your deck for up to 2 cards and put them into your hand. Then, shuffle your deck."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
   "sv05-128": {
     "id": "sv05-128",
     "name": "Dunsparce",
@@ -173185,67 +173212,6 @@
       }
     ],
     "isEx": true,
-    "isMega": false
-  },
-  "sv06-078": {
-    "id": "sv06-078",
-    "name": "Clefairy",
-    "regulationMark": "H",
-    "rarity": "Common",
-    "image": "https://assets.tcgdex.net/en/sv/sv06/078",
-    "category": "Pokemon",
-    "stage": "Basic",
-    "hp": 60,
-    "types": ["Psychic"],
-    "evolvesFrom": null,
-    "weakness": "Metal",
-    "resistance": null,
-    "retreat": 1,
-    "attacks": [
-      {
-        "name": "Moon Kick",
-        "cost": ["Colorless", "Colorless"],
-        "damage": 40,
-        "damageSuffix": "",
-        "text": ""
-      }
-    ],
-    "abilities": [],
-    "isEx": false,
-    "isMega": false
-  },
-  "sv06-079": {
-    "id": "sv06-079",
-    "name": "Clefable",
-    "regulationMark": "H",
-    "rarity": "Uncommon",
-    "image": "https://assets.tcgdex.net/en/sv/sv06/079",
-    "category": "Pokemon",
-    "stage": "Stage1",
-    "hp": 120,
-    "types": ["Psychic"],
-    "evolvesFrom": "Clefairy",
-    "weakness": "Metal",
-    "resistance": null,
-    "retreat": 2,
-    "attacks": [
-      {
-        "name": "Metronome",
-        "cost": ["Colorless", "Colorless"],
-        "damage": 0,
-        "damageSuffix": "",
-        "text": "Choose 1 of your opponent's Active Pokémon's attacks and use it as this attack."
-      },
-      {
-        "name": "Magical Shot",
-        "cost": ["Psychic", "Colorless", "Colorless"],
-        "damage": 100,
-        "damageSuffix": "",
-        "text": ""
-      }
-    ],
-    "abilities": [],
-    "isEx": false,
     "isMega": false
   },
   "sv06-095": {
@@ -173642,6 +173608,65 @@
     "isEx": false,
     "isMega": false
   },
+  "sv07-114": {
+    "id": "sv07-114",
+    "name": "Hoothoot",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv07/114",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Colorless"],
+    "evolvesFrom": null,
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Triple Stab",
+        "cost": ["Colorless"],
+        "damage": 10,
+        "damageSuffix": "×",
+        "text": "Flip 3 coins. This attack does 10 damage for each heads."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv07-115": {
+    "id": "sv07-115",
+    "name": "Noctowl",
+    "regulationMark": "H",
+    "rarity": "Rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv07/115",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 100,
+    "types": ["Colorless"],
+    "evolvesFrom": "Hoothoot",
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Speed Wing",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 60,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Jewel Seeker",
+        "text": "Once during your turn, when you play this Pokémon from your hand to evolve 1 of your Pokémon, if you have any Tera Pokémon in play, you may search your deck for up to 2 Trainer cards, reveal them, and put them into your hand. Then, shuffle your deck."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
   "sv07-133": {
     "id": "sv07-133",
     "name": "Crispin",
@@ -173717,40 +173742,6 @@
     "energyKind": "Special",
     "provides": ["Colorless"],
     "text": "As long as this card is attached to a Pokémon, it provides {C} Energy.\n\nWhen you attach this card from your hand to a Pokémon, draw 4 cards."
-  },
-  "sv08.5-081": {
-    "id": "sv08.5-081",
-    "name": "Miltank",
-    "regulationMark": "H",
-    "rarity": "Common",
-    "image": "https://assets.tcgdex.net/en/sv/sv08.5/081",
-    "category": "Pokemon",
-    "stage": "Basic",
-    "hp": 130,
-    "types": ["Colorless"],
-    "evolvesFrom": null,
-    "weakness": "Fighting",
-    "resistance": null,
-    "retreat": 2,
-    "attacks": [
-      {
-        "name": "Rollout",
-        "cost": ["Colorless"],
-        "damage": 20,
-        "damageSuffix": "",
-        "text": ""
-      },
-      {
-        "name": "Moomoo Rolling",
-        "cost": ["Colorless", "Colorless"],
-        "damage": 100,
-        "damageSuffix": "",
-        "text": "You can use this attack only if this Pokémon used Rollout during your last turn."
-      }
-    ],
-    "abilities": [],
-    "isEx": false,
-    "isMega": false
   },
   "sv09-056": {
     "id": "sv09-056",
