@@ -1,20 +1,65 @@
 {
   "name": "Morty's Ghost Deck",
   "cards": [
-    { "id": "me02-054", "count": 4 },
-    { "id": "me02-055", "count": 4 },
-    { "id": "me02-056", "count": 3 },
-    { "id": "me02-067", "count": 2 },
-    { "id": "me02-068", "count": 2 },
-    { "id": "me02-059", "count": 2 },
-    { "id": "sv05-155", "count": 3 },
-    { "id": "me01-119", "count": 4 },
-    { "id": "me01-114", "count": 2 },
-    { "id": "me01-131", "count": 3 },
-    { "id": "me01-167", "count": 3 },
-    { "id": "me01-130", "count": 2 },
-    { "id": "me01-173", "count": 2 },
-    { "id": "me01-125", "count": 3 },
-    { "id": "mee-007", "count": 21 }
+    {
+      "id": "me02-054",
+      "count": 4
+    },
+    {
+      "id": "me02-055",
+      "count": 4
+    },
+    {
+      "id": "me02-056",
+      "count": 2
+    },
+    {
+      "id": "me02-067",
+      "count": 3
+    },
+    {
+      "id": "me02-068",
+      "count": 2
+    },
+    {
+      "id": "me02-059",
+      "count": 2
+    },
+    {
+      "id": "sv05-155",
+      "count": 3
+    },
+    {
+      "id": "me01-119",
+      "count": 4
+    },
+    {
+      "id": "me01-114",
+      "count": 2
+    },
+    {
+      "id": "me01-131",
+      "count": 3
+    },
+    {
+      "id": "me01-167",
+      "count": 3
+    },
+    {
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "me01-125",
+      "count": 1
+    },
+    {
+      "id": "mee-007",
+      "count": 23
+    }
   ]
 }
