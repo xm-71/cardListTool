@@ -102,7 +102,11 @@ export function MainMenu() {
               <span className="town-fountain" />
             </div>
           </div>
-          <p aria-live="polite" data-testid="town-dialog" className="min-h-20 border-t-4 border-ink bg-paper px-5 py-3 text-2xl leading-snug">
+          <p
+            aria-live="polite"
+            data-testid="town-dialog"
+            className="min-h-20 border-t-4 border-ink bg-paper px-5 py-3 text-2xl leading-snug"
+          >
             <span className="mb-1 block font-pixel text-[10px] uppercase">
               {BUILDINGS.find((b) => b.id === current)!.sign}
             </span>

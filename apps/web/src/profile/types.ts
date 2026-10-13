@@ -48,6 +48,8 @@ export interface Profile {
   playerName: string | null;
   /** Starter deck picked in the intro: the default "Your deck" in Duel. */
   starterDeck: string | null;
+  /** The deck Duel and Gym start with: an owned premade deck id or `custom:<id>`; null until chosen. */
+  activeDeck: string | null;
   introDone: boolean;
   binders: CustomBinder[];
   /** Free packs; battling hidden. */
@@ -74,6 +76,7 @@ export function newProfile(): Profile {
     awardedGames: [],
     playerName: null,
     starterDeck: null,
+    activeDeck: null,
     introDone: false,
     binders: [],
     collectorMode: false,
@@ -94,6 +97,7 @@ export function normalizeProfile(raw: Partial<Profile> & { version: 1 }): Profil
     ...newProfile(),
     ...raw,
     ownedDecks: Array.isArray(raw.ownedDecks) ? raw.ownedDecks.filter((id) => typeof id === 'string') : [],
+    activeDeck: typeof raw.activeDeck === 'string' ? raw.activeDeck : null,
     binders,
     collectorMode: raw.collectorMode === true,
     gym: normalizeGym(raw.gym),

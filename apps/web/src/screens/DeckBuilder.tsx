@@ -2,12 +2,15 @@ import { useMemo, useState } from 'react';
 import type { CardDef, DeckList } from '@ptcg/engine';
 import { SETS, isCollectOnlyEra } from '@ptcg/cards';
 import { DECK_SIZE, deckFormat, isGymUsable, MAX_COPIES, validateGymDeck } from '@ptcg/economy';
-import { eraLabel, registry } from '../game/catalog.ts';
+import { DECKS, eraLabel, registry, type DeckInfo } from '../game/catalog.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
+import { useNav } from '../nav/useNav.ts';
 import { useProfile } from '../profile/useProfile.ts';
 import type { CustomDeck } from '../profile/types.ts';
 import { cardNumber } from './Binder.tsx';
 import { CardThumb } from '../ui/CardThumb.tsx';
+import { RunDeckView } from '../ui/frontier/RunDeckView.tsx';
+import { Sheet } from '../ui/Sheet.tsx';
 
 const isBasicEnergy = (def: CardDef): boolean => def.category === 'Energy' && def.energyKind === 'Basic';
 // One of each type, from the modern Mega Evolution Energy set.
@@ -39,6 +42,8 @@ export function DeckBuilder() {
 function DeckBuilderBody() {
   const decks = useProfile((s) => s.profile.decks);
   const deleteDeck = useProfile((s) => s.deleteDeck);
+  const owned = useProfile((s) => s.profile.ownedDecks);
+  const [viewing, setViewing] = useState<DeckInfo | null>(null);
   const [editing, setEditing] = useState<CustomDeck | null>(null);
 
   if (editing) return <Editor initial={editing} onClose={() => setEditing(null)} />;
@@ -48,16 +53,60 @@ function DeckBuilderBody() {
         <h2 className="font-pixel text-xs uppercase">Your decks</h2>
         <button
           type="button"
+          onClick={() => useNav.getState().go('deckcase', 'decks')}
+          className="ml-auto border-4 border-ink bg-paper px-3 py-2 font-pixel text-[10px] uppercase hover:bg-cream"
+        >
+          Deck Case
+        </button>
+        <button
+          type="button"
           onClick={() => setEditing({ id: newId(), name: 'New deck', cards: [] })}
-          className="retro-shadow ml-auto border-4 border-ink bg-yellow text-ink-fixed px-3 py-2 font-pixel text-[10px] uppercase"
+          className="retro-shadow border-4 border-ink bg-yellow text-ink-fixed px-3 py-2 font-pixel text-[10px] uppercase"
         >
           New deck
         </button>
       </div>
       <p className="text-xl">
-        Build decks from cards you own that the game can play. Basic Energy is free. Starter decks are always
-        available on the Home screen.
+        Build decks from cards you own that the game can play. Basic Energy is free. Pick the deck you play in
+        the Deck Case, and buy more premade decks in the Poké Mart.
       </p>
+      <section aria-label="Premade decks" className="flex flex-col gap-2">
+        <h2 className="font-pixel text-[10px] uppercase">Premade decks</h2>
+        <ul className="flex flex-col gap-2">
+          {DECKS.filter((d) => owned.includes(d.id)).map((d) => (
+            <li key={d.id} className="retro-box flex flex-wrap items-center gap-3 px-4 py-3">
+              <span className="font-pixel text-[10px]">{d.name}</span>
+              <button
+                type="button"
+                aria-label={`View ${d.name}`}
+                onClick={() => setViewing(d)}
+                className="ml-auto border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-cream"
+              >
+                View
+              </button>
+              <button
+                type="button"
+                aria-label={`Copy to edit ${d.name}`}
+                onClick={() =>
+                  setEditing({
+                    id: newId(),
+                    name: `${d.name} copy`,
+                    cards: d.list.cards.map((c) => ({ ...c })),
+                  })
+                }
+                className="border-4 border-ink bg-paper px-2 py-1 font-pixel text-[9px] uppercase hover:bg-cream"
+              >
+                Copy to edit
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+      {viewing && (
+        <Sheet title={viewing.name} onClose={() => setViewing(null)} className="max-h-[85dvh]">
+          <RunDeckView cards={viewing.list.cards} label="Deck list" />
+        </Sheet>
+      )}
       {decks.length === 0 ? (
         <p className="text-xl">No custom decks yet.</p>
       ) : (

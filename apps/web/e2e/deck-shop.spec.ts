@@ -65,10 +65,13 @@ for (const [name, width, height] of [
 
     await page.getByRole('button', { name: 'Back' }).click();
     await page.getByRole('menuitem', { name: 'Duel' }).click();
-    const yours = page.getByRole('group', { name: 'Your deck' });
-    await expect(yours.getByRole('button', { name: /Mega Charizard X ex/ })).toBeVisible();
-    await expect(yours.getByRole('button', { name: /Mega Diancie ex/ })).toHaveCount(0);
-    await yours.getByRole('button', { name: /Mega Charizard X ex/ }).click();
+    // The bought deck is in the Deck Case; the old deck tiles are gone from Duel.
+    await page.getByRole('button', { name: 'Change' }).click();
+    await expect(page.getByRole('button', { name: 'View Mega Charizard X ex' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'View Mega Diancie ex' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'View Mega Charizard X ex' }).click();
+    await page.getByRole('button', { name: 'Use this deck' }).click();
+    await expect(page.getByRole('heading', { name: 'Your deck' })).toBeVisible();
     await page.getByRole('button', { name: 'Play' }).click();
     await expect(page.getByRole('region', { name: /^You$/ })).toBeVisible();
   });

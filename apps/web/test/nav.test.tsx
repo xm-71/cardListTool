@@ -1,5 +1,5 @@
 import { PACKS } from '@ptcg/economy';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
 import { useGame } from '../src/game/store.ts';
@@ -35,6 +35,7 @@ test('first launch: PRESS START leads to the intro, which ends in the main menu'
   fireEvent.change(await screen.findByLabelText('Your name'), { target: { value: 'ALEX' } });
   fireEvent.click(screen.getByRole('button', { name: 'OK' }));
   fireEvent.click(screen.getByRole('button', { name: /Mega Lucario ex/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Choose this deck' }));
   advance('Beat the bots to earn credits!');
   advance('Spend credits on booster packs in the SHOP.');
   advance('Build your own decks in DECKS from cards the game can play.');
@@ -46,11 +47,8 @@ test('first launch: PRESS START leads to the intro, which ends in the main menu'
     introDone: true,
   });
   fireEvent.click(screen.getByRole('menuitem', { name: 'Duel' }));
-  const yours = screen.getByRole('group', { name: 'Your deck' });
-  expect(within(yours).getByRole('button', { name: /Mega Lucario ex/ })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  expect(screen.getByText('Mega Lucario ex')).toBeInTheDocument();
+  expect(useProfile.getState().profile.activeDeck).toBe('mega-lucario');
 });
 
 test('a returning player goes straight from the title to the menu', async () => {

@@ -23,7 +23,7 @@ export function seedWhereSeat0PromptsFirst(from = 1): number {
 }
 import { DECKS, deckById, type DeckId } from '../src/game/catalog.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
-import { newProfile } from '../src/profile/types.ts';
+import { newProfile, type Profile } from '../src/profile/types.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
 const deckList = (id: DeckId) => deckById(id).list;
 
@@ -54,9 +54,12 @@ export function mutate(fn: (s: GameState) => void): void {
  * Loads a profile that owns every premade deck, so a screen that lists the player's decks shows them all.
  * (The deck lists are listed as owned without adding their cards: tests that need cards set a collection.)
  */
-export async function ownEveryDeck(): Promise<void> {
+export async function ownEveryDeck(extra: Partial<Profile> = {}): Promise<void> {
   useProfile.getState().reset();
   await useProfile
     .getState()
-    .init(createMemoryStore({ ...newProfile(), introDone: true, ownedDecks: DECKS.map((d) => d.id) }), true);
+    .init(
+      createMemoryStore({ ...newProfile(), introDone: true, ownedDecks: DECKS.map((d) => d.id), ...extra }),
+      true,
+    );
 }

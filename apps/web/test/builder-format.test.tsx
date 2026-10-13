@@ -65,10 +65,11 @@ test('the editor accepts owned 151 cards, labels the deck Gym only, and saves it
   expect(screen.getByRole('button', { name: 'Save deck' })).toBeEnabled();
 });
 
-test('the Duel picker only offers Standard custom decks', async () => {
+test('the hotseat opponent picker only offers Standard custom decks', async () => {
   await setProfile([standard, gym]);
   render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
-  const custom = within(screen.getByRole('group', { name: 'Your deck' })).getByRole('group', {
+  fireEvent.click(screen.getByLabelText(/Hotseat/)); // the opponent's picker is the one that lists custom decks
+  const custom = within(screen.getByRole('group', { name: "Opponent's deck" })).getByRole('group', {
     name: 'Custom decks',
   });
   expect(within(custom).getByText('Ghost Party')).toBeInTheDocument();

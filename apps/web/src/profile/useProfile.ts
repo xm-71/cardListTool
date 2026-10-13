@@ -158,6 +158,8 @@ interface ProfileState {
   deleteDeck(id: string): Promise<void>;
   /** Ends the intro. An empty name or a null deck keeps what the profile already has (else PLAYER / Mega Gengar). */
   finishIntro(name: string, deck: string | null): Promise<void>;
+  /** Makes an owned premade deck or an existing custom deck (`custom:<id>`) the active deck; other ids are ignored. */
+  setActiveDeck(id: string): Promise<void>;
   setName(name: string): Promise<void>;
   /** Adds or replaces a binder by id (stamping updatedAt); a new one is refused at MAX_BINDERS. */
   saveBinder(b: CustomBinder): Promise<void>;
@@ -428,9 +430,18 @@ export const useProfile = create<ProfileState>()((set, get) => {
           ...p,
           playerName: name.trim() ? cleanName(name) : (p.playerName ?? 'PLAYER'),
           starterDeck,
+          activeDeck: first ? starterDeck : p.activeDeck,
           introDone: true,
         };
         return { next: first ? grantDeck(next, starterDeck as DeckId) : next, result: undefined };
+      });
+    },
+    async setActiveDeck(id) {
+      await change((p) => {
+        const ok = id.startsWith('custom:')
+          ? p.decks.some((d) => `custom:${d.id}` === id)
+          : p.ownedDecks.includes(id);
+        return ok ? { next: { ...p, activeDeck: id }, result: undefined } : null;
       });
     },
     async saveBinder(binder) {

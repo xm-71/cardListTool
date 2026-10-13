@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { validateGymDeck } from '@ptcg/economy';
 import { sfx } from '../audio/sfx.ts';
-import { ownedDeckSources, registry, type DeckSource } from '../game/catalog.ts';
+import { deckSources, registry, type DeckSource } from '../game/catalog.ts';
+import { resolveActiveDeck } from '../game/deckCase.ts';
 import {
   CHAMPION_STAGE,
   ELITE,
@@ -14,12 +15,16 @@ import {
 } from '../game/gym.ts';
 import { runDeckSource, snapshotOf, startEliteMatch, startGymMatch } from '../game/gymMatch.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
+import { useNav } from '../nav/useNav.ts';
 import { useProfile } from '../profile/useProfile.ts';
-import { DeckChoice } from '../ui/DeckChoice.tsx';
+import { ActiveDeckPanel } from '../ui/ActiveDeckPanel.tsx';
 import { CharacterPortrait } from '../ui/CharacterPortrait.tsx';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
 
 type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite' };
+
+/** The setup the player was on when they opened the Deck Case, so Back / Use this deck return to it. */
+let resumeSetup: Setup | null = null;
 
 const art = (cover: string) => `${registry.defs[cover]!.image}/low.webp`;
 
@@ -31,7 +36,11 @@ export function GymChallenge() {
   useEffect(() => {
     void abandonUnfinishedRun();
   }, [abandonUnfinishedRun]);
-  const [setup, setSetup] = useState<Setup | null>(null);
+  const [setup, setSetup] = useState<Setup | null>(() => {
+    const resumed = resumeSetup;
+    resumeSetup = null;
+    return resumed;
+  });
   const earned = gym.badges.length;
 
   if (setup) return <MatchSetup setup={setup} onCancel={() => setSetup(null)} />;
@@ -151,25 +160,23 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
   const collection = useProfile((s) => s.profile.collection);
   const gym = useProfile((s) => s.profile.gym);
   const startEliteRun = useProfile((s) => s.startEliteRun);
-  const starter = useProfile((s) => s.profile.starterDeck);
-  const ownedDecks = useProfile((s) => s.profile.ownedDecks);
-  // Premade decks the player owns, then custom decks; custom decks that are not Gym-legal (or no longer owned) are left out.
-  const decks = useMemo(
+  const profile = useProfile((s) => s.profile);
+  // The active deck, if it is Gym-legal and owned (resolveActiveDeck falls back otherwise).
+  const activeId = resolveActiveDeck(profile);
+  const active = useMemo(
     () =>
-      ownedDeckSources(
-        ownedDecks,
+      deckSources(
         customDecks.filter(
           (d) => validateGymDeck({ name: d.name, cards: d.cards }, registry, collection).length === 0,
         ),
-      ),
-    [ownedDecks, customDecks, collection],
+      ).find((d) => d.id === activeId),
+    [activeId, customDecks, collection],
   );
   const run = setup.kind === 'elite' ? gym.run : null;
   const locked = run ? runDeckSource(run.deck) : undefined;
-  const [picked, setPicked] = useState(starter ?? 'mega-gengar');
   const opponent = setup.kind === 'gym' ? setup.leader : ELITE[run?.stage ?? 0]!;
   const choosing = !locked;
-  const deck: DeckSource | undefined = locked ?? decks.find((d) => d.id === picked) ?? decks[0];
+  const deck: DeckSource | undefined = locked ?? active;
 
   const battle = async () => {
     if (!deck) return;
@@ -197,12 +204,13 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
       {choosing ? (
         <>
           {run && <p className="text-xl">Your run deck is gone. Pick another to keep going.</p>}
-          <DeckChoice
-            label="Your deck"
-            group="Your deck"
-            decks={decks}
-            value={deck?.id ?? ''}
-            onChange={setPicked}
+          <ActiveDeckPanel
+            title="Your deck"
+            source={deck}
+            onChange={() => {
+              resumeSetup = setup;
+              useNav.getState().go('deckcase', 'gym');
+            }}
           />
         </>
       ) : (

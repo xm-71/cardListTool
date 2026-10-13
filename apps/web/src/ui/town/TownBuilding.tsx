@@ -14,7 +14,15 @@ interface Props {
 }
 
 /** One building on the town square: a menu item drawn as a pixel house, with its progress marker. */
-export function TownBuilding({ building: b, status, active, closed, onPointerEnter, onPointerDown, onClick }: Props) {
+export function TownBuilding({
+  building: b,
+  status,
+  active,
+  closed,
+  onPointerEnter,
+  onPointerDown,
+  onClick,
+}: Props) {
   const tower = b.id === 'frontier';
   const wins = status.frontier?.wins ?? 0;
   return (

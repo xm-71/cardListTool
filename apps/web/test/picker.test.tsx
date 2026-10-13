@@ -20,26 +20,22 @@ describe('Home deck picker', () => {
   test('groups decks into Starter decks (3) and Theme decks (6), with no Custom section when there are none', () => {
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText(/Hotseat/)); // the second deck is only chosen by a second player
-    for (const side of ['Your deck', "Opponent's deck"]) {
-      const g = screen.getByRole('group', { name: side });
-      expect(
-        within(within(g).getByRole('group', { name: 'Starter decks' })).getAllByRole('button'),
-      ).toHaveLength(3);
-      expect(
-        within(within(g).getByRole('group', { name: 'Theme decks' })).getAllByRole('button'),
-      ).toHaveLength(6);
-      expect(within(g).queryByRole('group', { name: 'Custom decks' })).toBeNull();
-    }
+    // Player 1 plays the active deck; only the opponent's deck is a tile picker.
+    expect(screen.getByRole('button', { name: 'Change' })).toBeInTheDocument();
+    const g = screen.getByRole('group', { name: "Opponent's deck" });
+    expect(
+      within(within(g).getByRole('group', { name: 'Starter decks' })).getAllByRole('button'),
+    ).toHaveLength(3);
+    expect(within(within(g).getByRole('group', { name: 'Theme decks' })).getAllByRole('button')).toHaveLength(
+      6,
+    );
+    expect(within(g).queryByRole('group', { name: 'Custom decks' })).toBeNull();
   });
 
-  test('a theme deck can be picked for both sides', () => {
+  test('a theme deck can be picked for both sides', async () => {
+    await ownEveryDeck({ activeDeck: 'mega-venusaur' });
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText(/Hotseat/));
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Your deck' })).getByRole('button', {
-        name: /Mega Venusaur ex/,
-      }),
-    );
     fireEvent.click(
       within(screen.getByRole('group', { name: "Opponent's deck" })).getByRole('button', {
         name: /Mega Venusaur ex/,
@@ -56,12 +52,11 @@ describe('Home deck picker', () => {
     expect(owners).toEqual(new Set([0, 1]));
   });
 
-  test('allows a starter-deck mirror match', () => {
+  test('allows a starter-deck mirror match', async () => {
+    await ownEveryDeck({ activeDeck: 'mega-lucario' });
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText(/Hotseat/));
-    const yours = screen.getByRole('group', { name: 'Your deck' });
     const theirs = screen.getByRole('group', { name: "Opponent's deck" });
-    fireEvent.click(within(yours).getByRole('button', { name: /Mega Lucario ex/ }));
     fireEvent.click(within(theirs).getByRole('button', { name: /Mega Lucario ex/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     const { config, state } = useGame.getState();
