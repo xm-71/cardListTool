@@ -16,19 +16,28 @@ async function launch(profile: Partial<Profile> = {}) {
   useProfile.getState().reset();
   useNav.setState({ route: 'menu' });
   await act(() =>
-    useProfile
-      .getState()
-      .init(
-        createMemoryStore({ ...newProfile(), introDone: true, playerName: 'ASH', starterDeck: 'mega-gengar', ...profile }),
-        true,
-      ),
+    useProfile.getState().init(
+      createMemoryStore({
+        ...newProfile(),
+        introDone: true,
+        playerName: 'ASH',
+        starterDeck: 'mega-gengar',
+        // Already owned, so its cards aren't added on top of the collection a test sets.
+        ownedDecks: ['mega-gengar'],
+        ...profile,
+      }),
+      true,
+    ),
   );
   render(<App botClient={never} botDelayMs={0} />);
 }
 
 const menu = () => screen.getByRole('menu', { name: 'Main menu' });
 const item = (name: string) => within(menu()).getByRole('menuitem', { name });
-const active = () => within(menu()).getAllByRole('menuitem').find((i) => i.dataset.active === 'true');
+const active = () =>
+  within(menu())
+    .getAllByRole('menuitem')
+    .find((i) => i.dataset.active === 'true');
 const frontierAfter = (wins: number) => {
   let r = chooseStarter(newRun(5), newRun(5).starterChoices[0]!);
   for (let i = 0; i < wins; i++) r = skipOffer(recordResult(beginFight(r), 'win'));
@@ -106,7 +115,11 @@ test('the buildings show progress: badges on the Gym flag, lit Frontier floors, 
 test('a new player sees no flag count above zero, dark floors and, without credits, no NEW sign', async () => {
   await launch({ credits: 10 });
   expect(within(item('Gym Challenge')).getByText('0/8')).toBeInTheDocument();
-  expect(within(item('Battle Frontier')).getAllByTestId('floor').some((f) => f.dataset.lit === 'true')).toBe(false);
+  expect(
+    within(item('Battle Frontier'))
+      .getAllByTestId('floor')
+      .some((f) => f.dataset.lit === 'true'),
+  ).toBe(false);
   expect(within(item('Shop')).queryByText('NEW')).toBeNull();
 });
 
@@ -137,6 +150,14 @@ test('My House opens the Trainer Card with name, credits, deck, badges and the F
   expect(within(card).getByText(/Fight 3 of 8/)).toBeInTheDocument();
   fireEvent.click(within(card).getByRole('button', { name: 'Battle Frontier' }));
   expect(useNav.getState().route).toBe('frontier');
+});
+
+test('the Trainer Card shows an owned deck even when the saved default is not owned', async () => {
+  await launch({ starterDeck: 'mega-lucario', ownedDecks: ['mega-diancie'] });
+  fireEvent.click(item('My House'));
+  const card = screen.getByRole('dialog', { name: 'Trainer Card' });
+  expect(within(card).getByText('Mega Diancie ex')).toBeInTheDocument();
+  expect(within(card).queryByText('Mega Lucario ex')).toBeNull();
 });
 
 test('the Trainer Card closes with Escape and gives the town its keys back', async () => {

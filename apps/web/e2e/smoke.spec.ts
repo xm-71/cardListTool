@@ -80,6 +80,12 @@ test('play a turn against the Medium bot', async ({ page }) => {
 
 test('buy and open a pack, then find the cards in the binder', async ({ page }) => {
   await toMenu(page);
+  // A finished intro owns its starter deck, so the binder already lists that deck's cards.
+  await page.getByRole('menuitem', { name: 'Binder' }).click();
+  await page.getByRole('checkbox', { name: 'Owned only' }).check();
+  const starterCards = await page.getByRole('list', { name: 'Cards' }).getByRole('listitem').count();
+  expect(starterCards).toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'Back' }).click();
   await page.getByRole('menuitem', { name: 'Shop' }).click();
   await expect(page.getByText('¢ 500 credits')).toBeVisible();
   await page.screenshot({ path: 'test-results/shop.png', fullPage: true });
@@ -103,8 +109,8 @@ test('buy and open a pack, then find the cards in the binder', async ({ page }) 
   await page.getByRole('menuitem', { name: 'Binder' }).click();
   await page.getByRole('checkbox', { name: 'Owned only' }).check();
   const owned = page.getByRole('list', { name: 'Cards' }).getByRole('listitem');
-  expect(await owned.count()).toBeGreaterThan(0);
-  expect(await owned.count()).toBeLessThanOrEqual(10);
+  expect(await owned.count()).toBeGreaterThanOrEqual(starterCards);
+  expect(await owned.count()).toBeLessThanOrEqual(starterCards + 10);
   // progress survives a reload (IndexedDB)
   await page.reload();
   await expect(page.getByText('PRESS START')).toBeVisible();

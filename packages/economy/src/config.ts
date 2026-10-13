@@ -6,9 +6,15 @@ export const CREDITS = {
   packPrice: 150,
   win: { easy: 100, medium: 200, hard: 300 },
   loss: { easy: 30, medium: 50, hard: 70 },
+  /** What a premade deck costs in the Poké Mart, by kind. */
+  deckPrices: { starter: 300, theme: 600, meta: 1200 },
 } as const;
 
 export type Difficulty = keyof typeof CREDITS.win;
+
+export type PremadeKind = keyof typeof CREDITS.deckPrices;
+
+export const deckPrice = (kind: PremadeKind): number => CREDITS.deckPrices[kind];
 
 /** Credits for a finished bot game. A concede by the human pays nothing; a draw pays as a loss. */
 export function creditsFor(result: GameResult, humanSeat: PlayerId, difficulty: Difficulty): number {

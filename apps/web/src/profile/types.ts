@@ -2,6 +2,7 @@ import { CREDITS } from '@ptcg/economy';
 import { emptyFrontier, normalizeFrontier, type FrontierProgress } from '../game/frontier/save.ts';
 import { emptyGym, normalizeGym, type GymProgress } from '../game/gym.ts';
 import { MAX_BINDERS, normalizeBinder } from './binders.ts';
+import { upgradeOwnedDecks } from './ownedDecks.ts';
 
 export interface CustomDeck {
   id: string;
@@ -39,6 +40,8 @@ export interface Profile {
   /** Owned copies by card id. */
   collection: Record<string, number>;
   decks: CustomDeck[];
+  /** Premade decks the player owns (their starter, plus any bought in the Poké Mart). */
+  ownedDecks: string[];
   /** Seeds of bot games that already paid credits (most recent last). */
   awardedGames: number[];
   /** Set by the first-launch intro. */
@@ -67,6 +70,7 @@ export function newProfile(): Profile {
     credits: CREDITS.start,
     collection: {},
     decks: [],
+    ownedDecks: [],
     awardedGames: [],
     playerName: null,
     starterDeck: null,
@@ -86,12 +90,13 @@ export function normalizeProfile(raw: Partial<Profile> & { version: 1 }): Profil
         .filter((b): b is CustomBinder => b !== null)
         .slice(0, MAX_BINDERS)
     : [];
-  return {
+  return upgradeOwnedDecks({
     ...newProfile(),
     ...raw,
+    ownedDecks: Array.isArray(raw.ownedDecks) ? raw.ownedDecks.filter((id) => typeof id === 'string') : [],
     binders,
     collectorMode: raw.collectorMode === true,
     gym: normalizeGym(raw.gym),
     frontier: normalizeFrontier(raw.frontier),
-  };
+  });
 }

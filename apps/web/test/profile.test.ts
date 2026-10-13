@@ -30,6 +30,7 @@ test('a new profile starts with 500 credits and nothing else', () => {
     version: 1,
     credits: CREDITS.start,
     collection: {},
+    ownedDecks: [],
     decks: [],
     awardedGames: [],
     playerName: null,
@@ -184,6 +185,7 @@ describe('intro fields', () => {
     const loaded = await (await openIndexedDbStore(dbName)).load();
     expect(loaded).toEqual({
       ...m4,
+      ownedDecks: [],
       playerName: null,
       starterDeck: null,
       introDone: false,

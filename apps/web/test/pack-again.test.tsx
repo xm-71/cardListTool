@@ -27,6 +27,8 @@ async function openFirstPack(profile: Partial<Profile>) {
   return opening;
 }
 
+/** A finished intro owns its starter deck: those cards are in the collection before any pack is opened. */
+const STARTER_CARDS = 60;
 const owned = () => Object.values(useProfile.getState().profile.collection).reduce((a, b) => a + b, 0);
 
 beforeEach(() => useSettings.getState().setSound(false));
@@ -40,7 +42,7 @@ test('with the credits, the same pack can be opened again without going back to 
   expect(await screen.findByText('Card 0 of 10', {}, { timeout: 4000 })).toBeInTheDocument();
   const next = screen.getByRole('dialog', { name: 'Pack opening' });
   expect(screen.getByText(/¢ 200 credits/)).toBeInTheDocument();
-  expect(owned()).toBe(20);
+  expect(owned()).toBe(STARTER_CARDS + 20);
   fireEvent.click(within(next).getByRole('button', { name: 'Reveal all' }));
   fireEvent.click(within(next).getByRole('button', { name: 'Done' }));
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Pack opening' })).not.toBeInTheDocument());
@@ -59,5 +61,5 @@ test('in Collector mode another pack is always one click away, with no price', a
   expect(again).toBeEnabled();
   fireEvent.click(again);
   await screen.findByText('Card 0 of 10', {}, { timeout: 4000 });
-  expect(owned()).toBe(20);
+  expect(owned()).toBe(STARTER_CARDS + 20);
 });

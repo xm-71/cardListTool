@@ -4,12 +4,15 @@ import { attachFromDeck, benchFromHand, swapActiveTo } from '@ptcg/engine/testin
 import { App } from '../src/App.tsx';
 import { createSyncBotClient } from '../src/game/botClient.ts';
 import { actorOf, useGame } from '../src/game/store.ts';
-import { botCfg, mutate, seedWhereSeat0PromptsFirst } from './helpers.ts';
+import { botCfg, mutate, ownEveryDeck, seedWhereSeat0PromptsFirst } from './helpers.ts';
 
 const bot = createSyncBotClient();
 const opts = { timeout: 8000 };
 
-beforeEach(() => useGame.getState().reset());
+beforeEach(async () => {
+  useGame.getState().reset();
+  await ownEveryDeck();
+});
 
 function renderApp() {
   return render(<App startAt="duel" botClient={bot} botDelayMs={0} />);

@@ -12,11 +12,39 @@ import { EraList } from '../ui/shop/EraList.tsx';
 import { PackDetail, type PackBuy } from '../ui/shop/PackDetail.tsx';
 import { PackRow } from '../ui/shop/PackRow.tsx';
 import { PackTile } from '../ui/shop/PackTile.tsx';
+import { DeckShop } from '../ui/shop/DeckShop.tsx';
 
+type Tab = 'packs' | 'decks';
+
+/** The Poké Mart: packs, and premade decks (not in Collector mode, where battling is closed). */
 export function Shop() {
+  const collector = useProfile((s) => s.profile.collectorMode);
+  const [tab, setTab] = useState<Tab>('packs');
+  // The tabs sit beside the Back button, so they cost no height: the packs stay above the fold.
+  const tabs = collector ? undefined : (
+    <div role="tablist" aria-label="Shop sections" className="flex gap-2">
+      {(
+        [
+          ['packs', 'Packs'],
+          ['decks', 'Decks'],
+        ] as const
+      ).map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={tab === id}
+          onClick={() => setTab(id)}
+          className={`border-4 border-ink px-4 py-2 font-pixel text-[10px] uppercase ${tab === id ? 'retro-shadow bg-yellow text-ink-fixed' : 'bg-paper hover:bg-cream'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
   return (
-    <ScreenFrame wide>
-      <ShopBody />
+    <ScreenFrame wide actions={tabs}>
+      {!collector && tab === 'decks' ? <DeckShop /> : <ShopBody />}
     </ScreenFrame>
   );
 }

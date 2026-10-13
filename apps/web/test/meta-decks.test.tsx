@@ -3,7 +3,7 @@ import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
 import { DECKS, deckById } from '../src/game/catalog.ts';
 import { useGame } from '../src/game/store.ts';
-import { useProfile } from '../src/profile/useProfile.ts';
+import { ownEveryDeck } from './helpers.ts';
 
 const never = { choose: () => new Promise<never>(() => {}) };
 const META = [
@@ -15,9 +15,9 @@ const META = [
   'meta-crustle',
 ] as const;
 
-beforeEach(() => {
+beforeEach(async () => {
   useGame.getState().reset();
-  useProfile.getState().reset();
+  await ownEveryDeck();
 });
 
 test('the six meta decks are in the deck list as meta decks, with a cover card from the deck', () => {
