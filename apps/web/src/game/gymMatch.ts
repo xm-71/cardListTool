@@ -3,7 +3,7 @@ import { registry, type DeckSource } from './catalog.ts';
 import {
   CHAMPION_STAGE,
   ELITE,
-  LEADERS,
+  findLeader,
   championDeckFor,
   mainEnergyType,
   type DeckRef,
@@ -39,7 +39,7 @@ const randomSeed = (): number => (Date.now() ^ Math.floor(Math.random() * 2 ** 3
 
 /** Starts a gym match against `leader` with the player's `deck`. */
 export function startGymMatch(leaderId: string, deck: DeckSource): void {
-  const leader = LEADERS.find((l) => l.id === leaderId)!;
+  const leader = findLeader(leaderId)!;
   useGame.getState().start({
     mode: 'bot',
     difficulty: leader.difficulty,
