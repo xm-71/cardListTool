@@ -126,13 +126,15 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   'blue-fire': [45, 65],
   'blue-water': [45, 65],
   'blue-grass': [45, 65],
-  morty: [45, 65],
-  whitney: [45, 65],
+  morty: [50, 70],
+  // Johto's last two gyms use the Hard bot in the game; the balance run pilots them with the Medium bot, so their
+  // targets sit higher than Kanto's.
+  whitney: [45, 70],
   falkner: [40, 60],
   bugsy: [45, 65],
 };
 
-/** The first four gyms are piloted by the Easy bot in the game; every other Gym deck by the Medium bot. */
+/** The first four Kanto gyms are piloted by the Easy bot in the game; every other Gym deck by the Medium bot (or Hard, for Johto's Whitney and Morty: too slow for a bulk run). */
 const EASY_PILOTED = new Set(['brock', 'surge', 'misty', 'erika']);
 
 if (gym) {
