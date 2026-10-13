@@ -14,7 +14,14 @@ let store = createMemoryStore();
 
 async function open(profile: Partial<Profile> = {}) {
   useProfile.getState().reset();
-  store = createMemoryStore({ ...newProfile(), introDone: true, collection: owned, ...profile });
+  // The deck is already owned, so its cards aren't added on top of the collection under test.
+  store = createMemoryStore({
+    ...newProfile(),
+    introDone: true,
+    collection: owned,
+    ownedDecks: ['mega-gengar'],
+    ...profile,
+  });
   await useProfile.getState().init(store, true);
   render(<Binder />);
   fireEvent.click(screen.getByRole('tab', { name: 'My binders' }));
