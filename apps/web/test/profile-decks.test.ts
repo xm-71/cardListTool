@@ -28,7 +28,7 @@ describe('the intro', () => {
 
   test('skipping the deck choice owns Mega Gengar', async () => {
     await useProfile.getState().init(createMemoryStore(), true);
-    await useProfile.getState().finishIntro('ASH', undefined);
+    await useProfile.getState().finishIntro('ASH', null);
     expect(state().ownedDecks).toEqual(['mega-gengar']);
     expect(total(state().collection)).toBe(60);
   });

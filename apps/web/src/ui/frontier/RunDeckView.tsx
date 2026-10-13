@@ -7,10 +7,10 @@ const GROUPS = [
   { title: 'Energy', category: 'Energy' },
 ] as const;
 
-/** The run deck as a list grouped by card kind, with counts. */
-export function RunDeckView({ cards }: { cards: RunCards }) {
+/** A deck as a list grouped by card kind, with counts. `label` names the region (the run deck by default). */
+export function RunDeckView({ cards, label = 'Run deck' }: { cards: RunCards; label?: string }) {
   return (
-    <section aria-label="Run deck" className="retro-box grid gap-4 p-4 sm:grid-cols-3">
+    <section aria-label={label} className="retro-box grid gap-4 p-4 sm:grid-cols-3">
       {GROUPS.map((g) => {
         const rows = cards.filter((c) => registry.defs[c.id]?.category === g.category);
         const total = rows.reduce((n, c) => n + c.count, 0);
