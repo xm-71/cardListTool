@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { validateCustomDeck } from '@ptcg/economy';
 import { sfx } from '../audio/sfx.ts';
-import { deckSources, registry } from '../game/catalog.ts';
+import { deckSources, ownedDeckSources, registry } from '../game/catalog.ts';
 import { useGame } from '../game/store.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useProfile } from '../profile/useProfile.ts';
@@ -24,29 +24,32 @@ export function DuelSetup() {
   const customDecks = useProfile((s) => s.profile.decks);
   const collection = useProfile((s) => s.profile.collection);
   const starter = useProfile((s) => s.profile.starterDeck);
+  const ownedDecks = useProfile((s) => s.profile.ownedDecks);
   // Custom decks that no longer validate (e.g. a card's playable status changed) are left out.
-  const decks = useMemo(
+  const validCustom = useMemo(
     () =>
-      deckSources(
-        customDecks.filter(
-          (d) => validateCustomDeck({ name: d.name, cards: d.cards }, registry, collection).length === 0,
-        ),
+      customDecks.filter(
+        (d) => validateCustomDeck({ name: d.name, cards: d.cards }, registry, collection).length === 0,
       ),
     [customDecks, collection],
   );
-  const [mine, setMine] = useState(starter ?? 'mega-gengar');
+  // The player plays the decks they own; a hotseat friend can take any premade deck.
+  const decks = useMemo(() => ownedDeckSources(ownedDecks, validCustom), [ownedDecks, validCustom]);
+  const allDecks = useMemo(() => deckSources(validCustom), [validCustom]);
+  const [pickedMine, setMine] = useState(starter ?? 'mega-gengar');
+  const mine = decks.some((d) => d.id === pickedMine) ? pickedMine : (decks[0]?.id ?? pickedMine);
   const [theirs, setTheirs] = useState('mega-diancie');
   const hotseat = opponent === 'hotseat';
-  const listOf = (id: string) => (decks.find((d) => d.id === id) ?? decks[0]!).list;
-  // Bots play a random starter or theme deck (every deck the game ships, never a custom one).
-  const botPool = decks.filter((d) => d.kind !== 'custom');
+  const listOf = (id: string, among = decks) => (among.find((d) => d.id === id) ?? among[0]!).list;
+  // Bots play a random starter, theme or meta deck: every premade deck, owned by the player or not.
+  const botPool = allDecks.filter((d) => d.kind !== 'custom');
   const play = () => {
     sfx('confirm');
     start({
       mode: hotseat ? 'hotseat' : 'bot',
       difficulty: hotseat ? undefined : opponent,
       humanDeck: listOf(mine),
-      botDeck: hotseat ? listOf(theirs) : botPool[Math.floor(Math.random() * botPool.length)]!.list,
+      botDeck: hotseat ? listOf(theirs, allDecks) : botPool[Math.floor(Math.random() * botPool.length)]!.list,
       seed: (Date.now() ^ Math.floor(Math.random() * 2 ** 31)) >>> 0,
     });
   };
@@ -80,7 +83,7 @@ export function DuelSetup() {
         <DeckChoice
           label="Player 2's deck"
           group="Opponent's deck"
-          decks={decks}
+          decks={allDecks}
           value={theirs}
           onChange={setTheirs}
         />
@@ -89,7 +92,7 @@ export function DuelSetup() {
           <p className="text-xl">Random: the bot plays a surprise starter, theme or meta deck.</p>
         </Box>
       )}
-      <Button onClick={play} className="self-center px-10 py-4 text-sm">
+      <Button onClick={play} disabled={decks.length === 0} className="self-center px-10 py-4 text-sm">
         Play
       </Button>
     </ScreenFrame>

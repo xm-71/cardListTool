@@ -207,6 +207,14 @@ export function deckSources(
   ];
 }
 
+/** What the player can pick for themselves: the premade decks they own (in catalog order), then their custom decks. */
+export function ownedDeckSources(
+  owned: readonly string[],
+  custom: readonly { id: string; name: string; cards: DeckList['cards'] }[],
+): DeckSource[] {
+  return deckSources(custom).filter((d) => d.kind === 'custom' || owned.includes(d.id));
+}
+
 /** Card eras, in the order the Shop and Binder show them. */
 export const ERAS = [
   { id: 'mega', label: 'Mega Evolution era', short: 'Mega' },

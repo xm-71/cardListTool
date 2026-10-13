@@ -3,15 +3,16 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { App } from '../src/App.tsx';
 import { DECKS } from '../src/game/catalog.ts';
 import { useGame } from '../src/game/store.ts';
+import { ownEveryDeck } from './helpers.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { newProfile } from '../src/profile/types.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
 
 const never = { choose: () => new Promise<never>(() => {}) };
 
-beforeEach(() => {
+beforeEach(async () => {
   useGame.getState().reset();
-  useProfile.getState().reset();
+  await ownEveryDeck();
 });
 afterEach(() => vi.restoreAllMocks());
 

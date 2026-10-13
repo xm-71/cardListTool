@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { validateGymDeck } from '@ptcg/economy';
 import { sfx } from '../audio/sfx.ts';
-import { deckSources, registry, type DeckSource } from '../game/catalog.ts';
+import { ownedDeckSources, registry, type DeckSource } from '../game/catalog.ts';
 import {
   CHAMPION_STAGE,
   ELITE,
@@ -152,15 +152,17 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
   const gym = useProfile((s) => s.profile.gym);
   const startEliteRun = useProfile((s) => s.startEliteRun);
   const starter = useProfile((s) => s.profile.starterDeck);
-  // Custom decks that are not Gym-legal (or no longer owned) are left out.
+  const ownedDecks = useProfile((s) => s.profile.ownedDecks);
+  // Premade decks the player owns, then custom decks; custom decks that are not Gym-legal (or no longer owned) are left out.
   const decks = useMemo(
     () =>
-      deckSources(
+      ownedDeckSources(
+        ownedDecks,
         customDecks.filter(
           (d) => validateGymDeck({ name: d.name, cards: d.cards }, registry, collection).length === 0,
         ),
       ),
-    [customDecks, collection],
+    [ownedDecks, customDecks, collection],
   );
   const run = setup.kind === 'elite' ? gym.run : null;
   const locked = run ? runDeckSource(run.deck) : undefined;

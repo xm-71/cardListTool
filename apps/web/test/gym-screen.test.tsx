@@ -45,10 +45,7 @@ const tile = (name: string) =>
 test('the main menu has Gym Challenge after Duel', async () => {
   await launch('menu');
   const items = within(screen.getByRole('menu', { name: 'Main menu' })).getAllByRole('menuitem');
-  expect(items.map((i) => i.getAttribute('aria-label')).slice(0, 2)).toEqual([
-    'Duel',
-    'Gym Challenge',
-  ]);
+  expect(items.map((i) => i.getAttribute('aria-label')).slice(0, 2)).toEqual(['Duel', 'Gym Challenge']);
   fireEvent.click(items[1]!);
   expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
 });
@@ -155,7 +152,7 @@ test('a custom deck with 151 cards is offered in Gym Challenge', async () => {
 });
 
 test('Start Elite Four locks the chosen deck and starts with Lorelei', async () => {
-  await launch('gym', { gym: gymOf(8) });
+  await launch('gym', { gym: gymOf(8), ownedDecks: ['mega-gengar', 'mega-lucario'] });
   fireEvent.click(screen.getByRole('button', { name: 'Start Elite Four' }));
   fireEvent.click(screen.getByRole('button', { name: /Mega Lucario ex/ }));
   fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));

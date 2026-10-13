@@ -9,8 +9,12 @@ import type { BotClient, BotSetup } from '../src/game/botClient.ts';
 import { botFor, createSyncBotClient } from '../src/game/botClient.ts';
 import { useGame } from '../src/game/store.ts';
 import { SlotView } from '../src/ui/SlotView.tsx';
+import { ownEveryDeck } from './helpers.ts';
 
-beforeEach(() => useGame.getState().reset());
+beforeEach(async () => {
+  useGame.getState().reset();
+  await ownEveryDeck();
+});
 
 describe('Home deck picker', () => {
   test('groups decks into Starter decks (3) and Theme decks (6), with no Custom section when there are none', () => {
