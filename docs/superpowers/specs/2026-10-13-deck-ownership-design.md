@@ -28,10 +28,10 @@ playable custom decks.
 - The save gains `ownedDecks: string[]`: the ids of premade decks the player owns, in the order they got them.
 - **Intro:** finishing the intro sets `ownedDecks` to the chosen starter (Mega Gengar when skipped) and adds its 60
   cards to the collection.
-- **Existing saves** (no `ownedDecks` field yet): when the save loads, `ownedDecks` becomes `[starterDeck]` (Mega
-  Gengar if the starter is missing or unknown) and that deck's 60 cards are added to the collection. A save that has
-  the field is never migrated again, so the cards are granted once. A save whose intro isn't finished gets
-  `ownedDecks: []`; the intro grants the starter.
+- **Existing saves:** when a save loads with the intro finished and no owned decks (true of every save made before
+  this update), `ownedDecks` becomes `[starterDeck]` (Mega Gengar if the starter is missing or unknown) and that deck's
+  60 cards are added to the collection. Once a deck is owned the rule no longer applies (decks can't be sold), so the
+  cards are granted once. A save whose intro isn't finished gets `ownedDecks: []`; the intro grants the starter.
 - Unknown ids in `ownedDecks` (a deck later removed from the game) are dropped when the save loads.
 
 ### Prices and the Decks tab
