@@ -152,6 +152,14 @@ test('My House opens the Trainer Card with name, credits, deck, badges and the F
   expect(useNav.getState().route).toBe('frontier');
 });
 
+test('the Trainer Card shows an owned deck even when the saved default is not owned', async () => {
+  await launch({ starterDeck: 'mega-lucario', ownedDecks: ['mega-diancie'] });
+  fireEvent.click(item('My House'));
+  const card = screen.getByRole('dialog', { name: 'Trainer Card' });
+  expect(within(card).getByText('Mega Diancie ex')).toBeInTheDocument();
+  expect(within(card).queryByText('Mega Lucario ex')).toBeNull();
+});
+
 test('the Trainer Card closes with Escape and gives the town its keys back', async () => {
   await launch();
   fireEvent.keyDown(menu(), { key: 'ArrowUp' }); // Duel Hall → Frontier

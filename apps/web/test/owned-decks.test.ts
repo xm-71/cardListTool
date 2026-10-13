@@ -39,6 +39,11 @@ describe('upgrading a save', () => {
     ]);
   });
 
+  test('the saved starter becomes the deck that was actually granted', () => {
+    expect(normalizeProfile(raw({ introDone: true, starterDeck: 'nope' })).starterDeck).toBe('mega-gengar');
+    expect(normalizeProfile(raw({ introDone: true, starterDeck: null })).starterDeck).toBe('mega-gengar');
+  });
+
   test('a profile that only sets introDone (as the screen tests do) owns Mega Gengar', () => {
     expect(normalizeProfile({ ...newProfile(), introDone: true }).ownedDecks).toEqual(['mega-gengar']);
   });

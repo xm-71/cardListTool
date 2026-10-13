@@ -16,7 +16,11 @@ interface Props {
 export function TrainerCard({ onClose, onGo }: Props) {
   const profile = useProfile((s) => s.profile);
   const s = townStatus(profile);
-  const deck = deckById((profile.starterDeck ?? 'mega-gengar') as DeckId) ?? deckById('mega-gengar');
+  // The default deck if it is owned, otherwise the first deck the player owns.
+  const shown = profile.ownedDecks.includes(profile.starterDeck ?? '')
+    ? profile.starterDeck
+    : profile.ownedDecks[0];
+  const deck = deckById((shown ?? 'mega-gengar') as DeckId) ?? deckById('mega-gengar');
   const collector = profile.collectorMode;
   const binder = collector ? latestBinder(profile) : null;
   return (

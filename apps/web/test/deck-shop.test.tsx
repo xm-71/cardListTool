@@ -79,6 +79,18 @@ test('buying a theme deck charges 600, marks it OWNED and adds its cards', async
   expect(screen.getByRole('button', { name: `View ${theme.name}` })).toHaveTextContent('OWNED');
 });
 
+test('after buying, focus moves to the confirmation instead of being lost', async () => {
+  await launch({ credits: 1000 });
+  openDecks();
+  view(theme.name);
+  const sheet = screen.getByRole('dialog', { name: theme.name });
+  await act(
+    async () => void fireEvent.click(within(sheet).getByRole('button', { name: 'Buy for 600 credits' })),
+  );
+  const status = await within(sheet).findByText('Added to your decks. 60 cards added to your binder.');
+  expect(status).toHaveFocus();
+});
+
 test('the buy button reads Not enough credits and is disabled below the price', async () => {
   await launch({ credits: 599 });
   openDecks();

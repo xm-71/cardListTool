@@ -35,12 +35,18 @@ describe('the intro', () => {
 });
 
 describe('replaying the intro', () => {
-  test('changes the default deck but grants nothing new', async () => {
+  test('picking a deck the player does not own grants nothing and keeps the default deck', async () => {
     await launch({ ownedDecks: ['mega-gengar'], starterDeck: 'mega-gengar', collection: { x: 1 } });
     await useProfile.getState().finishIntro('ASH', 'mega-lucario');
-    expect(state().starterDeck).toBe('mega-lucario');
+    expect(state().starterDeck).toBe('mega-gengar');
     expect(state().ownedDecks).toEqual(['mega-gengar']);
     expect(state().collection).toEqual({ x: 1 });
+  });
+
+  test('picking an owned deck makes it the default', async () => {
+    await launch({ ownedDecks: ['mega-gengar', 'mega-lucario'], starterDeck: 'mega-gengar' });
+    await useProfile.getState().finishIntro('ASH', 'mega-lucario');
+    expect(state().starterDeck).toBe('mega-lucario');
   });
 });
 

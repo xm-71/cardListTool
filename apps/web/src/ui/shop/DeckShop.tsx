@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deckPrice } from '@ptcg/economy';
 import { DECKS, registry, type DeckInfo } from '../../game/catalog.ts';
 import { useProfile } from '../../profile/useProfile.ts';
@@ -24,6 +24,11 @@ export function DeckShop() {
   const [error, setError] = useState<string | null>(null);
   // A ref, not state: two presses in the same tick must not both start a purchase.
   const busy = useRef(false);
+  const confirmation = useRef<HTMLParagraphElement>(null);
+  // The Buy button is gone once the deck is bought: keep focus in the sheet, on the confirmation.
+  useEffect(() => {
+    if (bought) confirmation.current?.focus();
+  }, [bought]);
   const open = DECKS.find((d) => d.id === openId);
 
   const buy = async (deck: DeckInfo) => {
@@ -83,7 +88,7 @@ export function DeckShop() {
         <Sheet title={open.name} onClose={() => setOpenId(null)} className="max-h-[85dvh]">
           <RunDeckView cards={open.list.cards} label="Deck list" />
           {bought === open.id && (
-            <p role="status" className="text-xl">
+            <p ref={confirmation} role="status" tabIndex={-1} className="text-xl outline-none">
               Added to your decks. 60 cards added to your binder.
             </p>
           )}

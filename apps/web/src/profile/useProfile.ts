@@ -413,19 +413,24 @@ export const useProfile = create<ProfileState>()((set, get) => {
     },
     async finishIntro(name, deck) {
       await change((p) => {
-        const starterDeck = deck ?? p.starterDeck ?? 'mega-gengar';
+        const first = p.ownedDecks.length === 0;
+        const picked = deck ?? p.starterDeck ?? FALLBACK_STARTER;
+        // The first intro gives the starter deck and its cards. Replaying it can only change the default deck to one
+        // the player owns, so the Trainer Card and the deck lists never disagree.
+        const starterDeck = first
+          ? isPremadeDeck(picked)
+            ? picked
+            : FALLBACK_STARTER
+          : p.ownedDecks.includes(picked)
+            ? picked
+            : (p.starterDeck ?? p.ownedDecks[0]!);
         const next = {
           ...p,
           playerName: name.trim() ? cleanName(name) : (p.playerName ?? 'PLAYER'),
           starterDeck,
           introDone: true,
         };
-        // The first intro gives the starter deck and its cards. Replaying it later only changes the default deck.
-        const owned =
-          p.ownedDecks.length > 0
-            ? next
-            : grantDeck(next, isPremadeDeck(starterDeck) ? starterDeck : FALLBACK_STARTER);
-        return { next: owned, result: undefined };
+        return { next: first ? grantDeck(next, starterDeck as DeckId) : next, result: undefined };
       });
     },
     async saveBinder(binder) {

@@ -26,7 +26,7 @@ export function upgradeOwnedDecks(p: Profile): Profile {
   if (!cleaned.introDone || cleaned.ownedDecks.length > 0) return cleaned;
   const starter =
     cleaned.starterDeck && isPremadeDeck(cleaned.starterDeck) ? cleaned.starterDeck : FALLBACK_STARTER;
-  return grantDeck(cleaned, starter);
+  return grantDeck({ ...cleaned, starterDeck: starter }, starter);
 }
 
 /** Why `id` can't be bought right now, or null when it can. */
