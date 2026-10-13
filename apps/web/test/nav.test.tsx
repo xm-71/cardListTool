@@ -46,11 +46,8 @@ test('first launch: PRESS START leads to the intro, which ends in the main menu'
     introDone: true,
   });
   fireEvent.click(screen.getByRole('menuitem', { name: 'Duel' }));
-  const yours = screen.getByRole('group', { name: 'Your deck' });
-  expect(within(yours).getByRole('button', { name: /Mega Lucario ex/ })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  expect(screen.getByText('Mega Lucario ex')).toBeInTheDocument();
+  expect(useProfile.getState().profile.activeDeck).toBe('mega-lucario');
 });
 
 test('a returning player goes straight from the title to the menu', async () => {

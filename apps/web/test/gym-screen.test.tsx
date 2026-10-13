@@ -116,8 +116,7 @@ test('Challenge shows the leader’s intro and the Gym deck picker, then Battle 
   await launch('gym');
   fireEvent.click(screen.getByRole('button', { name: 'Challenge Brock' }));
   expect(screen.getByText(/Brock's Gym/)).toBeInTheDocument();
-  const picker = screen.getByRole('group', { name: 'Your deck' });
-  expect(within(picker).getByRole('group', { name: 'Starter decks' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Change' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
   const { config } = useGame.getState();
   expect(config).toMatchObject({ mode: 'bot', difficulty: 'easy', botDeck: GYM_DECKS.brock });
@@ -131,8 +130,9 @@ test('Medium-bot gyms use the Medium bot', async () => {
   expect(useGame.getState().config).toMatchObject({ difficulty: 'medium', botDeck: GYM_DECKS.koga });
 });
 
-test('a custom deck with 151 cards is offered in Gym Challenge', async () => {
+test('a custom deck with 151 cards can be the active deck in Gym Challenge', async () => {
   await launch('gym', {
+    activeDeck: 'custom:rock',
     collection: { 'sv03.5-074': 4 },
     decks: [
       {
@@ -146,15 +146,16 @@ test('a custom deck with 151 cards is offered in Gym Challenge', async () => {
     ],
   });
   fireEvent.click(screen.getByRole('button', { name: 'Challenge Brock' }));
-  expect(
-    within(screen.getByRole('group', { name: 'Custom decks' })).getByText('Rock Party'),
-  ).toBeInTheDocument();
+  expect(screen.getByText('Rock Party')).toBeInTheDocument();
 });
 
 test('Start Elite Four locks the chosen deck and starts with Lorelei', async () => {
-  await launch('gym', { gym: gymOf(8), ownedDecks: ['mega-gengar', 'mega-lucario'] });
+  await launch('gym', {
+    gym: gymOf(8),
+    ownedDecks: ['mega-gengar', 'mega-lucario'],
+    activeDeck: 'mega-lucario',
+  });
   fireEvent.click(screen.getByRole('button', { name: 'Start Elite Four' }));
-  fireEvent.click(screen.getByRole('button', { name: /Mega Lucario ex/ }));
   fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
   await waitFor(() => expect(useGame.getState().config?.context).toMatchObject({ kind: 'elite', stage: 0 }));
   expect(useGame.getState().config?.botDeck).toBe(GYM_DECKS.lorelei);

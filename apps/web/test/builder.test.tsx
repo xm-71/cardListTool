@@ -9,7 +9,7 @@ import { useGame } from '../src/game/store.ts';
 import { DeckBuilder } from '../src/screens/DeckBuilder.tsx';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
 import { useProfile } from '../src/profile/useProfile.ts';
-import { newProfile, type CustomDeck } from '../src/profile/types.ts';
+import { newProfile, type CustomDeck, type Profile } from '../src/profile/types.ts';
 
 const GASTLY = 'me02-054';
 const ULTRA_BALL = 'me01-131';
@@ -25,13 +25,14 @@ const ghosts: CustomDeck = {
   ],
 };
 
-async function setProfile(decks: CustomDeck[] = []) {
+async function setProfile(decks: CustomDeck[] = [], extra: Partial<Profile> = {}) {
   useProfile.getState().reset();
   await useProfile.getState().init(
     createMemoryStore({
       ...newProfile(),
       collection: { [GASTLY]: 4, [ULTRA_BALL]: 3, [unplayable.id]: 2 },
       decks,
+      ...extra,
     }),
     true,
   );
@@ -103,11 +104,10 @@ describe('deck builder', () => {
 });
 
 describe('custom decks in play', () => {
-  test('a saved deck appears in the Home picker and starts a game with its cards', async () => {
-    await setProfile([ghosts]);
+  test('the active custom deck is shown in Duel and starts a game with its cards', async () => {
+    await setProfile([ghosts], { activeDeck: `custom:${ghosts.id}` });
     render(<App startAt="duel" botClient={{ choose: () => new Promise(() => {}) }} botDelayMs={0} />);
-    const yours = screen.getByRole('group', { name: 'Your deck' });
-    fireEvent.click(within(yours).getByRole('button', { name: /Ghost Party/ }));
+    expect(screen.getByText('Ghost Party')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     const { config, state } = useGame.getState();
     expect(config?.humanDeck).toEqual({ name: 'Ghost Party', cards: ghosts.cards });
@@ -116,7 +116,7 @@ describe('custom decks in play', () => {
   });
 
   test('(RF5) a Medium bot game sends the custom decklist to the bot', async () => {
-    await setProfile([ghosts]);
+    await setProfile([ghosts], { activeDeck: `custom:${ghosts.id}` });
     const seen: BotSetup[] = [];
     const sync = createSyncBotClient();
     const spy: BotClient = {
@@ -127,9 +127,6 @@ describe('custom decks in play', () => {
     };
     render(<App startAt="duel" botClient={spy} botDelayMs={0} />);
     fireEvent.click(screen.getByLabelText('Medium bot'));
-    fireEvent.click(
-      within(screen.getByRole('group', { name: 'Your deck' })).getByRole('button', { name: /Ghost Party/ }),
-    );
     fireEvent.click(screen.getByRole('button', { name: 'Play' }));
     await waitFor(
       () => {

@@ -23,40 +23,21 @@ async function launch(route: Route, profile: Partial<Profile> = {}) {
   render(<App botClient={never} botDelayMs={0} />);
 }
 
-const yours = () => screen.getByRole('group', { name: 'Your deck' });
-const names = (group: HTMLElement) =>
-  within(group)
-    .queryAllByRole('button')
-    .map((b) => b.textContent);
+/** The "Your deck" panel on a setup screen. */
+const panel = () => within(screen.getByRole('heading', { name: 'Your deck' }).parentElement!);
 
 beforeEach(() => useSettings.getState().setSound(false));
 afterEach(() => vi.restoreAllMocks());
 
-test('Duel lists only owned premade decks', async () => {
+test('Duel shows the starter as the deck and no deck tiles', async () => {
   await launch('duel', { ownedDecks: ['mega-gengar'] });
-  expect(names(yours())).toEqual(['Mega Gengar ex']);
-  expect(within(yours()).queryByRole('group', { name: 'Theme decks' })).toBeNull();
+  expect(panel().getByText('Mega Gengar ex')).toBeInTheDocument();
+  expect(screen.queryByRole('group', { name: 'Theme decks' })).toBeNull();
 });
 
-test('Duel lists a bought deck after the starter, then valid custom decks', async () => {
-  await launch('duel', {
-    ownedDecks: ['mega-gengar', theme.id],
-    collection: { 'sv03.5-074': 4 },
-    decks: [
-      {
-        id: 'rock',
-        name: 'Rock Party',
-        cards: [
-          { id: 'sv03.5-074', count: 4 },
-          { id: 'mee-006', count: 56 },
-        ],
-      },
-    ],
-  });
-  const list = names(yours());
-  expect(list).toContain('Mega Gengar ex');
-  expect(list).toContain(theme.name);
-  expect(list).not.toContain('Mega Diancie ex');
+test('Duel shows a bought deck when it is the active deck', async () => {
+  await launch('duel', { ownedDecks: ['mega-gengar', theme.id], activeDeck: theme.id });
+  expect(panel().getByText(theme.name)).toBeInTheDocument();
 });
 
 test('hotseat player 2 can pick any premade deck', async () => {
@@ -77,18 +58,15 @@ test('bots still play every premade deck, owned or not', async () => {
   expect(useGame.getState().config?.botDeck).toBe(DECKS.at(-1)!.list);
 });
 
-test('the default deck falls back to the first owned deck when the saved starter is not owned', async () => {
+test('the deck falls back to the first owned deck when the saved starter is not owned', async () => {
   await launch('duel', { starterDeck: 'mega-lucario', ownedDecks: ['mega-diancie'] });
-  expect(within(yours()).getByRole('button', { name: /Mega Diancie ex/ })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  expect(panel().getByText('Mega Diancie ex')).toBeInTheDocument();
 });
 
-test('Gym match setup lists only owned decks', async () => {
+test('Gym match setup shows the active owned deck', async () => {
   await launch('gym', { ownedDecks: ['mega-gengar'] });
   fireEvent.click(screen.getByRole('button', { name: 'Challenge Brock' }));
-  expect(names(yours())).toEqual(['Mega Gengar ex']);
+  expect(panel().getByText('Mega Gengar ex')).toBeInTheDocument();
 });
 
 test('an Elite Four run in progress keeps its locked deck even if it is not owned', async () => {

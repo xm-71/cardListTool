@@ -26,8 +26,26 @@ export interface Building {
 
 /** In the old menu's order (the order they're read out), then My House. */
 export const BUILDINGS: readonly Building[] = [
-  { id: 'duel', route: 'duel', label: 'Duel', sign: 'Duel Hall', row: 1, col: 2, battle: true, roof: '#d84848' },
-  { id: 'gym', route: 'gym', label: 'Gym Challenge', sign: 'Gym', row: 0, col: 1, battle: true, roof: '#3868c0' },
+  {
+    id: 'duel',
+    route: 'duel',
+    label: 'Duel',
+    sign: 'Duel Hall',
+    row: 1,
+    col: 2,
+    battle: true,
+    roof: '#d84848',
+  },
+  {
+    id: 'gym',
+    route: 'gym',
+    label: 'Gym Challenge',
+    sign: 'Gym',
+    row: 0,
+    col: 1,
+    battle: true,
+    roof: '#3868c0',
+  },
   {
     id: 'frontier',
     route: 'frontier',
@@ -38,9 +56,36 @@ export const BUILDINGS: readonly Building[] = [
     battle: true,
     roof: '#8060c0',
   },
-  { id: 'shop', route: 'shop', label: 'Shop', sign: 'Poké Mart', row: 1, col: 0, battle: false, roof: '#58a0d8' },
-  { id: 'binder', route: 'binder', label: 'Binder', sign: 'Binder', row: 2, col: 1, battle: false, roof: '#58a050' },
-  { id: 'decks', route: 'decks', label: 'Decks', sign: 'Deck Lab', row: 2, col: 0, battle: true, roof: '#e890b8' },
+  {
+    id: 'shop',
+    route: 'shop',
+    label: 'Shop',
+    sign: 'Poké Mart',
+    row: 1,
+    col: 0,
+    battle: false,
+    roof: '#58a0d8',
+  },
+  {
+    id: 'binder',
+    route: 'binder',
+    label: 'Binder',
+    sign: 'Binder',
+    row: 2,
+    col: 1,
+    battle: false,
+    roof: '#58a050',
+  },
+  {
+    id: 'decks',
+    route: 'decks',
+    label: 'Decks',
+    sign: 'Deck Lab',
+    row: 2,
+    col: 0,
+    battle: true,
+    roof: '#e890b8',
+  },
   {
     id: 'options',
     route: 'options',
@@ -51,7 +96,16 @@ export const BUILDINGS: readonly Building[] = [
     battle: false,
     roof: '#a8a8a8',
   },
-  { id: 'house', route: null, label: 'My House', sign: 'My House', row: 0, col: 0, battle: false, roof: '#f0c030' },
+  {
+    id: 'house',
+    route: null,
+    label: 'My House',
+    sign: 'My House',
+    row: 0,
+    col: 0,
+    battle: false,
+    roof: '#f0c030',
+  },
 ];
 
 const STEP: Record<string, [number, number]> = {
@@ -69,7 +123,11 @@ export function moveInTown(from: BuildingId, key: string, open: (id: BuildingId)
   const step = STEP[key];
   const at = BUILDINGS.find((b) => b.id === from);
   if (!step || !at) return from;
-  for (let r = at.row + step[0], c = at.col + step[1]; r >= 0 && r < 3 && c >= 0 && c < 3; r += step[0], c += step[1]) {
+  for (
+    let r = at.row + step[0], c = at.col + step[1];
+    r >= 0 && r < 3 && c >= 0 && c < 3;
+    r += step[0], c += step[1]
+  ) {
     const b = BUILDINGS.find((x) => x.row === r && x.col === c);
     if (b && open(b.id)) return b.id;
   }

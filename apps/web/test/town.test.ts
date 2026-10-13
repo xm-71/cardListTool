@@ -85,7 +85,10 @@ describe('progress shown on the buildings', () => {
   test('badges, champion, a Frontier run, credits and the binder count come from the save', () => {
     const s = townStatus(
       profile({
-        gym: gym(['brock', 'misty', 'surge'], [{ date: '2026-10-01', playerName: 'ASH', deckName: 'X', cover: 'x' }]),
+        gym: gym(
+          ['brock', 'misty', 'surge'],
+          [{ date: '2026-10-01', playerName: 'ASH', deckName: 'X', cover: 'x' }],
+        ),
         frontier: frontierAfter(2),
         credits: 100,
         collection: { 'me01-001': 2, 'me01-002': 0, 'me01-003': 1 },
