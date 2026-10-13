@@ -1,5 +1,5 @@
 import { PACKS } from '@ptcg/economy';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
 import { useGame } from '../src/game/store.ts';
