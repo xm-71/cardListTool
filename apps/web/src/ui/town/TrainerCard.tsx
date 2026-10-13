@@ -1,4 +1,5 @@
 import { deckById, registry, type DeckId } from '../../game/catalog.ts';
+import { resolveActiveDeck } from '../../game/deckCase.ts';
 import { FIGHTS } from '../../game/frontier/run.ts';
 import { LEADERS } from '../../game/gym.ts';
 import { latestBinder, townStatus } from '../../game/town.ts';
@@ -16,11 +17,19 @@ interface Props {
 export function TrainerCard({ onClose, onGo }: Props) {
   const profile = useProfile((s) => s.profile);
   const s = townStatus(profile);
-  // The default deck if it is owned, otherwise the first deck the player owns.
-  const shown = profile.ownedDecks.includes(profile.starterDeck ?? '')
-    ? profile.starterDeck
-    : profile.ownedDecks[0];
-  const deck = deckById((shown ?? 'mega-gengar') as DeckId) ?? deckById('mega-gengar');
+  // The active deck: a premade deck, or the name and cover of a custom deck.
+  const activeId = resolveActiveDeck(profile);
+  const custom = activeId?.startsWith('custom:')
+    ? profile.decks.find((d) => `custom:${d.id}` === activeId)
+    : null;
+  const premade =
+    deckById((custom ? 'mega-gengar' : (activeId ?? 'mega-gengar')) as DeckId) ?? deckById('mega-gengar');
+  const deck = custom
+    ? {
+        name: custom.name,
+        cover: custom.cards.find((c) => registry.defs[c.id]?.category === 'Pokemon')?.id ?? premade.cover,
+      }
+    : premade;
   const collector = profile.collectorMode;
   const binder = collector ? latestBinder(profile) : null;
   return (
@@ -83,6 +92,7 @@ export function TrainerCard({ onClose, onGo }: Props) {
               ['gym', 'Gym Challenge'],
               ['frontier', 'Battle Frontier'],
               ['decks', 'Decks'],
+              ['deckcase', 'Deck Case'],
             ] as const
           ).map(([route, label]) => (
             <button

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { sfx } from '../audio/sfx.ts';
-import { STARTER_DECKS, registry } from '../game/catalog.ts';
+import { STARTER_DECKS, registry, type DeckInfo } from '../game/catalog.ts';
 import { useNav } from '../nav/useNav.ts';
 import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
+import { RunDeckView } from '../ui/frontier/RunDeckView.tsx';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
+import { Sheet } from '../ui/Sheet.tsx';
 
 export const INTRO_TIPS = [
   'Beat the bots to earn credits!',
@@ -19,6 +21,7 @@ export function Intro() {
   const [step, setStep] = useState<Step>({ kind: 'name' });
   const [name, setName] = useState('');
   const [deck, setDeck] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState<DeckInfo | null>(null);
 
   const finish = async (n: string, d: string | null) => {
     await finishIntro(n, d);
@@ -67,9 +70,8 @@ export function Intro() {
                 key={d.id}
                 type="button"
                 onClick={() => {
-                  sfx('confirm');
-                  setDeck(d.id);
-                  setStep({ kind: 'tip', index: 0 });
+                  sfx('cursor');
+                  setPreviewing(d);
                 }}
                 className="retro-shadow flex w-32 flex-col items-center gap-2 border-4 border-ink bg-paper p-2 hover:-translate-y-1"
               >
@@ -79,6 +81,22 @@ export function Intro() {
             ))}
           </div>
           <DialogBox text="Pick the deck you want to start with!" />
+          {previewing && (
+            <Sheet title={previewing.name} onClose={() => setPreviewing(null)} className="max-h-[85dvh]">
+              <RunDeckView cards={previewing.list.cards} label="Deck list" />
+              <Button
+                className="self-start"
+                onClick={() => {
+                  sfx('confirm');
+                  setDeck(previewing.id);
+                  setPreviewing(null);
+                  setStep({ kind: 'tip', index: 0 });
+                }}
+              >
+                Choose this deck
+              </Button>
+            </Sheet>
+          )}
         </>
       )}
       {step.kind === 'tip' && (
