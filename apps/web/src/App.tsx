@@ -9,6 +9,7 @@ import { useNav, type Route } from './nav/useNav.ts';
 import { Binder } from './screens/Binder.tsx';
 import { BattleFrontier } from './screens/BattleFrontier.tsx';
 import { GymChallenge } from './screens/GymChallenge.tsx';
+import { DeckCase } from './screens/DeckCase.tsx';
 import { DeckBuilder } from './screens/DeckBuilder.tsx';
 import { DuelSetup } from './screens/DuelSetup.tsx';
 import { Intro } from './screens/Intro.tsx';
@@ -161,11 +162,12 @@ const SCREENS: Record<Route, () => React.JSX.Element> = {
   shop: Shop,
   binder: Binder,
   decks: DeckBuilder,
+  deckcase: DeckCase,
   options: Options,
 };
 
 /** Screens Collector mode hides; a route that lands on one goes back to the menu. */
-const BATTLE_ROUTES: readonly Route[] = ['duel', 'gym', 'frontier', 'decks'];
+const BATTLE_ROUTES: readonly Route[] = ['duel', 'gym', 'frontier', 'decks', 'deckcase'];
 
 function Screens() {
   const route = useNav((s) => s.route);
