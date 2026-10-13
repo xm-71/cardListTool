@@ -35,6 +35,7 @@ test('first launch: PRESS START leads to the intro, which ends in the main menu'
   fireEvent.change(await screen.findByLabelText('Your name'), { target: { value: 'ALEX' } });
   fireEvent.click(screen.getByRole('button', { name: 'OK' }));
   fireEvent.click(screen.getByRole('button', { name: /Mega Lucario ex/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Choose this deck' }));
   advance('Beat the bots to earn credits!');
   advance('Spend credits on booster packs in the SHOP.');
   advance('Build your own decks in DECKS from cards the game can play.');
