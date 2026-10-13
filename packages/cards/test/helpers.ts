@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 import type { DeckList } from '@ptcg/engine';
 import { GYM_SET } from '../src/gym.ts';
 import { isPlayable } from '../src/playable.ts';
-import { createEngine, type GameState, type PlayerId } from '@ptcg/engine';
+import { createEngine, isAceSpec, type GameState, type PlayerId } from '@ptcg/engine';
 import { act, started } from '@ptcg/engine/testing';
 import { buildRegistry } from '../src/registry.ts';
 
@@ -189,7 +189,7 @@ export function assertGymDeck(deck: DeckList): void {
     ).toBe(true);
     if (basicEnergy) continue;
     names.set(d.name, (names.get(d.name) ?? 0) + c.count);
-    if (d.category !== 'Energy' && 'isAceSpec' in d && d.isAceSpec) aceSpecs += c.count;
+    if (isAceSpec(d)) aceSpecs += c.count;
   }
   for (const [name, n] of names) expect(n, name).toBeLessThanOrEqual(4);
   expect(aceSpecs).toBeLessThanOrEqual(1);
