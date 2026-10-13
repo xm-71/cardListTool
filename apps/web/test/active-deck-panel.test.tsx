@@ -126,3 +126,25 @@ test('with no deck owned, Play is disabled and the panel points to the Poké Mar
   expect(screen.getByText('No deck yet. Buy a deck in the Poké Mart.')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Play' })).toBeDisabled();
 });
+
+test('Duel keeps the opponent and the second deck after a trip to the Deck Case', async () => {
+  await launch('duel');
+  fireEvent.click(screen.getByLabelText('Hard bot'));
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+  expect(screen.getByLabelText('Hard bot')).toBeChecked();
+  fireEvent.click(screen.getByLabelText(/Hotseat/));
+  fireEvent.click(
+    within(screen.getByRole('group', { name: "Opponent's deck" })).getByRole('button', {
+      name: /Mega Lucario ex/,
+    }),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+  expect(screen.getByLabelText(/Hotseat/)).toBeChecked();
+  expect(
+    within(screen.getByRole('group', { name: "Opponent's deck" })).getByRole('button', {
+      name: /Mega Lucario ex/,
+    }),
+  ).toHaveAttribute('aria-pressed', 'true');
+});

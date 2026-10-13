@@ -20,10 +20,18 @@ const OPPONENTS = [
   ['hotseat', 'Hotseat (2 players, 1 device)'],
 ] as const;
 
+/** The choices the player had made when they opened the Deck Case, so coming back restores them. */
+let resume: { opponent: Opponent; theirs: string } | null = null;
+
 /** Choose the opponent and both decks, then start a game. */
 export function DuelSetup() {
   const start = useGame((s) => s.start);
-  const [opponent, setOpponent] = useState<Opponent>('easy');
+  const [restored] = useState(() => {
+    const r = resume;
+    resume = null;
+    return r;
+  });
+  const [opponent, setOpponent] = useState<Opponent>(restored?.opponent ?? 'easy');
   const customDecks = useProfile((s) => s.profile.decks);
   const collection = useProfile((s) => s.profile.collection);
   const profile = useProfile((s) => s.profile);
@@ -46,7 +54,7 @@ export function DuelSetup() {
       customDecks.find((d) => `custom:${d.id}` === mine.id)!,
       collection,
     ).standard;
-  const [theirs, setTheirs] = useState('mega-diancie');
+  const [theirs, setTheirs] = useState(restored?.theirs ?? 'mega-diancie');
   const hotseat = opponent === 'hotseat';
   const listOf = (id: string) => (allDecks.find((d) => d.id === id) ?? allDecks[0]!).list;
   // Bots play a random starter, theme or meta deck: every premade deck, owned by the player or not.
@@ -84,7 +92,10 @@ export function DuelSetup() {
         title={hotseat ? "Player 1's deck" : 'Your deck'}
         source={mine}
         notice={gymOnly ? 'This deck can only be used in Gym Challenge' : undefined}
-        onChange={() => useNav.getState().go('deckcase', 'duel')}
+        onChange={() => {
+          resume = { opponent, theirs };
+          useNav.getState().go('deckcase', 'duel');
+        }}
       />
       {hotseat ? (
         <DeckChoice
