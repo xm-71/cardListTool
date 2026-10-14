@@ -6,11 +6,14 @@ import {
   JOHTO_ELITE,
   JOHTO_LEADERS,
   JOHTO_PACK_SET,
+  RED,
+  RED_FIRST_REWARD,
   JOHTO_TOTAL,
   LEADERS,
   abandonUnfinishedRun,
   applyEliteResult,
   applyGymResult,
+  applyRedResult,
   badgeReward,
   beginMatch,
   canChallenge,
@@ -28,6 +31,7 @@ import {
   leadersOf,
   nextGymIndex,
   normalizeGym,
+  redUnlocked,
   regionOf,
   startRun,
   type GymProgress,
@@ -316,5 +320,44 @@ describe('the Johto Elite Four', () => {
     expect(normalizeGym({ badges: johtoBadges, run: { stage: 1, deck } }).run).toBeNull();
     const h = normalizeGym({ hallOfFame: [entry, jEntry, { ...entry, region: 'mars' }] }).hallOfFame;
     expect(h.map((e) => e.region)).toEqual([undefined, 'johto', undefined]);
+  });
+});
+
+describe('Red', () => {
+  const jEntry = { ...entry, region: 'johto' as const };
+
+  test('RED is a Hard-bot opponent with his own deck', () => {
+    expect(RED).toMatchObject({ id: 'red', name: 'Red', difficulty: 'hard', deck: 'red' });
+    expect(GYM_DECKS[RED.deck]).toBeDefined();
+  });
+
+  test('redUnlocked needs a Johto Hall of Fame entry', () => {
+    expect(redUnlocked(emptyGym())).toBe(false);
+    expect(redUnlocked({ ...emptyGym(), hallOfFame: [entry] })).toBe(false);
+    expect(redUnlocked({ ...emptyGym(), hallOfFame: [jEntry] })).toBe(true);
+  });
+
+  test('the first win pays 2000 and 3 me02 packs and sets redBeaten', () => {
+    const g = { ...emptyGym(), hallOfFame: [jEntry] };
+    const { next, reward } = applyRedResult(g, true);
+    expect(reward).toEqual({ credits: 2000, packs: 3, set: 'me02' });
+    expect(reward).toEqual(RED_FIRST_REWARD);
+    expect(next.redBeaten).toBe(true);
+  });
+
+  test('a rematch win, a loss, and a win before the Johto Champion change nothing', () => {
+    const beaten = { ...emptyGym(), hallOfFame: [jEntry], redBeaten: true };
+    expect(applyRedResult(beaten, true)).toEqual({ next: beaten, reward: null });
+    const fresh = { ...emptyGym(), hallOfFame: [jEntry] };
+    expect(applyRedResult(fresh, false)).toEqual({ next: fresh, reward: null });
+    const locked = { ...emptyGym(), hallOfFame: [entry] };
+    expect(applyRedResult(locked, true)).toEqual({ next: locked, reward: null });
+  });
+
+  test('normalizeGym defaults redBeaten to false and rejects non-booleans', () => {
+    expect(normalizeGym({}).redBeaten).toBe(false);
+    expect(normalizeGym({ redBeaten: true }).redBeaten).toBe(true);
+    expect(normalizeGym({ redBeaten: 'yes' }).redBeaten).toBe(false);
+    expect(emptyGym().redBeaten).toBe(false);
   });
 });

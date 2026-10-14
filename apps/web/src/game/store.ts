@@ -7,6 +7,7 @@ import { engine } from './catalog.ts';
 /** What a game belongs to, so finishing it updates Gym Challenge progress instead of paying Duel credits. */
 export type GameContext =
   | { kind: 'gym'; leaderId: string; deck: DeckRef }
+  | { kind: 'red'; deck: DeckRef }
   | { kind: 'elite'; stage: number; region?: Region; deckName: string; cover: string }
   | { kind: 'frontier'; fight: number; opponent: string };
 

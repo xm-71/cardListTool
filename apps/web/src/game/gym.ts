@@ -41,9 +41,11 @@ export interface GymProgress {
   run: EliteRun | null;
   /** Newest first. */
   hallOfFame: HallOfFameEntry[];
+  /** Red has been beaten once: his first-win reward is paid. */
+  redBeaten?: boolean;
 }
 
-export const emptyGym = (): GymProgress => ({ badges: [], run: null, hallOfFame: [] });
+export const emptyGym = (): GymProgress => ({ badges: [], run: null, hallOfFame: [], redBeaten: false });
 
 export interface Opponent {
   id: string;
@@ -272,6 +274,18 @@ export const JOHTO_ELITE: readonly Opponent[] = [
   },
 ];
 
+/** Red waits on Mt. Silver for whoever has beaten the Johto Champion: one optional fight with the active deck. */
+export const RED: Opponent = {
+  id: 'red',
+  name: 'Red',
+  type: 'Fire + Lightning',
+  deck: 'red',
+  difficulty: 'hard',
+  intro: '...',
+  win: '...',
+  lose: '... ...',
+};
+
 /** Johto, unlocked by beating the Kanto Champion. Leaders are fought in this order, like Kanto's. */
 export type Region = 'kanto' | 'johto';
 
@@ -410,6 +424,12 @@ export const johtoBadgeReward = (gymIndex: number): Payout => ({
   set: JOHTO_PACK_SET,
 });
 
+/** Red is open once the Johto Champion has been beaten. */
+export const redUnlocked = (g: GymProgress): boolean => johtoChampion(g);
+
+/** The first win over Red. */
+export const RED_FIRST_REWARD: Payout = { credits: 2000, packs: 3, set: JOHTO_PACK_SET };
+
 export const CHAMPION_STAGE = ELITE.length - 1;
 
 /** The Elite Four and Champion of a region, in the order they are fought. */
@@ -511,6 +531,15 @@ export function applyGymResult(
   }
   const reward = region === 'johto' ? johtoBadgeReward(index) : badgeReward(index);
   return { next: { ...g, badges: [...g.badges, leaderId] }, reward };
+}
+
+/**
+ * Applies a finished Red match. Only the first win (once he is unlocked) pays `RED_FIRST_REWARD`; the caller pays
+ * the normal bot credits for everything else (`reward` is null then).
+ */
+export function applyRedResult(g: GymProgress, won: boolean): { next: GymProgress; reward: Payout | null } {
+  if (!won || g.redBeaten || !redUnlocked(g)) return { next: g, reward: null };
+  return { next: { ...g, redBeaten: true }, reward: RED_FIRST_REWARD };
 }
 
 /**
@@ -629,5 +658,5 @@ export function normalizeGym(raw: unknown): GymProgress {
         }))
         .slice(0, 200)
     : [];
-  return { badges, run, hallOfFame };
+  return { badges, run, hallOfFame, redBeaten: g.redBeaten === true };
 }

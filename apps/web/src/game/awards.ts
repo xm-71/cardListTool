@@ -44,22 +44,28 @@ export function useGymResult(): GymPayout | undefined {
     const draw = result.winner === 'draw';
     const profile = useProfile.getState();
     const saved =
-      context.kind === 'gym'
-        ? profile.recordGym({
+      context.kind === 'red'
+        ? profile.recordRed({
             seed,
-            leaderId: context.leaderId,
             won,
             normalCredits: creditsFor(result, human, config.difficulty ?? 'easy'),
           })
-        : profile.recordElite({
-            seed,
-            stage: context.stage,
-            region: context.region,
-            won,
-            draw,
-            deckName: context.deckName,
-            cover: context.cover,
-          });
+        : context.kind === 'gym'
+          ? profile.recordGym({
+              seed,
+              leaderId: context.leaderId,
+              won,
+              normalCredits: creditsFor(result, human, config.difficulty ?? 'easy'),
+            })
+          : profile.recordElite({
+              seed,
+              stage: context.stage,
+              region: context.region,
+              won,
+              draw,
+              deckName: context.deckName,
+              cover: context.cover,
+            });
     saved
       .then((payout) => setPaid((prev) => (prev?.seed === seed && prev.payout ? prev : { seed, payout })))
       .catch((e: unknown) => console.error('Could not save Gym Challenge progress', e));

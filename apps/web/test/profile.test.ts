@@ -39,7 +39,7 @@ test('a new profile starts with 500 credits and nothing else', () => {
     introDone: false,
     binders: [],
     collectorMode: false,
-    gym: { badges: [], run: null, hallOfFame: [] },
+    gym: { badges: [], run: null, hallOfFame: [], redBeaten: false },
     frontier: { run: null, hallOfFame: [] },
   });
 });
@@ -193,7 +193,7 @@ describe('intro fields', () => {
       introDone: false,
       binders: [],
       collectorMode: false,
-      gym: { badges: [], run: null, hallOfFame: [] },
+      gym: { badges: [], run: null, hallOfFame: [], redBeaten: false },
       frontier: { run: null, hallOfFame: [] },
     });
   });

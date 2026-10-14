@@ -3,6 +3,7 @@ import { registry, type DeckSource } from './catalog.ts';
 import {
   CHAMPION_STAGE,
   eliteOf,
+  RED,
   findLeader,
   championDeckFor,
   mainEnergyType,
@@ -88,4 +89,16 @@ export async function startNextEliteMatch(): Promise<boolean> {
   if (!run) return false;
   await startEliteMatch(run.stage, runDeckSource(run.deck), run.region ?? 'kanto');
   return true;
+}
+
+/** Starts the match against Red with the player's `deck`. */
+export function startRedMatch(deck: DeckSource): void {
+  useGame.getState().start({
+    mode: 'bot',
+    difficulty: RED.difficulty,
+    humanDeck: deck.list,
+    botDeck: GYM_DECKS[RED.deck],
+    seed: randomSeed(),
+    context: { kind: 'red', deck: refOf(deck) },
+  });
 }
