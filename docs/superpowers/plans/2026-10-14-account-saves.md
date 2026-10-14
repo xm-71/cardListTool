@@ -95,7 +95,7 @@
 
 - [ ] **Step 1: Failing tests**: `the section is absent when the cloud is not configured`; `signed out it explains accounts and offers Create account and Sign in`; `Create account validates the fields and shows the confirmation notice`; `a failed sign-in shows the error in an alert and keeps the form`; `signing in shows the email and a Sign out button, which signs out`; `Forgot password sends a reset and shows the notice`; `Options still shows every existing control (sound, theme, animations, Collector mode, name, Replay intro)`. Use `useCloud.getState().init(fakeApi)` in each test. Run — Expected: FAIL.
 - [ ] **Step 2: Implement** the components with the existing retro `Box` / `Button` and the Options styling; inputs `min-w-0` so phone width never scrolls sideways.
-- [ ] **Step 3: Verify** `pnpm --filter @ptcg/web exec vitest run test/account-screen.test.tsx test/options.test.tsx` (use the existing Options test file's name) — Expected: PASS.
+- [ ] **Step 3: Verify** `pnpm --filter @ptcg/web exec vitest run test/account-screen.test.tsx` plus every existing test that renders Options (`grep -ln Options apps/web/test`) — Expected: PASS.
 - [ ] **Step 4: Commit** `feat(web): Options → Account section`.
 
 ### Task 4: Password recovery, setup files and a hidden-by-default build
