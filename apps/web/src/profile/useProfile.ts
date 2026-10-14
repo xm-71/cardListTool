@@ -135,7 +135,7 @@ interface ProfileState {
   /** Starts an Elite Four run with a locked deck (needs all 8 badges of the region; Kanto by default). */
   startEliteRun(deck: RunDeck, region?: Region): Promise<void>;
   /** An Elite Four or Champion match is starting: leaving it before it ends will count as a loss. */
-  beginEliteMatch(stage: number): Promise<void>;
+  beginEliteMatch(stage: number, region?: Region): Promise<boolean>;
   /** Ends a run whose match was started but never finished (the player quit or reloaded). */
   abandonUnfinishedRun(): Promise<void>;
   /** Starts a Battle Frontier run (does nothing while a run, even a finished unclaimed one, exists). */
@@ -331,11 +331,13 @@ export const useProfile = create<ProfileState>()((set, get) => {
         return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
       });
     },
-    async beginEliteMatch(stage) {
-      await change((p) => {
-        const gym = beginMatch(p.gym, stage);
-        return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
+    async beginEliteMatch(stage, region = 'kanto') {
+      const marked = await change((p) => {
+        const gym = beginMatch(p.gym, stage, region);
+        const ours = !!gym.run && gym.run.stage === stage && (gym.run.region ?? 'kanto') === region;
+        return { next: gym === p.gym ? p : { ...p, gym }, result: ours };
       });
+      return marked === true;
     },
     async startFrontierRun() {
       await change((p) =>

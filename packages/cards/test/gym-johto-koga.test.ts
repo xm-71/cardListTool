@@ -55,7 +55,7 @@ describe('Zubat, Golbat and Crobat', () => {
     attachFromDeck(s0, me, DARK);
     const s = attack(s0, 1);
     expect(dealt(s, opp)).toBe(80);
-    expect(Object.keys(s.players[me].active!.attackLocks).length).toBeGreaterThan(0);
+    expect(s.players[me].active!.cantAttackOnTurn).toBe(s0.turn + 2);
   });
 
   test('Poison Fang does 120 and Poisons the Defending Pokémon', () => {

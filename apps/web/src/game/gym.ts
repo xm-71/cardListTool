@@ -561,8 +561,10 @@ export function applyEliteResult(
 }
 
 /** Marks the run's match for `stage` as started (see `EliteRun.inMatch`). */
-export function beginMatch(g: GymProgress, stage: number): GymProgress {
-  return g.run && g.run.stage === stage && !g.run.inMatch ? { ...g, run: { ...g.run, inMatch: true } } : g;
+export function beginMatch(g: GymProgress, stage: number, region: Region = 'kanto'): GymProgress {
+  return g.run && g.run.stage === stage && (g.run.region ?? 'kanto') === region && !g.run.inMatch
+    ? { ...g, run: { ...g.run, inMatch: true } }
+    : g;
 }
 
 /** A match that was started but never finished (the player quit or reloaded) is a loss: the run ends. */

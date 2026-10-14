@@ -12,8 +12,10 @@ export const script: CardScript = {
         const self = { player: ctx.me, zone: 'active' } as const;
         const energy = [...ctx.slot(self).energy];
         if (energy.length > 0) ctx.discardEnergy(self, energy);
-        const [prize] = ctx.state.players[ctx.me].prizes;
-        if (prize) ctx.moveCard(prize, { player: ctx.me, zone: 'hand' });
+        // Taking the last Prize would have to end the game, which an attack effect cannot do in this engine
+        // (only a Knock Out does), so the last Prize is left in place.
+        const prizes = ctx.state.players[ctx.me].prizes;
+        if (prizes.length > 1) ctx.moveCard(prizes[0]!, { player: ctx.me, zone: 'hand' });
       },
     },
   },

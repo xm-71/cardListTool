@@ -3,7 +3,7 @@ import { GYM_DECKS } from '@ptcg/cards';
 import { beforeEach, expect, test } from 'vitest';
 import { opponentName } from '../src/game/describe.ts';
 import { emptyGym } from '../src/game/gym.ts';
-import { startEliteMatch, startGymMatch } from '../src/game/gymMatch.ts';
+import { startEliteMatch, startGymMatch, startNextEliteMatch } from '../src/game/gymMatch.ts';
 import { useGame } from '../src/game/store.ts';
 import { deckById } from '../src/game/catalog.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
@@ -143,7 +143,7 @@ test('startEliteRun with a Johto deck stores region johto and refuses while a Ka
 
 test('beginEliteMatch then abandonUnfinishedRun ends a Johto run', async () => {
   await init({ gym: { ...johtoGym(), run: { stage: 1, region: 'johto', deck: runDeck } } });
-  await useProfile.getState().beginEliteMatch(1);
+  await useProfile.getState().beginEliteMatch(1, 'johto');
   expect(profile().gym.run?.inMatch).toBe(true);
   await useProfile.getState().abandonUnfinishedRun();
   expect(profile().gym.run).toBeNull();
@@ -292,4 +292,34 @@ test('a Johto badge pack says Mega Evolution too', () => {
     { credits: 150, packs: [['me02-001']], set: 'me02', badge: true, champion: false },
   );
   expect(screen.getByText('You won a Mega Evolution pack!')).toBeInTheDocument();
+});
+
+test('Next after beating Will starts Koga in Johto, not a Kanto match', async () => {
+  const realDeck = { ...runDeck, cards: deckById('mega-gengar').list.cards.map((c) => ({ ...c })) };
+  await init({ gym: { ...johtoGym(), run: { stage: 1, region: 'johto', deck: realDeck } } });
+  expect(await startNextEliteMatch()).toBe(true);
+  expect(useGame.getState().config).toMatchObject({
+    difficulty: 'hard',
+    botDeck: GYM_DECKS['johto-koga'],
+    context: { kind: 'elite', stage: 1, region: 'johto' },
+  });
+  expect(profile().gym.run).toMatchObject({ stage: 1, region: 'johto', inMatch: true });
+  await init({ gym: { ...johtoGym(), run: { stage: 1, deck: realDeck } } });
+  await startNextEliteMatch();
+  expect(useGame.getState().config).toMatchObject({ botDeck: GYM_DECKS.bruno });
+  await init({ gym: johtoGym() });
+  expect(await startNextEliteMatch()).toBe(false);
+});
+
+test('beginEliteMatch only marks a run of the same region', async () => {
+  await init({ gym: { ...johtoGym(), run: { stage: 0, region: 'johto', deck: runDeck } } });
+  await useProfile.getState().beginEliteMatch(0, 'kanto');
+  expect(profile().gym.run?.inMatch).toBeUndefined();
+  await useProfile.getState().beginEliteMatch(0, 'johto');
+  expect(profile().gym.run?.inMatch).toBe(true);
+  await init({ gym: { ...johtoGym(), run: { stage: 0, deck: runDeck } } });
+  await useProfile.getState().beginEliteMatch(0, 'johto');
+  expect(profile().gym.run?.inMatch).toBeUndefined();
+  await useProfile.getState().beginEliteMatch(0);
+  expect(profile().gym.run?.inMatch).toBe(true);
 });

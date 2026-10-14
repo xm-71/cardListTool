@@ -58,7 +58,8 @@ export async function startEliteMatch(
   region: Region = 'kanto',
 ): Promise<void> {
   // Saved first, so quitting or reloading from here on counts as a loss.
-  await useProfile.getState().beginEliteMatch(stage);
+  // A run that is not this stage of this region (another tab moved it on) is not ours to play.
+  if (!(await useProfile.getState().beginEliteMatch(stage, region))) return;
   const opponent = eliteOf(region)[stage]!;
   // Kanto's Blue picks the ace that counters the challenger's main Energy; Johto's Lance plays one fixed deck.
   const botDeck =
@@ -79,4 +80,12 @@ export async function startEliteMatch(
       cover: deck.cover,
     },
   });
+}
+
+/** The next match of the run in progress (after a win or a draw), in the run's own region; false without a run. */
+export async function startNextEliteMatch(): Promise<boolean> {
+  const run = useProfile.getState().profile.gym.run;
+  if (!run) return false;
+  await startEliteMatch(run.stage, runDeckSource(run.deck), run.region ?? 'kanto');
+  return true;
 }

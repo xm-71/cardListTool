@@ -299,6 +299,8 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     if (!run) await startEliteRun(snapshotOf(deck), region);
     // The run's saved copy of the deck is what plays, so a deck changed since the run started doesn't matter.
     const current = useProfile.getState().profile.gym.run;
+    // Another tab may have started a run of the other region: that run is not ours to play or mark.
+    if (current && (current.region ?? 'kanto') !== region) return;
     await startEliteMatch(current?.stage ?? 0, current ? runDeckSource(current.deck) : deck, region);
   };
 

@@ -63,6 +63,18 @@ describe('Karen scripts', () => {
     expect(s.players[me].hand.length).toBeGreaterThan(hand);
   });
 
+  test('Onyx never takes the last Prize (the engine cannot end the game from an attack effect)', () => {
+    const { s: s0, me, opp } = game(spec);
+    swapActiveTo(s0, me, UMBREON);
+    tank(s0, opp);
+    for (const e of ['mee-004', 'mee-005', DARK]) attachFromDeck(s0, me, e);
+    s0.players[me].prizes = s0.players[me].prizes.slice(0, 1);
+    const s = attack(s0, 1);
+    expect(s.players[me].active!.energy).toHaveLength(0);
+    expect(s.players[me].prizes).toHaveLength(1);
+    expect(s.result).toBeNull();
+  });
+
   test('Reckless Charge does 30 and 10 to Eevee itself', () => {
     const { s: s0, me, opp } = game(spec);
     swapActiveTo(s0, me, EEVEE);

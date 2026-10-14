@@ -26,7 +26,7 @@ import { GymGameOver } from './ui/GymGameOver.tsx';
 import { validateGymDeck } from '@ptcg/economy';
 import { deckSources, registry } from './game/catalog.ts';
 import { startFrontierMatch } from './game/frontierMatch.ts';
-import { resolveDeck, runDeckSource, startEliteMatch, startGymMatch } from './game/gymMatch.ts';
+import { resolveDeck, startGymMatch, startNextEliteMatch } from './game/gymMatch.ts';
 import { PassDevice } from './ui/PassDevice.tsx';
 import { useShownState } from './game/animation/director.ts';
 
@@ -132,9 +132,9 @@ function Game({ client, delay }: { client: BotClient; delay: number }) {
             startGymMatch(config.context.leaderId, deck);
           }}
           onNext={() => {
-            const { run } = useProfile.getState().profile.gym;
-            if (!run) return reset();
-            void startEliteMatch(run.stage, runDeckSource(run.deck));
+            void startNextEliteMatch().then((started) => {
+              if (!started) reset();
+            });
           }}
         />
       )}

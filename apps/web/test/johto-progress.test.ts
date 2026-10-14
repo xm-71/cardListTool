@@ -294,7 +294,7 @@ describe('the Johto Elite Four', () => {
   });
 
   test('abandoning an unfinished Johto match ends the run', () => {
-    const g = beginMatch(johtoRun(1), 1);
+    const g = beginMatch(johtoRun(1), 1, 'johto');
     expect(g.run?.inMatch).toBe(true);
     expect(abandonUnfinishedRun(g).run).toBeNull();
   });

@@ -264,3 +264,25 @@ test('each region lists its own Hall of Fame', async () => {
   johtoTab();
   expect(screen.getByText('No Johto Champions yet.')).toBeInTheDocument();
 });
+
+test("Battle! does not start a Kanto match while another tab's Johto run is open", async () => {
+  await launch({
+    gym: { ...champion, badges: [...KANTO_IDS, ...JOHTO_IDS] },
+    ownedDecks: ['mega-gengar'],
+    activeDeck: 'mega-gengar',
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Start Elite Four' }));
+  // Another tab starts a Johto run in the meantime.
+  const johtoRun = { stage: 0, region: 'johto' as const, deck: eliteDeck('mega-gengar') };
+  const saved = {
+    ...useProfile.getState().profile,
+    gym: { ...useProfile.getState().profile.gym, run: johtoRun },
+  };
+  await act(async () => {
+    await useProfile.getState().store.save(saved);
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await act(async () => {});
+  expect(useGame.getState().config).toBeNull();
+  expect((await useProfile.getState().store.load())?.gym.run).toEqual(johtoRun);
+});
