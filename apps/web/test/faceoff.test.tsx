@@ -48,6 +48,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('the Face-off board on a phone', () => {
+  test('your own hand count is shown and follows the hand', () => {
+    render(<GameScreen />);
+    const count = () => document.querySelector('[data-hand-count-of="0"]')!;
+    expect(count()).toHaveTextContent(`Hand ${st().players[0].hand.length}`);
+    mutate((s) => void giveCard(s, 0, 'me02-062'));
+    expect(count()).toHaveTextContent(`Hand ${st().players[0].hand.length}`);
+  });
+
   test('shows both Active Pokémon, the opponent hand count, and your whole hand without a Hand button', () => {
     render(<GameScreen />);
     expect(activeOf(opponent(), 1)).toBeInTheDocument();

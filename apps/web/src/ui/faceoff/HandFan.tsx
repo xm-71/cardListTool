@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { CardInstance, PlayerId } from '@ptcg/engine';
+import { HandCount } from '../Hand.tsx';
 import { CardView } from '../CardView.tsx';
 
 interface Props {
@@ -22,8 +23,9 @@ export function HandFan({ owner, cards, playable, held, onCard }: Props) {
     <section
       aria-label="Your hand"
       data-hand-of={owner}
-      className="flex justify-center px-2 pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
+      className="relative flex justify-center px-2 pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
     >
+      <HandCount owner={owner} n={n} className="absolute top-0.5 left-2 z-30" />
       {n === 0 && <span className="py-4 text-xl opacity-60">No cards in hand</span>}
       {cards.map((c, i) => {
         const lifted = c.uid === held;
