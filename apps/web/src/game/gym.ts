@@ -260,18 +260,58 @@ export const JOHTO_LEADERS: readonly Opponent[] = [
     win: "I'm not good enough yet... All right. The Fog Badge is yours.",
     lose: 'I knew it. The Ghost Pokémon I trained with are far from done with you. Come back stronger!',
   },
+  {
+    id: 'chuck',
+    name: 'Chuck',
+    badge: 'Storm',
+    type: 'Fighting',
+    deck: 'chuck',
+    difficulty: 'hard',
+    intro:
+      "Wahahah! I'm Chuck, the Cianwood Gym Leader! I train under a waterfall every day, and I have never lost my fighting spirit. Come on, let's brawl!",
+    win: 'Wha? Wahaha! I enjoyed battling you! Here, take the Storm Badge!',
+    lose: 'Wahahah! Not even close! Hit the waterfall and train some more, then come back!',
+  },
+  {
+    id: 'jasmine',
+    name: 'Jasmine',
+    badge: 'Mineral',
+    type: 'Metal',
+    deck: 'jasmine',
+    difficulty: 'hard',
+    intro:
+      "...Um... I'm Jasmine, the Olivine Gym Leader. I use the Steel type. ...Do you know it? It's strong and unyielding. ...Shall we begin?",
+    win: '...You are a better Trainer than me, in both skill and kindness. In accordance with League rules, I confer upon you this Mineral Badge.',
+    lose: '...I am sorry. My Steel Pokémon held firm. Please try again when you are ready.',
+  },
+  {
+    id: 'pryce',
+    name: 'Pryce',
+    badge: 'Glacier',
+    type: 'Water',
+    deck: 'pryce',
+    difficulty: 'hard',
+    intro:
+      'I have been training Pokémon since before you were born, young one. In all that time, I have seen it all. Allow me to show you the strength of the cold!',
+    win: 'Hmm... You have proven yourself. The Glacier Badge is yours; wear it with pride.',
+    lose: 'Ho ho. My years of experience carried the day. Come back after you have learned a few more things.',
+  },
+  {
+    id: 'clair',
+    name: 'Clair',
+    badge: 'Rising',
+    type: 'Dragon',
+    deck: 'clair',
+    difficulty: 'hard',
+    intro:
+      "I am Clair. The world's best Dragon master. I can hold my own against anyone. Do not expect me to go easy on you, just because you made it this far!",
+    win: "I lost... I can't believe it. Fine. You have earned the Rising Badge.",
+    lose: 'As expected of the Dragon masters. You are not ready for the Rising Badge. Train, then return.',
+  },
 ];
 
-/** The four Johto leaders that come in a later update: shown as "Coming soon". */
-export const JOHTO_UPCOMING: readonly { id: string; name: string; type: string }[] = [
-  { id: 'chuck', name: 'Chuck', type: 'Fighting' },
-  { id: 'jasmine', name: 'Jasmine', type: 'Metal' },
-  { id: 'pryce', name: 'Pryce', type: 'Water' },
-  { id: 'clair', name: 'Clair', type: 'Dragon' },
-];
-
-/** Places in the Johto badge case: the built leaders plus the upcoming ones. */
-export const JOHTO_TOTAL = JOHTO_LEADERS.length + JOHTO_UPCOMING.length;
+/** Places in the Johto badge case. */
+export const JOHTO_TOTAL = JOHTO_LEADERS.length;
 
 export const leadersOf = (region: Region): readonly Opponent[] =>
   region === 'johto' ? JOHTO_LEADERS : LEADERS;

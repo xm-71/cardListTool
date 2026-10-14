@@ -17,6 +17,10 @@ import sabrina from './decks/gym/sabrina.json';
 import whitney from './decks/gym/whitney.json';
 import falkner from './decks/gym/falkner.json';
 import bugsy from './decks/gym/bugsy.json';
+import chuck from './decks/gym/chuck.json';
+import jasmine from './decks/gym/jasmine.json';
+import pryce from './decks/gym/pryce.json';
+import clair from './decks/gym/clair.json';
 import surge from './decks/gym/surge.json';
 
 /** The Scarlet & Violet 151 set: the only non-Standard cards the Gym format allows. */
@@ -40,6 +44,10 @@ export const GYM_DECKS = {
   whitney,
   falkner,
   bugsy,
+  chuck,
+  jasmine,
+  pryce,
+  clair,
   'blue-fire': blueFire,
   'blue-water': blueWater,
   'blue-grass': blueGrass,

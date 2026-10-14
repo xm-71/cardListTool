@@ -4,7 +4,6 @@ import {
   JOHTO_LEADERS,
   JOHTO_PACK_SET,
   JOHTO_TOTAL,
-  JOHTO_UPCOMING,
   LEADERS,
   applyGymResult,
   badgeReward,
@@ -27,10 +26,32 @@ const kanto = LEADERS.map((l) => l.id);
 const entry = { date: '2026-10-13', playerName: 'ASH', deckName: 'Deck', cover: 'me01-077' };
 
 describe('the Johto leaders', () => {
-  test('are Falkner, Bugsy, Whitney and Morty, with Medium then Hard bots and real decks', () => {
-    expect(leadersOf('johto').map((l) => l.id)).toEqual(['falkner', 'bugsy', 'whitney', 'morty']);
-    expect(JOHTO_LEADERS.map((l) => l.difficulty)).toEqual(['medium', 'medium', 'hard', 'hard']);
-    expect(JOHTO_LEADERS.map((l) => l.badge)).toEqual(['Zephyr', 'Hive', 'Plain', 'Fog']);
+  test('are the eight Johto leaders in order, with Medium then Hard bots and real decks', () => {
+    expect(leadersOf('johto').map((l) => l.id)).toEqual([
+      'falkner',
+      'bugsy',
+      'whitney',
+      'morty',
+      'chuck',
+      'jasmine',
+      'pryce',
+      'clair',
+    ]);
+    expect(JOHTO_LEADERS.map((l) => l.difficulty)).toEqual([
+      'medium',
+      'medium',
+      ...Array<'hard'>(6).fill('hard'),
+    ]);
+    expect(JOHTO_LEADERS.map((l) => l.badge)).toEqual([
+      'Zephyr',
+      'Hive',
+      'Plain',
+      'Fog',
+      'Storm',
+      'Mineral',
+      'Glacier',
+      'Rising',
+    ]);
     for (const l of JOHTO_LEADERS) {
       expect(GYM_DECKS[l.deck], l.id).toBeDefined();
       expect(l.intro.length).toBeGreaterThan(10);
@@ -38,10 +59,9 @@ describe('the Johto leaders', () => {
     expect(leadersOf('kanto')).toBe(LEADERS);
   });
 
-  test('the later four are listed as upcoming and the case has 8 places', () => {
-    expect(JOHTO_UPCOMING.map((l) => l.name)).toEqual(['Chuck', 'Jasmine', 'Pryce', 'Clair']);
+  test('the case has 8 places', () => {
     expect(JOHTO_TOTAL).toBe(8);
-    expect(JOHTO_LEADERS.length + JOHTO_UPCOMING.length).toBe(JOHTO_TOTAL);
+    expect(JOHTO_LEADERS).toHaveLength(JOHTO_TOTAL);
   });
 
   test('findLeader and regionOf search both regions', () => {
@@ -55,6 +75,16 @@ describe('the Johto leaders', () => {
 });
 
 describe('order rules per region', () => {
+  test('Chuck opens after Morty, and Clair after Pryce', () => {
+    const first4 = ['falkner', 'bugsy', 'whitney', 'morty'];
+    expect(gymStatus(first4, 'chuck')).toBe('next');
+    expect(gymStatus(first4, 'jasmine')).toBe('locked');
+    const first7 = [...first4, 'chuck', 'jasmine', 'pryce'];
+    expect(gymStatus(first7, 'clair')).toBe('next');
+    expect(gymStatus(first7, 'pryce')).toBe('beaten');
+    expect(gymStatus([...first7, 'clair'], 'clair')).toBe('beaten');
+  });
+
   test('each region has its own next gym', () => {
     expect(gymStatus([], 'brock')).toBe('next');
     expect(gymStatus([], 'falkner')).toBe('next');
@@ -85,6 +115,10 @@ describe('unlock and rewards', () => {
   test('Johto opens once the Hall of Fame has an entry', () => {
     expect(johtoUnlocked(emptyGym())).toBe(false);
     expect(johtoUnlocked({ ...emptyGym(), hallOfFame: [entry] })).toBe(true);
+  });
+
+  test('the last four Johto gyms pay 250, 275, 300 and 325', () => {
+    expect([4, 5, 6, 7].map((i) => johtoBadgeReward(i).credits)).toEqual([250, 275, 300, 325]);
   });
 
   test('a Johto badge pays 150 + 25 per gym and a me02 pack; Kanto is unchanged', () => {
