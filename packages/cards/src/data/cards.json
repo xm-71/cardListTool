@@ -173250,65 +173250,6 @@
     "text": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot. If you do, switch your Active Pokémon with 1 of your Benched Pokémon.",
     "isAceSpec": true
   },
-  "sv06-004": {
-    "id": "sv06-004",
-    "name": "Spinarak",
-    "regulationMark": "H",
-    "rarity": "Common",
-    "image": "https://assets.tcgdex.net/en/sv/sv06/004",
-    "category": "Pokemon",
-    "stage": "Basic",
-    "hp": 60,
-    "types": ["Grass"],
-    "evolvesFrom": null,
-    "weakness": "Fire",
-    "resistance": null,
-    "retreat": 1,
-    "attacks": [
-      {
-        "name": "Bug Bite",
-        "cost": ["Grass"],
-        "damage": 20,
-        "damageSuffix": "",
-        "text": ""
-      }
-    ],
-    "abilities": [],
-    "isEx": false,
-    "isMega": false
-  },
-  "sv06-005": {
-    "id": "sv06-005",
-    "name": "Ariados",
-    "regulationMark": "H",
-    "rarity": "Uncommon",
-    "image": "https://assets.tcgdex.net/en/sv/sv06/005",
-    "category": "Pokemon",
-    "stage": "Stage1",
-    "hp": 90,
-    "types": ["Grass"],
-    "evolvesFrom": "Spinarak",
-    "weakness": "Fire",
-    "resistance": null,
-    "retreat": 1,
-    "attacks": [
-      {
-        "name": "String Bind",
-        "cost": ["Grass"],
-        "damage": 10,
-        "damageSuffix": "+",
-        "text": "This attack does 30 more damage for each {C} in your opponent's Active Pokémon's Retreat Cost."
-      }
-    ],
-    "abilities": [
-      {
-        "name": "Big Net",
-        "text": "Your opponent's Active Evolution Pokémon's Retreat Cost is {C} more."
-      }
-    ],
-    "isEx": false,
-    "isMega": false
-  },
   "sv06-008": {
     "id": "sv06-008",
     "name": "Heracross",
@@ -173896,6 +173837,101 @@
       }
     ],
     "isEx": true,
+    "isMega": false
+  },
+  "sv08-098": {
+    "id": "sv08-098",
+    "name": "Mankey",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/098",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 60,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Dual Chop",
+        "cost": ["Colorless"],
+        "damage": 10,
+        "damageSuffix": "×",
+        "text": "Flip 2 coins. This attack does 10 damage for each heads."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv08-099": {
+    "id": "sv08-099",
+    "name": "Primeape",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/099",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 110,
+    "types": ["Fighting"],
+    "evolvesFrom": "Mankey",
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Sweep the Leg",
+        "cost": ["Fighting"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": "Flip a coin. If heads, discard an Energy from your opponent's Active Pokémon."
+      },
+      {
+        "name": "Mega Punch",
+        "cost": ["Fighting", "Colorless"],
+        "damage": 70,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv08-100": {
+    "id": "sv08-100",
+    "name": "Annihilape",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/100",
+    "category": "Pokemon",
+    "stage": "Stage2",
+    "hp": 140,
+    "types": ["Fighting"],
+    "evolvesFrom": "Primeape",
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Tantrum",
+        "cost": ["Fighting"],
+        "damage": 130,
+        "damageSuffix": "",
+        "text": "This Pokémon is now Confused."
+      },
+      {
+        "name": "Destined Fight",
+        "cost": ["Fighting", "Colorless"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Both Active Pokémon are Knocked Out."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
     "isMega": false
   },
   "sv08-177": {
