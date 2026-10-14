@@ -2,11 +2,12 @@ import { GYM_DECKS } from '@ptcg/cards';
 import { registry, type DeckSource } from './catalog.ts';
 import {
   CHAMPION_STAGE,
-  ELITE,
+  eliteOf,
   findLeader,
   championDeckFor,
   mainEnergyType,
   type DeckRef,
+  type Region,
   type RunDeck,
 } from './gym.ts';
 import { useProfile } from '../profile/useProfile.ts';
@@ -50,14 +51,14 @@ export function startGymMatch(leaderId: string, deck: DeckSource): void {
   });
 }
 
-/** Starts the Elite Four or Champion match for `stage` with the run's locked deck. */
-export async function startEliteMatch(stage: number, deck: DeckSource): Promise<void> {
+/** Starts the Elite Four or Champion match for `stage` of `region` with the run's locked deck. */
+export async function startEliteMatch(stage: number, deck: DeckSource, region: Region = 'kanto'): Promise<void> {
   // Saved first, so quitting or reloading from here on counts as a loss.
   await useProfile.getState().beginEliteMatch(stage);
-  const opponent = ELITE[stage]!;
-  // Blue picks the ace that counters the challenger's main Energy.
+  const opponent = eliteOf(region)[stage]!;
+  // Kanto's Blue picks the ace that counters the challenger's main Energy; Johto's Lance plays one fixed deck.
   const botDeck =
-    stage === CHAMPION_STAGE
+    region === 'kanto' && stage === CHAMPION_STAGE
       ? GYM_DECKS[championDeckFor(mainEnergyType(deck.list, registry.defs))]
       : GYM_DECKS[opponent.deck];
   useGame.getState().start({
@@ -66,6 +67,12 @@ export async function startEliteMatch(stage: number, deck: DeckSource): Promise<
     humanDeck: deck.list,
     botDeck,
     seed: randomSeed(),
-    context: { kind: 'elite', stage, deckName: deck.name, cover: deck.cover },
+    context: {
+      kind: 'elite',
+      stage,
+      ...(region === 'johto' ? { region } : {}),
+      deckName: deck.name,
+      cover: deck.cover,
+    },
   });
 }

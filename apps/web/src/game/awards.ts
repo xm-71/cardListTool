@@ -54,6 +54,7 @@ export function useGymResult(): GymPayout | undefined {
         : profile.recordElite({
             seed,
             stage: context.stage,
+            region: context.region,
             won,
             draw,
             deckName: context.deckName,

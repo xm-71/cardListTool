@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { IllegalActionError, type Action, type DeckList, type GameState, type PlayerId } from '@ptcg/engine';
 import { usePreview } from '../ui/preview.ts';
-import type { DeckRef } from './gym.ts';
+import type { DeckRef, Region } from './gym.ts';
 import { engine } from './catalog.ts';
 
 /** What a game belongs to, so finishing it updates Gym Challenge progress instead of paying Duel credits. */
 export type GameContext =
   | { kind: 'gym'; leaderId: string; deck: DeckRef }
-  | { kind: 'elite'; stage: number; deckName: string; cover: string }
+  | { kind: 'elite'; stage: number; region?: Region; deckName: string; cover: string }
   | { kind: 'frontier'; fight: number; opponent: string };
 
 export interface GameConfig {
