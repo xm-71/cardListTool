@@ -7,7 +7,7 @@ const registry = buildRegistry();
 const ownAll = Object.fromEntries(Object.keys(registry.defs).map((id) => [id, 99]));
 
 /** Each gym deck task raises this by the number of decks it adds (Kanto: 12 leaders + 3 Champion lists; Johto so far: 4 leaders). */
-const EXPECTED_DECKS = 20;
+const EXPECTED_DECKS = 21;
 
 test('every Kanto and Johto gym deck is registered', () => {
   expect(Object.keys(GYM_DECKS)).toHaveLength(EXPECTED_DECKS);

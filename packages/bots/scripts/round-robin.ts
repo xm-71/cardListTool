@@ -133,6 +133,7 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   falkner: [40, 60],
   bugsy: [45, 65],
   chuck: [40, 60],
+  jasmine: [40, 60],
 };
 
 /**

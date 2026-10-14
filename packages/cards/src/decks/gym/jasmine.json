@@ -1,0 +1,69 @@
+{
+  "name": "Jasmine's Mineral Deck",
+  "cards": [
+    {
+      "id": "sv03.5-095",
+      "count": 3
+    },
+    {
+      "id": "me01-093",
+      "count": 3
+    },
+    {
+      "id": "me01-045",
+      "count": 4
+    },
+    {
+      "id": "me01-046",
+      "count": 3
+    },
+    {
+      "id": "me01-047",
+      "count": 3
+    },
+    {
+      "id": "sv08-124",
+      "count": 4
+    },
+    {
+      "id": "me01-119",
+      "count": 4
+    },
+    {
+      "id": "me01-114",
+      "count": 2
+    },
+    {
+      "id": "me01-131",
+      "count": 3
+    },
+    {
+      "id": "me01-167",
+      "count": 3
+    },
+    {
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "me01-125",
+      "count": 3
+    },
+    {
+      "id": "me01-166",
+      "count": 1
+    },
+    {
+      "id": "mee-008",
+      "count": 12
+    },
+    {
+      "id": "mee-004",
+      "count": 8
+    }
+  ]
+}

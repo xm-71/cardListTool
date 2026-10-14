@@ -173934,6 +173934,33 @@
     "isEx": false,
     "isMega": false
   },
+  "sv08-124": {
+    "id": "sv08-124",
+    "name": "Skarmory",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/124",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 110,
+    "types": ["Metal"],
+    "evolvesFrom": null,
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Steel Wing",
+        "cost": ["Metal", "Colorless"],
+        "damage": 50,
+        "damageSuffix": "",
+        "text": "During your opponent's next turn, this Pokémon takes 30 less damage from attacks (after applying Weakness and Resistance)."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
   "sv08-177": {
     "id": "sv08-177",
     "name": "Gravity Mountain",
@@ -173943,6 +173970,17 @@
     "category": "Trainer",
     "trainerType": "Stadium",
     "text": "Each Stage 2 Pokémon in play (both yours and your opponent's) gets -30 HP.",
+    "isAceSpec": false
+  },
+  "sv08-178": {
+    "id": "sv08-178",
+    "name": "Jasmine's Gaze",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv08/178",
+    "category": "Trainer",
+    "trainerType": "Supporter",
+    "text": "During your opponent's next turn, all of your Pokémon take 30 less damage from attacks from your opponent's Pokémon (after applying Weakness and Resistance). (This includes new Pokémon that come into play.)",
     "isAceSpec": false
   },
   "sv08-187": {
