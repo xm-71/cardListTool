@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GameResult, PlayerId } from '@ptcg/engine';
 import { sfx } from '../audio/sfx.ts';
-import { CHAMPION_STAGE, ELITE, findLeader } from '../game/gym.ts';
+import { JOHTO_PACK_SET, championStage, eliteOf, findLeader } from '../game/gym.ts';
 import type { GameContext } from '../game/store.ts';
 import type { GymPayout } from '../profile/useProfile.ts';
 import { CharacterPortrait } from './CharacterPortrait.tsx';
@@ -31,15 +31,18 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
     if (!draw) sfx(won ? 'win' : 'lose');
   }, [won, draw]);
 
-  const opponent = context.kind === 'gym' ? findLeader(context.leaderId)! : ELITE[context.stage]!;
+  const eliteRegion = context.kind === 'elite' ? (context.region ?? 'kanto') : 'kanto';
+  const opponent =
+    context.kind === 'gym' ? findLeader(context.leaderId)! : eliteOf(eliteRegion)[context.stage]!;
   const packs = payout?.packs ?? [];
+  const packName = payout?.set === JOHTO_PACK_SET ? 'Mega Evolution' : 'Scarlet & Violet 151';
   const hasMorePacks = opening < packs.length;
   // After a win the run moves to the next opponent; after a draw the same match is replayed.
   const nextStage =
     context.kind === 'elite'
       ? draw
         ? context.stage
-        : won && context.stage < CHAMPION_STAGE
+        : won && context.stage < championStage(eliteRegion)
           ? context.stage + 1
           : null
       : null;
@@ -90,8 +93,8 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
               {packs.length > 0 && (
                 <p className="text-xl">
                   {packs.length === 1
-                    ? 'You won a Scarlet & Violet 151 pack!'
-                    : `You won ${packs.length} Scarlet & Violet 151 packs!`}
+                    ? `You won a ${packName} pack!`
+                    : `You won ${packs.length} ${packName} packs!`}
                 </p>
               )}
             </>
@@ -105,7 +108,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
         <div className="flex flex-wrap justify-center gap-3">
           {nextStage !== null && (
             <Button disabled={payout === undefined} onClick={onNext}>
-              {draw ? 'Replay' : 'Next'}: {ELITE[nextStage]!.name}
+              {draw ? 'Replay' : 'Next'}: {eliteOf(eliteRegion)[nextStage]!.name}
             </Button>
           )}
           {context.kind === 'gym' && (
@@ -121,7 +124,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
       {showing && hasMorePacks && (
         <PackOpening
           key={opening}
-          setId="sv03.5"
+          setId={payout?.set ?? 'sv03.5'}
           cards={packs[opening]!}
           onDone={() => {
             setShowing(false);

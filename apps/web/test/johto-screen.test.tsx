@@ -1,8 +1,9 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { GYM_DECKS } from '@ptcg/cards';
 import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
-import { emptyGym, type GymProgress } from '../src/game/gym.ts';
+import { DECKS } from '../src/game/catalog.ts';
+import { JOHTO_LEADERS, LEADERS, emptyGym, type GymProgress, type RunDeck } from '../src/game/gym.ts';
 import { useGame } from '../src/game/store.ts';
 import { useNav } from '../src/nav/useNav.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
@@ -132,13 +133,16 @@ test('Whitney is fought with the Hard bot', async () => {
   expect(useGame.getState().config).toMatchObject({ difficulty: 'hard', botDeck: GYM_DECKS.whitney });
 });
 
-test('the Elite Four and Hall of Fame panels belong to the Kanto tab', async () => {
-  await launch({ gym: champion });
+test('the Elite Four and Hall of Fame panels appear on the open Johto tab too, but not while it is locked', async () => {
+  await launch();
   johtoTab();
   expect(screen.queryByText('Elite Four')).toBeNull();
   expect(screen.queryByText('Hall of Fame')).toBeNull();
-  fireEvent.click(screen.getByRole('tab', { name: 'Kanto' }));
+  cleanup();
+  await launch({ gym: champion });
+  johtoTab();
   expect(screen.getByText('Elite Four')).toBeInTheDocument();
+  expect(screen.getByText('Hall of Fame')).toBeInTheDocument();
 });
 
 test('Back from the Deck Case returns to the same Johto leader and tab', async () => {
@@ -156,4 +160,129 @@ test('Back from the Deck Case returns to the same Johto leader and tab', async (
 test('Collector mode closes Gym Challenge', async () => {
   await launch({ collectorMode: true, gym: champion });
   expect(useNav.getState().route).toBe('menu');
+});
+
+// ---- Johto Elite Four ----
+const KANTO_IDS = LEADERS.map((l) => l.id);
+const JOHTO_IDS = JOHTO_LEADERS.map((l) => l.id);
+const eliteDeck = (id: string): RunDeck => {
+  const d = DECKS.find((x) => x.id === id)!;
+  return { kind: d.kind, id: d.id, name: d.name, cover: d.cover, cards: d.list.cards.map((c) => ({ ...c })) };
+};
+const johtoReady = (extra: Partial<GymProgress> = {}): GymProgress => ({
+  ...champion,
+  badges: [...KANTO_IDS, ...JOHTO_IDS],
+  ...extra,
+});
+const jEntry = { ...entry, playerName: 'LANCEFAN', deckName: 'Dragons', region: 'johto' as const };
+
+test('the Johto Elite Four panel is locked with the Johto badge count', async () => {
+  await launch({ gym: { ...champion, badges: ['falkner', 'bugsy', 'whitney'] } });
+  johtoTab();
+  expect(screen.getByRole('list', { name: 'Elite Four order' })).toHaveTextContent('Champion Lance');
+  expect(screen.getByText(/Earn all 8 badges to enter \(3 \/ 8\)/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Start Elite Four' })).toBeDisabled();
+});
+
+test('the Kanto Elite Four hint counts only Kanto badges', async () => {
+  await launch({ gym: { ...champion, badges: ['brock', 'misty', ...JOHTO_IDS] } });
+  expect(screen.getByText(/Earn all 8 badges to enter \(2 \/ 8\)/)).toBeInTheDocument();
+});
+
+test('with eight Johto badges Start Elite Four opens Will and Battle! plays the will deck, hard, in Johto', async () => {
+  await launch({
+    gym: johtoReady(),
+    ownedDecks: ['mega-gengar', 'mega-lucario'],
+    activeDeck: 'mega-lucario',
+  });
+  johtoTab();
+  expect(screen.getByText(/five matches in a row, and a loss sends you back to Will/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Start Elite Four' }));
+  expect(screen.getByText('Will')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await waitFor(() =>
+    expect(useGame.getState().config?.context).toMatchObject({ kind: 'elite', stage: 0, region: 'johto' }),
+  );
+  expect(useGame.getState().config).toMatchObject({ difficulty: 'hard', botDeck: GYM_DECKS.will });
+  expect(useProfile.getState().profile.gym.run).toMatchObject({ stage: 0, region: 'johto', inMatch: true });
+});
+
+test('a Johto run shows the five names with the current one highlighted and can be continued', async () => {
+  await launch({ gym: johtoReady({ run: { stage: 3, region: 'johto', deck: eliteDeck('mega-gengar') } }) });
+  johtoTab();
+  expect(screen.getByText(/next up is Karen \(match 4 of 5\)/)).toBeInTheDocument();
+  const order = screen.getByRole('list', { name: 'Elite Four order' });
+  expect(
+    within(order)
+      .getAllByRole('listitem')
+      .map((li) => li.textContent),
+  ).toEqual(['1. Will', '2. Koga', '3. Bruno', '4. Karen', '5. Champion Lance']);
+  expect(
+    within(order)
+      .getByText(/4\. Karen/)
+      .closest('li'),
+  ).toHaveAttribute('aria-current', 'step');
+  fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await waitFor(() => expect(useGame.getState().config?.botDeck).toBe(GYM_DECKS.karen));
+});
+
+test("Lance's setup says he plays one fixed deck; Blue's still counters", async () => {
+  await launch({ gym: johtoReady({ run: { stage: 4, region: 'johto', deck: eliteDeck('mega-gengar') } }) });
+  johtoTab();
+  fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
+  expect(screen.getByText('Lance plays one fixed deck.')).toBeInTheDocument();
+  expect(screen.queryByText(/Blue picks the ace/)).toBeNull();
+  cleanup();
+  await launch({ gym: johtoReady({ run: { stage: 4, deck: eliteDeck('mega-gengar') } }) });
+  fireEvent.click(screen.getByRole('button', { name: 'Continue run' }));
+  expect(screen.getByText(/Blue picks the ace/)).toBeInTheDocument();
+  expect(screen.queryByText('Lance plays one fixed deck.')).toBeNull();
+});
+
+test("one run at a time: the other region's panel is blocked while a run is open", async () => {
+  await launch({ gym: johtoReady({ run: { stage: 1, deck: eliteDeck('mega-gengar') } }) });
+  johtoTab();
+  expect(screen.getByText('Finish your Kanto run first.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Start Elite Four' })).toBeDisabled();
+  cleanup();
+  await launch({ gym: johtoReady({ run: { stage: 1, region: 'johto', deck: eliteDeck('mega-gengar') } }) });
+  expect(screen.getByText('Finish your Johto run first.')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Start Elite Four' })).toBeDisabled();
+});
+
+test('each region lists its own Hall of Fame', async () => {
+  await launch({ gym: { ...champion, hallOfFame: [jEntry, entry] } });
+  expect(within(screen.getByRole('list', { name: 'Hall of Fame' })).getAllByRole('listitem')).toHaveLength(1);
+  expect(screen.queryByText('LANCEFAN')).toBeNull();
+  johtoTab();
+  const list = screen.getByRole('list', { name: 'Hall of Fame' });
+  expect(within(list).getAllByRole('listitem')).toHaveLength(1);
+  expect(within(list).getByText('LANCEFAN')).toBeInTheDocument();
+  cleanup();
+  await launch({ gym: champion });
+  johtoTab();
+  expect(screen.getByText('No Johto Champions yet.')).toBeInTheDocument();
+});
+
+test("Battle! does not start a Kanto match while another tab's Johto run is open", async () => {
+  await launch({
+    gym: { ...champion, badges: [...KANTO_IDS, ...JOHTO_IDS] },
+    ownedDecks: ['mega-gengar'],
+    activeDeck: 'mega-gengar',
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Start Elite Four' }));
+  // Another tab starts a Johto run in the meantime.
+  const johtoRun = { stage: 0, region: 'johto' as const, deck: eliteDeck('mega-gengar') };
+  const saved = {
+    ...useProfile.getState().profile,
+    gym: { ...useProfile.getState().profile.gym, run: johtoRun },
+  };
+  await act(async () => {
+    await useProfile.getState().store.save(saved);
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  await act(async () => {});
+  expect(useGame.getState().config).toBeNull();
+  expect((await useProfile.getState().store.load())?.gym.run).toEqual(johtoRun);
 });

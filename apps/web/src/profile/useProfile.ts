@@ -10,6 +10,7 @@ import {
   beginMatch,
   startRun,
   type Payout,
+  type Region,
   type RunDeck,
 } from '../game/gym.ts';
 import type { EnergyType } from '@ptcg/engine';
@@ -58,6 +59,8 @@ export interface GymPayout {
   badge: boolean;
   /** The Champion was beaten and a Hall of Fame entry was added. */
   champion: boolean;
+  /** The set the reward packs came from; the 151 set when absent. */
+  set?: string;
   /** False when an Elite Four result arrived for a stage the run had already moved past (another tab). */
   counted?: boolean;
 }
@@ -76,10 +79,15 @@ function openRewardPacks(n: number, collection: Record<string, number>, set: str
 function pay(
   p: Profile,
   payout: Payout | null,
-): { collection: Record<string, number>; credits: number; packs: string[][] } {
+): { collection: Record<string, number>; credits: number; packs: string[][]; set?: string } {
   const collection = { ...p.collection };
   const packs = payout ? openRewardPacks(payout.packs, collection, payout.set) : [];
-  return { collection, credits: p.credits + (payout?.credits ?? 0), packs };
+  return {
+    collection,
+    credits: p.credits + (payout?.credits ?? 0),
+    packs,
+    ...(payout?.set ? { set: payout.set } : {}),
+  };
 }
 
 /** Trimmed, at most 10 characters, and "PLAYER" when empty. */
@@ -117,15 +125,17 @@ interface ProfileState {
   recordElite(o: {
     seed: number;
     stage: number;
+    /** The match's region; Kanto when absent. */
+    region?: Region;
     won: boolean;
     draw?: boolean;
     deckName: string;
     cover: string;
   }): Promise<GymPayout | undefined>;
-  /** Starts an Elite Four run with a locked deck (needs all 8 badges). */
-  startEliteRun(deck: RunDeck): Promise<void>;
+  /** Starts an Elite Four run with a locked deck (needs all 8 badges of the region; Kanto by default). */
+  startEliteRun(deck: RunDeck, region?: Region): Promise<void>;
   /** An Elite Four or Champion match is starting: leaving it before it ends will count as a loss. */
-  beginEliteMatch(stage: number): Promise<void>;
+  beginEliteMatch(stage: number, region?: Region): Promise<boolean>;
   /** Ends a run whose match was started but never finished (the player quit or reloaded). */
   abandonUnfinishedRun(): Promise<void>;
   /** Starts a Battle Frontier run (does nothing while a run, even a finished unclaimed one, exists). */
@@ -274,13 +284,14 @@ export const useProfile = create<ProfileState>()((set, get) => {
           result: {
             credits: reward ? reward.credits : normalCredits,
             packs: paid.packs,
+            ...(paid.set ? { set: paid.set } : {}),
             badge: !!reward,
             champion: false,
           },
         };
       });
     },
-    async recordElite({ seed, stage, won, draw, deckName, cover }) {
+    async recordElite({ seed, stage, region, won, draw, deckName, cover }) {
       return change((p) => {
         if (p.awardedGames.includes(seed)) return null;
         const entry = {
@@ -289,7 +300,11 @@ export const useProfile = create<ProfileState>()((set, get) => {
           deckName,
           cover,
         };
-        const { next: gym, reward, stale } = applyEliteResult(p.gym, stage, won, entry, draw);
+        const {
+          next: gym,
+          reward,
+          stale,
+        } = applyEliteResult(p.gym, stage, won, entry, draw, region ?? 'kanto');
         const paid = pay(p, reward);
         return {
           next: {
@@ -302,6 +317,7 @@ export const useProfile = create<ProfileState>()((set, get) => {
           result: {
             credits: reward?.credits ?? 0,
             packs: paid.packs,
+            ...(paid.set ? { set: paid.set } : {}),
             badge: false,
             champion: !!reward,
             counted: !stale,
@@ -309,17 +325,19 @@ export const useProfile = create<ProfileState>()((set, get) => {
         };
       });
     },
-    async startEliteRun(deck) {
+    async startEliteRun(deck, region) {
       await change((p) => {
-        const gym = startRun(p.gym, deck);
+        const gym = startRun(p.gym, deck, region);
         return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
       });
     },
-    async beginEliteMatch(stage) {
-      await change((p) => {
-        const gym = beginMatch(p.gym, stage);
-        return gym === p.gym ? null : { next: { ...p, gym }, result: undefined };
+    async beginEliteMatch(stage, region = 'kanto') {
+      const marked = await change((p) => {
+        const gym = beginMatch(p.gym, stage, region);
+        const ours = !!gym.run && gym.run.stage === stage && (gym.run.region ?? 'kanto') === region;
+        return { next: gym === p.gym ? p : { ...p, gym }, result: ours };
       });
+      return marked === true;
     },
     async startFrontierRun() {
       await change((p) =>

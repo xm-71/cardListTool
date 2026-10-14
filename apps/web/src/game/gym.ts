@@ -20,11 +20,15 @@ export interface HallOfFameEntry {
   deckName: string;
   /** Card id shown as the deck's picture. */
   cover: string;
+  /** Which region's Champion was beaten; missing (older saves, Kanto) means Kanto. */
+  region?: Region;
 }
 
 export interface EliteRun {
-  /** Next opponent: 0 Lorelei, 1 Bruno, 2 Agatha, 3 Lance, 4 Champion Blue. */
+  /** Next opponent: Kanto 0 Lorelei, 1 Bruno, 2 Agatha, 3 Lance, 4 Champion Blue; Johto 0 Will … 4 Champion Lance. */
   stage: number;
+  /** Which region's Elite Four this is; missing (older saves, Kanto) means Kanto. */
+  region?: Region;
   /** The player's deck, locked for the whole run. */
   deck: RunDeck;
   /** A match of this run has started and not finished: leaving it (quitting, reloading) counts as a loss. */
@@ -209,6 +213,65 @@ export const ELITE: readonly Opponent[] = [
   },
 ];
 
+/** The Johto Elite Four and Champion Lance, fought in this order in one run. */
+export const JOHTO_ELITE: readonly Opponent[] = [
+  {
+    id: 'will',
+    name: 'Will',
+    type: 'Psychic',
+    deck: 'will',
+    difficulty: 'hard',
+    intro:
+      'I am Will of the Elite Four. I have trained all around the world, and my psychic Pokémon see every move before you make it. Let us begin!',
+    win: 'Even though I have lost, I have grown. The next Elite Four member awaits.',
+    lose: 'My Pokémon read you like a book. The run ends here. Start again from the beginning!',
+  },
+  {
+    id: 'johto-koga',
+    name: 'Koga',
+    type: 'Poison',
+    deck: 'johto-koga',
+    difficulty: 'hard',
+    intro:
+      'Fwahahaha! I am Koga of the Elite Four. Poison and cunning are the weapons of a ninja, and you will feel both!',
+    win: 'Humph! You have proven your worth. Go on, the next challenger of the Elite Four is waiting.',
+    lose: 'Fwahaha! A ninja never fights fair. The run ends here. Come back from the start!',
+  },
+  {
+    id: 'johto-bruno',
+    name: 'Bruno',
+    type: 'Fighting',
+    deck: 'johto-bruno',
+    difficulty: 'hard',
+    intro:
+      'I am Bruno of the Elite Four! I have lifted every weight and faced every punch. Show me your strength!',
+    win: 'Hmm. You are stronger than your training shows. Go, face the next one!',
+    lose: 'Hoo hah! You lack the strength to go on. The run ends here. Train and return!',
+  },
+  {
+    id: 'karen',
+    name: 'Karen',
+    type: 'Darkness',
+    deck: 'karen',
+    difficulty: 'hard',
+    intro:
+      'I am Karen of the Elite Four. Strong Pokémon, weak Pokémon, that is only the selfish perception of people. Truly skilled trainers should try to win with the Pokémon they love best.',
+    win: 'Strong Pokémon, weak Pokémon... you showed me the answer. Go on, the Champion awaits.',
+    lose: 'Is that all? Your bond with your Pokémon is not yet deep enough. The run ends here.',
+  },
+  {
+    id: 'johto-lance',
+    name: 'Champion Lance',
+    type: 'Dragon',
+    deck: 'johto-lance',
+    difficulty: 'hard',
+    intro:
+      'I have been waiting for you. I am Lance, the Champion of the Pokémon League, and my dragons have never lost to a challenger who was not ready. Show me everything you have!',
+    win: 'I never expected to see my dragons fall. You are the new Champion of the Pokémon League!',
+    lose: 'My dragons are unmatched. The run ends here. Come back from the start and try again!',
+  },
+];
+
 /** Johto, unlocked by beating the Kanto Champion. Leaders are fought in this order, like Kanto's. */
 export type Region = 'kanto' | 'johto';
 
@@ -323,8 +386,19 @@ export const findLeader = (id: string): Opponent | undefined =>
 export const regionOf = (id: string): Region | null =>
   LEADERS.some((l) => l.id === id) ? 'kanto' : JOHTO_LEADERS.some((l) => l.id === id) ? 'johto' : null;
 
-/** Johto opens once the Kanto Champion has been beaten (a Hall of Fame entry exists). */
-export const johtoUnlocked = (g: GymProgress): boolean => g.hallOfFame.length > 0;
+/** An entry's region: entries without one (older saves, Kanto) are Kanto's. */
+const entryRegion = (e: HallOfFameEntry): Region => (e.region === 'johto' ? 'johto' : 'kanto');
+
+/** The Kanto Champion has been beaten at least once. */
+export const kantoChampion = (g: GymProgress): boolean =>
+  g.hallOfFame.some((e) => entryRegion(e) === 'kanto');
+
+/** The Johto Champion has been beaten at least once. */
+export const johtoChampion = (g: GymProgress): boolean =>
+  g.hallOfFame.some((e) => entryRegion(e) === 'johto');
+
+/** Johto opens once the Kanto Champion has been beaten. */
+export const johtoUnlocked = (g: GymProgress): boolean => kantoChampion(g);
 
 /** Johto badge rewards are Mega Evolution era packs. */
 export const JOHTO_PACK_SET = 'me02';
@@ -338,15 +412,27 @@ export const johtoBadgeReward = (gymIndex: number): Payout => ({
 
 export const CHAMPION_STAGE = ELITE.length - 1;
 
+/** The Elite Four and Champion of a region, in the order they are fought. */
+export const eliteOf = (region: Region): readonly Opponent[] => (region === 'johto' ? JOHTO_ELITE : ELITE);
+
+/** The stage of a region's Champion (the last of its run). */
+export const championStage = (region: Region): number => eliteOf(region).length - 1;
+
 /** Credits for a first badge: 100 for Brock, plus 25 for each later gym. Each also gives one 151 pack. */
 export const badgeReward = (gymIndex: number): Payout => ({
   credits: 100 + 25 * gymIndex,
   packs: 1,
 });
 
-/** The Champion pays more the first time. */
-export const championReward = (first: boolean): { credits: number; packs: number } =>
-  first ? { credits: 1000, packs: 3 } : { credits: 300, packs: 1 };
+/** The Champion pays more the first time; Johto's Champion pays in Mega Evolution packs. */
+export const championReward = (first: boolean, region: Region = 'kanto'): Payout =>
+  region === 'johto'
+    ? first
+      ? { credits: 1500, packs: 3, set: JOHTO_PACK_SET }
+      : { credits: 400, packs: 1, set: JOHTO_PACK_SET }
+    : first
+      ? { credits: 1000, packs: 3 }
+      : { credits: 300, packs: 1 };
 
 /** How many gyms of a region (Kanto by default) have been beaten in order (the index of the next gym). */
 export function nextGymIndex(badges: readonly string[], leaders: readonly Opponent[] = LEADERS): number {
@@ -369,8 +455,9 @@ export function gymStatus(badges: readonly string[], leaderId: string): GymStatu
 export const canChallenge = (badges: readonly string[], leaderId: string): boolean =>
   gymStatus(badges, leaderId) !== 'locked';
 
-export const canStartElite = (badges: readonly string[]): boolean =>
-  nextGymIndex(badges, LEADERS) === LEADERS.length;
+/** All eight leaders of the region (Kanto by default) have been beaten. */
+export const canStartElite = (badges: readonly string[], region: Region = 'kanto'): boolean =>
+  nextGymIndex(badges, leadersOf(region)) === leadersOf(region).length;
 
 /** The most common Basic Energy type in a deck, or null when it has none. */
 export function mainEnergyType(
@@ -426,17 +513,20 @@ export function applyGymResult(
   return { next: { ...g, badges: [...g.badges, leaderId] }, reward };
 }
 
-/** Starts an Elite Four run with a locked deck (needs all 8 badges); an unfinished run is kept as it is. */
-export function startRun(g: GymProgress, deck: RunDeck): GymProgress {
-  if (!canStartElite(g.badges) || g.run) return g;
-  return { ...g, run: { stage: 0, deck } };
+/**
+ * Starts an Elite Four run with a locked deck (needs all 8 badges of the region). Only one run exists at a time:
+ * an unfinished run, of either region, is kept as it is. Kanto runs carry no region, as in older saves.
+ */
+export function startRun(g: GymProgress, deck: RunDeck, region: Region = 'kanto'): GymProgress {
+  if (!canStartElite(g.badges, region) || g.run) return g;
+  return { ...g, run: region === 'johto' ? { stage: 0, region, deck } : { stage: 0, deck } };
 }
 
 /**
  * Applies a finished Elite Four or Champion match: a loss ends the run, a win moves on, a draw replays the
  * same match (the run stays where it is), and beating the Champion ends the run with a Hall of Fame entry and
- * the Champion reward. A result for a stage the run is not at (or with no run, e.g. the other tab already moved
- * on) changes nothing and is marked `stale`.
+ * the Champion reward of the run's region. A result for a stage or region the run is not at (or with no run, e.g.
+ * the other tab already moved on) changes nothing and is marked `stale`. `region` is the match's region.
  */
 export function applyEliteResult(
   g: GymProgress,
@@ -444,22 +534,37 @@ export function applyEliteResult(
   won: boolean,
   entry: HallOfFameEntry,
   draw = false,
+  region: Region = g.run?.region ?? 'kanto',
 ): { next: GymProgress; reward: Payout | null; stale?: true } {
-  if (!g.run || g.run.stage !== stage) return { next: g, reward: null, stale: true };
-  if (draw) {
-    return { next: { ...g, run: { stage: g.run.stage, deck: g.run.deck } }, reward: null };
+  const run = g.run;
+  if (!run || run.stage !== stage || (run.region ?? 'kanto') !== region) {
+    return { next: g, reward: null, stale: true };
   }
+  // The run as it continues: the same stage and deck, with the match no longer started.
+  const kept: EliteRun = { stage: run.stage, ...(run.region ? { region: run.region } : {}), deck: run.deck };
+  if (draw) return { next: { ...g, run: kept }, reward: null };
   if (!won) return { next: { ...g, run: null }, reward: null };
-  if (stage < CHAMPION_STAGE) {
-    return { next: { ...g, run: { deck: g.run.deck, stage: stage + 1 } }, reward: null };
-  }
-  const first = g.hallOfFame.length === 0;
-  return { next: { ...g, run: null, hallOfFame: [entry, ...g.hallOfFame] }, reward: championReward(first) };
+  if (stage < championStage(region))
+    return { next: { ...g, run: { ...kept, stage: stage + 1 } }, reward: null };
+  const first = !g.hallOfFame.some((e) => entryRegion(e) === region);
+  const plain = {
+    date: entry.date,
+    playerName: entry.playerName,
+    deckName: entry.deckName,
+    cover: entry.cover,
+  };
+  const stamped: HallOfFameEntry = region === 'johto' ? { ...plain, region } : plain;
+  return {
+    next: { ...g, run: null, hallOfFame: [stamped, ...g.hallOfFame] },
+    reward: championReward(first, region),
+  };
 }
 
 /** Marks the run's match for `stage` as started (see `EliteRun.inMatch`). */
-export function beginMatch(g: GymProgress, stage: number): GymProgress {
-  return g.run && g.run.stage === stage && !g.run.inMatch ? { ...g, run: { ...g.run, inMatch: true } } : g;
+export function beginMatch(g: GymProgress, stage: number, region: Region = 'kanto'): GymProgress {
+  return g.run && g.run.stage === stage && (g.run.region ?? 'kanto') === region && !g.run.inMatch
+    ? { ...g, run: { ...g.run, inMatch: true } }
+    : g;
 }
 
 /** A match that was started but never finished (the player quit or reloaded) is a loss: the run ends. */
@@ -484,21 +589,23 @@ export function normalizeGym(raw: unknown): GymProgress {
     d.cards.every((c) => !!c && isString(c.id) && Number.isInteger(c.count) && c.count > 0)
       ? d.cards.map((c) => ({ id: c.id, count: c.count }))
       : null;
+  const runRegion: Region = r?.region === 'johto' ? 'johto' : 'kanto';
   const run =
     r &&
     typeof r.stage === 'number' &&
     Number.isInteger(r.stage) &&
     r.stage >= 0 &&
-    r.stage <= CHAMPION_STAGE &&
+    r.stage <= championStage(runRegion) &&
     d &&
     kinds.includes(d.kind as string) &&
     isString(d.id) &&
     isString(d.name) &&
     isString(d.cover) &&
     cards &&
-    canStartElite(badges)
+    canStartElite(badges, runRegion)
       ? {
           stage: r.stage,
+          ...(runRegion === 'johto' ? { region: runRegion } : {}),
           deck: { kind: d.kind as RunDeck['kind'], id: d.id, name: d.name, cover: d.cover, cards },
           ...(r.inMatch === true ? { inMatch: true } : {}),
         }
@@ -513,6 +620,13 @@ export function normalizeGym(raw: unknown): GymProgress {
             isString((e as HallOfFameEntry).deckName) &&
             isString((e as HallOfFameEntry).cover),
         )
+        .map((e) => ({
+          date: e.date,
+          playerName: e.playerName,
+          deckName: e.deckName,
+          cover: e.cover,
+          ...(e.region === 'johto' ? { region: e.region } : {}),
+        }))
         .slice(0, 200)
     : [];
   return { badges, run, hallOfFame };

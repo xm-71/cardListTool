@@ -1,23 +1,36 @@
 import { describe, expect, test } from 'vitest';
 import { GYM_DECKS } from '@ptcg/cards';
 import {
+  CHAMPION_STAGE,
+  ELITE,
+  JOHTO_ELITE,
   JOHTO_LEADERS,
   JOHTO_PACK_SET,
   JOHTO_TOTAL,
   LEADERS,
+  abandonUnfinishedRun,
+  applyEliteResult,
   applyGymResult,
   badgeReward,
+  beginMatch,
   canChallenge,
   canStartElite,
+  championReward,
+  championStage,
+  eliteOf,
   emptyGym,
   findLeader,
   gymStatus,
   johtoBadgeReward,
+  johtoChampion,
   johtoUnlocked,
+  kantoChampion,
   leadersOf,
   nextGymIndex,
   normalizeGym,
   regionOf,
+  startRun,
+  type GymProgress,
 } from '../src/game/gym.ts';
 import { townStatus } from '../src/game/town.ts';
 import { newProfile } from '../src/profile/types.ts';
@@ -153,5 +166,155 @@ describe('applyGymResult for Johto', () => {
 describe('normalizeGym', () => {
   test('keeps ids of both regions, drops unknown ones', () => {
     expect(normalizeGym({ badges: ['falkner', 'brock', 'nobody'] }).badges).toEqual(['falkner', 'brock']);
+  });
+});
+
+describe('the Johto Elite Four', () => {
+  const johtoBadges = JOHTO_LEADERS.map((l) => l.id);
+  const deck = {
+    kind: 'starter' as const,
+    id: 'x',
+    name: 'Deck',
+    cover: 'me01-077',
+    cards: [{ id: 'mee-001', count: 60 }],
+  };
+  const jEntry = { ...entry, region: 'johto' as const };
+  const johtoReady = (): GymProgress => ({ ...emptyGym(), badges: [...johtoBadges] });
+  const johtoRun = (stage: number): GymProgress => ({
+    ...johtoReady(),
+    run: { stage, region: 'johto', deck },
+  });
+  const kantoRun = (stage: number): GymProgress => ({
+    ...emptyGym(),
+    badges: [...kanto],
+    run: { stage, deck },
+  });
+
+  test('JOHTO_ELITE is Will, Koga, Bruno, Karen and Champion Lance, all Hard with real decks', () => {
+    expect(JOHTO_ELITE.map((o) => o.id)).toEqual([
+      'will',
+      'johto-koga',
+      'johto-bruno',
+      'karen',
+      'johto-lance',
+    ]);
+    expect(JOHTO_ELITE.map((o) => o.name)).toEqual(['Will', 'Koga', 'Bruno', 'Karen', 'Champion Lance']);
+    expect(JOHTO_ELITE.every((o) => o.difficulty === 'hard')).toBe(true);
+    for (const o of JOHTO_ELITE) expect(GYM_DECKS[o.deck], o.id).toBeDefined();
+    expect(eliteOf('johto')).toBe(JOHTO_ELITE);
+    expect(eliteOf('kanto')).toBe(ELITE);
+    expect(championStage('johto')).toBe(4);
+    expect(championStage('kanto')).toBe(CHAMPION_STAGE);
+  });
+
+  test('canStartElite needs all eight leaders of the region', () => {
+    expect(canStartElite(johtoBadges, 'johto')).toBe(true);
+    expect(canStartElite(johtoBadges.slice(0, 7), 'johto')).toBe(false);
+    expect(canStartElite(kanto, 'johto')).toBe(false);
+    expect(canStartElite(johtoBadges)).toBe(false);
+    expect(canStartElite(kanto)).toBe(true);
+  });
+
+  test('startRun starts a Johto run at stage 0 and refuses while any run exists, in either region', () => {
+    expect(startRun(johtoReady(), deck, 'johto').run).toEqual({ stage: 0, region: 'johto', deck });
+    expect(startRun(emptyGym(), deck, 'johto').run).toBeNull();
+    const both = { ...kantoRun(1), badges: [...kanto, ...johtoBadges] };
+    expect(startRun(both, deck, 'johto')).toBe(both);
+    const other = { ...johtoRun(1), badges: [...kanto, ...johtoBadges] };
+    expect(startRun(other, deck)).toBe(other);
+  });
+
+  test('kantoChampion ignores Johto entries; entries without a region count as Kanto', () => {
+    const g = emptyGym();
+    expect(kantoChampion({ ...g, hallOfFame: [jEntry] })).toBe(false);
+    expect(johtoChampion({ ...g, hallOfFame: [jEntry] })).toBe(true);
+    expect(kantoChampion({ ...g, hallOfFame: [entry] })).toBe(true);
+    expect(johtoChampion({ ...g, hallOfFame: [entry] })).toBe(false);
+  });
+
+  test('a Johto Hall of Fame entry does not unlock Johto or the town champion flag; a Kanto one does', () => {
+    expect(johtoUnlocked({ ...emptyGym(), hallOfFame: [jEntry] })).toBe(false);
+    expect(johtoUnlocked({ ...emptyGym(), hallOfFame: [entry] })).toBe(true);
+    const p = newProfile();
+    expect(townStatus({ ...p, gym: { ...emptyGym(), hallOfFame: [jEntry] } }).champion).toBe(false);
+    expect(townStatus({ ...p, gym: { ...emptyGym(), hallOfFame: [entry] } }).champion).toBe(true);
+  });
+
+  test('the Johto Champion pays 1500 + 3 me02 packs the first time, then 400 + 1', () => {
+    expect(championReward(true, 'johto')).toEqual({ credits: 1500, packs: 3, set: 'me02' });
+    expect(championReward(false, 'johto')).toEqual({ credits: 400, packs: 1, set: 'me02' });
+    expect(championReward(true)).toEqual({ credits: 1000, packs: 3 });
+  });
+
+  test('winning moves on, a draw replays the stage, a loss ends the run', () => {
+    expect(applyEliteResult(johtoRun(0), 0, true, jEntry).next.run).toEqual({
+      stage: 1,
+      region: 'johto',
+      deck,
+    });
+    expect(applyEliteResult(johtoRun(2), 2, true, jEntry, true).next.run).toEqual({
+      stage: 2,
+      region: 'johto',
+      deck,
+    });
+    expect(applyEliteResult(johtoRun(2), 2, false, jEntry).next.run).toBeNull();
+  });
+
+  test('beating Lance records a Johto entry, ends the run and pays the Johto reward, independent of Kanto', () => {
+    const won = applyEliteResult(johtoRun(4), 4, true, jEntry);
+    expect(won.next.run).toBeNull();
+    expect(won.next.hallOfFame).toEqual([jEntry]);
+    expect(won.reward).toEqual(championReward(true, 'johto'));
+    const kantoFirst = { ...johtoRun(4), hallOfFame: [entry] };
+    expect(applyEliteResult(kantoFirst, 4, true, jEntry).reward).toEqual(championReward(true, 'johto'));
+    const again = { ...johtoRun(4), hallOfFame: [jEntry, entry] };
+    expect(applyEliteResult(again, 4, true, jEntry).reward).toEqual(championReward(false, 'johto'));
+  });
+
+  test('a Johto result against a Kanto run, or a stale stage, counts for nothing', () => {
+    const k = kantoRun(2);
+    expect(applyEliteResult(k, 2, true, jEntry, false, 'johto')).toEqual({
+      next: k,
+      reward: null,
+      stale: true,
+    });
+    const j = johtoRun(2);
+    expect(applyEliteResult(j, 2, true, entry, false, 'kanto')).toEqual({
+      next: j,
+      reward: null,
+      stale: true,
+    });
+    expect(applyEliteResult(j, 1, true, jEntry).stale).toBe(true);
+  });
+
+  test('a Kanto Champion win is unchanged and its entry has no region', () => {
+    const won = applyEliteResult(kantoRun(CHAMPION_STAGE), CHAMPION_STAGE, true, entry);
+    expect(won.next.hallOfFame).toEqual([entry]);
+    expect(won.reward).toEqual({ credits: 1000, packs: 3 });
+  });
+
+  test('abandoning an unfinished Johto match ends the run', () => {
+    const g = beginMatch(johtoRun(1), 1, 'johto');
+    expect(g.run?.inMatch).toBe(true);
+    expect(abandonUnfinishedRun(g).run).toBeNull();
+  });
+
+  test('normalizeGym keeps a Johto run and entries, defaults the rest to Kanto, and bounds the stage', () => {
+    const base = { badges: [...kanto, ...johtoBadges] };
+    expect(normalizeGym({ ...base, run: { stage: 3, region: 'johto', deck } }).run).toEqual({
+      stage: 3,
+      region: 'johto',
+      deck,
+    });
+    expect(normalizeGym({ ...base, run: { stage: 3, deck } }).run).toEqual({ stage: 3, deck });
+    expect(normalizeGym({ ...base, run: { stage: 5, region: 'johto', deck } }).run).toBeNull();
+    expect(normalizeGym({ ...base, run: { stage: 3, region: 'nowhere', deck } }).run).toEqual({
+      stage: 3,
+      deck,
+    });
+    expect(normalizeGym({ badges: kanto, run: { stage: 1, region: 'johto', deck } }).run).toBeNull();
+    expect(normalizeGym({ badges: johtoBadges, run: { stage: 1, deck } }).run).toBeNull();
+    const h = normalizeGym({ hallOfFame: [entry, jEntry, { ...entry, region: 'mars' }] }).hallOfFame;
+    expect(h.map((e) => e.region)).toEqual([undefined, 'johto', undefined]);
   });
 });

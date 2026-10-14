@@ -5,16 +5,18 @@ import { deckSources, registry, type DeckSource } from '../game/catalog.ts';
 import { resolveActiveDeck } from '../game/deckCase.ts';
 import {
   CHAMPION_STAGE,
-  ELITE,
   JOHTO_LEADERS,
   JOHTO_TOTAL,
   LEADERS,
   badgeReward,
   canChallenge,
   canStartElite,
+  championStage,
+  eliteOf,
   gymStatus,
   johtoBadgeReward,
   johtoUnlocked,
+  leadersOf,
   regionOf,
   type Opponent,
   type Region,
@@ -27,7 +29,7 @@ import { ActiveDeckPanel } from '../ui/ActiveDeckPanel.tsx';
 import { CharacterPortrait } from '../ui/CharacterPortrait.tsx';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
 
-type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite' };
+type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite'; region: Region };
 
 /** The setup the player was on when they opened the Deck Case, so Back / Use this deck return to it. */
 let resumeSetup: Setup | null = null;
@@ -83,7 +85,13 @@ function LeaderGrid({
 }
 
 /** The Johto tab: locked until the Kanto Champion has been beaten. */
-function JohtoGyms({ onChallenge }: { onChallenge(leader: Opponent): void }) {
+function JohtoGyms({
+  onChallenge,
+  onStartElite,
+}: {
+  onChallenge(leader: Opponent): void;
+  onStartElite(): void;
+}) {
   const gym = useProfile((s) => s.profile.gym);
   if (!johtoUnlocked(gym)) {
     return (
@@ -106,6 +114,8 @@ function JohtoGyms({ onChallenge }: { onChallenge(leader: Opponent): void }) {
         reward={(i) => `${johtoBadgeReward(i).credits} credits + a Mega Evolution pack`}
         onChallenge={onChallenge}
       />
+      <EliteFour region="johto" onStart={onStartElite} />
+      <HallOfFame region="johto" />
     </>
   );
 }
@@ -124,7 +134,7 @@ export function GymChallenge() {
     return resumed;
   });
   const [region, setRegion] = useState<Region>(
-    setup?.kind === 'gym' ? (regionOf(setup.leader.id) ?? 'kanto') : 'kanto',
+    setup?.kind === 'gym' ? (regionOf(setup.leader.id) ?? 'kanto') : (setup?.region ?? 'kanto'),
   );
   const earned = gym.badges.filter((id) => LEADERS.some((l) => l.id === id)).length;
 
@@ -154,7 +164,10 @@ export function GymChallenge() {
   return (
     <ScreenFrame wide actions={tabs}>
       {region === 'johto' ? (
-        <JohtoGyms onChallenge={challenge} />
+        <JohtoGyms
+          onChallenge={challenge}
+          onStartElite={() => setSetup({ kind: 'elite', region: 'johto' })}
+        />
       ) : (
         <>
           <Box title="Gym Challenge">
@@ -169,27 +182,34 @@ export function GymChallenge() {
             reward={(i) => `${badgeReward(i).credits} credits + a 151 pack`}
             onChallenge={challenge}
           />
-          <EliteFour onStart={() => setSetup({ kind: 'elite' })} />
-          <HallOfFame />
+          <EliteFour region="kanto" onStart={() => setSetup({ kind: 'elite', region: 'kanto' })} />
+          <HallOfFame region="kanto" />
         </>
       )}
     </ScreenFrame>
   );
 }
 
-function EliteFour({ onStart }: { onStart(): void }) {
+const REGION_NAME: Record<Region, string> = { kanto: 'Kanto', johto: 'Johto' };
+
+/** The Elite Four run of a region: the order, the state of the run and the button to start or continue it. */
+function EliteFour({ region, onStart }: { region: Region; onStart(): void }) {
   const gym = useProfile((s) => s.profile.gym);
-  const unlocked = canStartElite(gym.badges);
+  const unlocked = canStartElite(gym.badges, region);
+  const members = eliteOf(region);
+  const earned = leadersOf(region).filter((l) => gym.badges.includes(l.id)).length;
   const run = gym.run;
+  const mine = run && (run.region ?? 'kanto') === region ? run : null;
+  const other = run && !mine ? (run.region ?? 'kanto') : null;
   return (
     <Box title="Elite Four">
       <div className="flex flex-col gap-3">
         <ol aria-label="Elite Four order" className="flex flex-wrap gap-3 text-xl">
-          {ELITE.map((o, i) => (
+          {members.map((o, i) => (
             <li
               key={o.id}
-              aria-current={run?.stage === i ? 'step' : undefined}
-              className={`border-2 border-ink px-2 py-1 ${run && i < run.stage ? 'bg-green/30 line-through' : ''} ${run?.stage === i ? 'bg-yellow text-ink-fixed' : ''}`}
+              aria-current={mine?.stage === i ? 'step' : undefined}
+              className={`border-2 border-ink px-2 py-1 ${mine && i < mine.stage ? 'bg-green/30 line-through' : ''} ${mine?.stage === i ? 'bg-yellow text-ink-fixed' : ''}`}
             >
               <CharacterPortrait id={o.id} size={20} className="mr-1 inline-block border-2 align-middle" />
               {i + 1}. {o.name}
@@ -197,31 +217,40 @@ function EliteFour({ onStart }: { onStart(): void }) {
           ))}
         </ol>
         {!unlocked ? (
-          <p className="text-xl">Earn all 8 badges to enter ({gym.badges.length} / 8).</p>
-        ) : run ? (
           <p className="text-xl">
-            Run in progress: next up is {ELITE[run.stage]!.name} (match {run.stage + 1} of {ELITE.length}).
-            Losing a match ends the run.
+            Earn all 8 badges to enter ({earned} / {leadersOf(region).length}).
+          </p>
+        ) : other ? (
+          <p className="text-xl">Finish your {REGION_NAME[other]} run first.</p>
+        ) : mine ? (
+          <p className="text-xl">
+            Run in progress: next up is {members[mine.stage]!.name} (match {mine.stage + 1} of{' '}
+            {members.length}). Losing a match ends the run.
           </p>
         ) : (
           <p className="text-xl">
-            Pick one deck for the whole run: five matches in a row, and a loss sends you back to Lorelei.
+            Pick one deck for the whole run: five matches in a row, and a loss sends you back to{' '}
+            {members[0]!.name}.
           </p>
         )}
-        <Button className="self-start" disabled={!unlocked} onClick={onStart}>
-          {run ? 'Continue run' : 'Start Elite Four'}
+        <Button className="self-start" disabled={!unlocked || !!other} onClick={onStart}>
+          {mine ? 'Continue run' : 'Start Elite Four'}
         </Button>
       </div>
     </Box>
   );
 }
 
-function HallOfFame() {
-  const hof = useProfile((s) => s.profile.gym.hallOfFame);
+/** The Champions of a region, newest first (entries without a region are Kanto's). */
+function HallOfFame({ region }: { region: Region }) {
+  const all = useProfile((s) => s.profile.gym.hallOfFame);
+  const hof = all.filter((e) => (e.region ?? 'kanto') === region);
   return (
     <Box title="Hall of Fame">
       {hof.length === 0 ? (
-        <p className="text-xl">No Champions yet. Will you be the first?</p>
+        <p className="text-xl">
+          {region === 'johto' ? 'No Johto Champions yet.' : 'No Champions yet. Will you be the first?'}
+        </p>
       ) : (
         <ol aria-label="Hall of Fame" className="flex flex-col gap-2">
           {hof.map((e, i) => (
@@ -256,9 +285,10 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
       ).find((d) => d.id === activeId),
     [activeId, customDecks, collection],
   );
-  const run = setup.kind === 'elite' ? gym.run : null;
+  const region = setup.kind === 'elite' ? setup.region : 'kanto';
+  const run = setup.kind === 'elite' && (gym.run?.region ?? 'kanto') === region ? gym.run : null;
   const locked = run ? runDeckSource(run.deck) : undefined;
-  const opponent = setup.kind === 'gym' ? setup.leader : ELITE[run?.stage ?? 0]!;
+  const opponent = setup.kind === 'gym' ? setup.leader : eliteOf(region)[run?.stage ?? 0]!;
   const choosing = !locked;
   const deck: DeckSource | undefined = locked ?? active;
 
@@ -266,10 +296,12 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     if (!deck) return;
     sfx('confirm');
     if (setup.kind === 'gym') return startGymMatch(setup.leader.id, deck);
-    if (!run) await startEliteRun(snapshotOf(deck));
+    if (!run) await startEliteRun(snapshotOf(deck), region);
     // The run's saved copy of the deck is what plays, so a deck changed since the run started doesn't matter.
     const current = useProfile.getState().profile.gym.run;
-    await startEliteMatch(current?.stage ?? 0, current ? runDeckSource(current.deck) : deck);
+    // Another tab may have started a run of the other region: that run is not ours to play or mark.
+    if (current && (current.region ?? 'kanto') !== region) return;
+    await startEliteMatch(current?.stage ?? 0, current ? runDeckSource(current.deck) : deck, region);
   };
 
   return (
@@ -281,8 +313,11 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
             <DialogBox text={opponent.intro} />
           </div>
         </div>
-        {setup.kind === 'elite' && run?.stage === CHAMPION_STAGE && (
+        {setup.kind === 'elite' && run?.stage === CHAMPION_STAGE && region === 'kanto' && (
           <p className="mt-2 text-lg opacity-70">Blue picks the ace that counters your deck's main Energy.</p>
+        )}
+        {setup.kind === 'elite' && run?.stage === championStage('johto') && region === 'johto' && (
+          <p className="mt-2 text-lg opacity-70">Lance plays one fixed deck.</p>
         )}
       </Box>
       {choosing ? (

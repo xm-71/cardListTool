@@ -2,7 +2,7 @@ import { CREDITS } from '@ptcg/economy';
 import type { Route } from '../nav/useNav.ts';
 import type { CustomBinder, Profile } from '../profile/types.ts';
 import { FIGHTS, LIVES } from './frontier/run.ts';
-import { LEADERS, nextGymIndex } from './gym.ts';
+import { LEADERS, kantoChampion, nextGymIndex } from './gym.ts';
 
 /** The main menu's town square: eight buildings around a fountain. Everything here is pure. */
 
@@ -151,7 +151,7 @@ export function townStatus(p: Profile): TownStatus {
   const run = p.frontier.run;
   return {
     badges: LEADERS.filter((l) => p.gym.badges.includes(l.id)).length,
-    champion: p.gym.hallOfFame.length > 0,
+    champion: kantoChampion(p.gym),
     frontier: run && run.phase !== 'over' ? { fight: run.fight, wins: run.wins, lives: run.lives } : null,
     canBuyPack: !p.collectorMode && p.credits >= CREDITS.packPrice,
     owned: Object.values(p.collection).filter((n) => n > 0).length,

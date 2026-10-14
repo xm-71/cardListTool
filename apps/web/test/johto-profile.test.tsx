@@ -3,7 +3,7 @@ import { GYM_DECKS } from '@ptcg/cards';
 import { beforeEach, expect, test } from 'vitest';
 import { opponentName } from '../src/game/describe.ts';
 import { emptyGym } from '../src/game/gym.ts';
-import { startGymMatch } from '../src/game/gymMatch.ts';
+import { startEliteMatch, startGymMatch, startNextEliteMatch } from '../src/game/gymMatch.ts';
 import { useGame } from '../src/game/store.ts';
 import { deckById } from '../src/game/catalog.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
@@ -114,4 +114,212 @@ test('the Gym game over screen shows a Johto leader', () => {
     />,
   );
   expect(screen.getByText(/Morty/)).toBeInTheDocument();
+});
+
+// ---- Johto Elite Four ----
+const JOHTO = ['falkner', 'bugsy', 'whitney', 'morty', 'chuck', 'jasmine', 'pryce', 'clair'];
+const KANTO = ['brock', 'misty', 'surge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni'];
+const runDeck = {
+  kind: 'starter' as const,
+  id: 'mega-gengar',
+  name: 'Gengar',
+  cover: 'me02-056',
+  cards: [{ id: 'mee-007', count: 60 }],
+};
+const johtoGym = () => ({ ...emptyGym(), badges: [...KANTO, ...JOHTO], hallOfFame: [entry] });
+const sourceOf = () => {
+  const d = deckById('mega-gengar');
+  return { id: d.id, name: d.name, list: d.list, cover: d.cover, kind: d.kind };
+};
+
+test('startEliteRun with a Johto deck stores region johto and refuses while a Kanto run exists', async () => {
+  await init({ gym: johtoGym() });
+  await useProfile.getState().startEliteRun(runDeck, 'johto');
+  expect(profile().gym.run).toEqual({ stage: 0, region: 'johto', deck: runDeck });
+  await init({ gym: { ...johtoGym(), run: { stage: 2, deck: runDeck } } });
+  await useProfile.getState().startEliteRun(runDeck, 'johto');
+  expect(profile().gym.run).toEqual({ stage: 2, deck: runDeck });
+});
+
+test('beginEliteMatch then abandonUnfinishedRun ends a Johto run', async () => {
+  await init({ gym: { ...johtoGym(), run: { stage: 1, region: 'johto', deck: runDeck } } });
+  await useProfile.getState().beginEliteMatch(1, 'johto');
+  expect(profile().gym.run?.inMatch).toBe(true);
+  await useProfile.getState().abandonUnfinishedRun();
+  expect(profile().gym.run).toBeNull();
+});
+
+test('beating Lance adds a Johto entry and pays 1500 credits and 3 me02 packs, then 400 and 1', async () => {
+  await init({ credits: 0, gym: { ...johtoGym(), run: { stage: 4, region: 'johto', deck: runDeck } } });
+  const first = await useProfile.getState().recordElite({
+    seed: 20,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'Gengar',
+    cover: 'me02-056',
+  });
+  expect(first).toMatchObject({ credits: 1500, champion: true, counted: true });
+  expect(first!.packs).toHaveLength(3);
+  expect(first!.set).toBe('me02');
+  expect(first!.packs.flat().every((id) => id.startsWith('me02-'))).toBe(true);
+  expect(profile().credits).toBe(1500);
+  expect(profile().gym.run).toBeNull();
+  expect(profile().gym.hallOfFame[0]).toMatchObject({ region: 'johto', deckName: 'Gengar' });
+  await init({
+    credits: 0,
+    gym: {
+      ...johtoGym(),
+      hallOfFame: [{ ...entry, region: 'johto' }, entry],
+      run: { stage: 4, region: 'johto', deck: runDeck },
+    },
+  });
+  const again = await useProfile.getState().recordElite({
+    seed: 21,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'Gengar',
+    cover: 'me02-056',
+  });
+  expect(again).toMatchObject({ credits: 400 });
+  expect(again!.packs).toHaveLength(1);
+});
+
+test('a Johto result against a Kanto run counts for nothing; a Kanto Champion win is unchanged', async () => {
+  await init({ credits: 0, gym: { ...johtoGym(), run: { stage: 4, deck: runDeck } } });
+  const stale = await useProfile.getState().recordElite({
+    seed: 22,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'D',
+    cover: 'me02-056',
+  });
+  expect(stale).toMatchObject({ counted: false, credits: 0 });
+  expect(profile().gym.run).toEqual({ stage: 4, deck: runDeck });
+  const kanto = await useProfile
+    .getState()
+    .recordElite({ seed: 23, stage: 4, won: true, draw: false, deckName: 'D', cover: 'me02-056' });
+  expect(kanto).toMatchObject({ credits: 300, champion: true });
+  expect(kanto!.packs[0]!.every((id) => id.startsWith('sv03.5-'))).toBe(true);
+});
+
+test('startEliteMatch plays the Johto opponent, and Lance always plays his fixed deck', async () => {
+  await init({ gym: { ...johtoGym(), run: { stage: 0, region: 'johto', deck: runDeck } } });
+  await startEliteMatch(0, sourceOf(), 'johto');
+  expect(useGame.getState().config).toMatchObject({
+    difficulty: 'hard',
+    botDeck: GYM_DECKS.will,
+    context: { kind: 'elite', stage: 0, region: 'johto' },
+  });
+  await init({ gym: { ...johtoGym(), run: { stage: 4, region: 'johto', deck: runDeck } } });
+  await startEliteMatch(4, sourceOf(), 'johto');
+  expect(useGame.getState().config).toMatchObject({ botDeck: GYM_DECKS['johto-lance'] });
+  await init({ gym: { ...emptyGym(), badges: KANTO, run: { stage: 4, deck: runDeck } } });
+  await startEliteMatch(4, sourceOf());
+  expect(useGame.getState().config?.context).toEqual({
+    kind: 'elite',
+    stage: 4,
+    deckName: sourceOf().name,
+    cover: sourceOf().cover,
+  });
+});
+
+test('the opponent is named from the Johto Elite Four', () => {
+  const config = (stage: number, region?: 'johto') =>
+    ({ mode: 'bot', context: { kind: 'elite', stage, region, deckName: 'D', cover: 'c' } }) as Parameters<
+      typeof opponentName
+    >[0];
+  expect(opponentName(config(1, 'johto'), 0)).toBe('Koga');
+  expect(opponentName(config(1), 0)).toBe('Bruno');
+  expect(opponentName(config(4, 'johto'), 0)).toBe('Champion Lance');
+});
+
+const elite = (stage: number, region?: 'johto') =>
+  ({ kind: 'elite', stage, region, deckName: 'D', cover: 'c' }) as const;
+const gameOver = (
+  context: Parameters<typeof GymGameOver>[0]['context'],
+  payout: Parameters<typeof GymGameOver>[0]['payout'],
+  onNext = () => {},
+) =>
+  render(
+    <GymGameOver
+      context={context}
+      result={{ winner: 0, reason: 'prizes' } as never}
+      human={0}
+      payout={payout}
+      onBack={() => {}}
+      onRematch={() => {}}
+      onNext={onNext}
+    />,
+  );
+
+test('after beating Will the game over screen offers Next: Koga', () => {
+  gameOver(elite(0, 'johto'), { credits: 0, packs: [], badge: false, champion: false, counted: true });
+  expect(screen.getByRole('button', { name: 'Next: Koga' })).toBeInTheDocument();
+  expect(screen.getByText(/Will:/)).toBeInTheDocument();
+});
+
+test('after beating Lance the screen says Champion! and offers the Mega Evolution packs', () => {
+  gameOver(elite(4, 'johto'), {
+    credits: 1500,
+    packs: [['me02-001'], ['me02-002'], ['me02-003']],
+    set: 'me02',
+    badge: false,
+    champion: true,
+    counted: true,
+  });
+  expect(screen.getByRole('heading', { name: 'Champion!' })).toBeInTheDocument();
+  expect(screen.getByText('You won 3 Mega Evolution packs!')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Next/ })).toBeNull();
+});
+
+test('a Kanto pack reward keeps the 151 wording', () => {
+  gameOver(
+    { kind: 'gym', leaderId: 'brock', deck: { kind: 'starter', id: 'x' } },
+    { credits: 100, packs: [['sv03.5-001']], badge: true, champion: false },
+  );
+  expect(screen.getByText('You won a Scarlet & Violet 151 pack!')).toBeInTheDocument();
+});
+
+test('a Johto badge pack says Mega Evolution too', () => {
+  gameOver(
+    { kind: 'gym', leaderId: 'falkner', deck: { kind: 'starter', id: 'x' } },
+    { credits: 150, packs: [['me02-001']], set: 'me02', badge: true, champion: false },
+  );
+  expect(screen.getByText('You won a Mega Evolution pack!')).toBeInTheDocument();
+});
+
+test('Next after beating Will starts Koga in Johto, not a Kanto match', async () => {
+  const realDeck = { ...runDeck, cards: deckById('mega-gengar').list.cards.map((c) => ({ ...c })) };
+  await init({ gym: { ...johtoGym(), run: { stage: 1, region: 'johto', deck: realDeck } } });
+  expect(await startNextEliteMatch()).toBe(true);
+  expect(useGame.getState().config).toMatchObject({
+    difficulty: 'hard',
+    botDeck: GYM_DECKS['johto-koga'],
+    context: { kind: 'elite', stage: 1, region: 'johto' },
+  });
+  expect(profile().gym.run).toMatchObject({ stage: 1, region: 'johto', inMatch: true });
+  await init({ gym: { ...johtoGym(), run: { stage: 1, deck: realDeck } } });
+  await startNextEliteMatch();
+  expect(useGame.getState().config).toMatchObject({ botDeck: GYM_DECKS.bruno });
+  await init({ gym: johtoGym() });
+  expect(await startNextEliteMatch()).toBe(false);
+});
+
+test('beginEliteMatch only marks a run of the same region', async () => {
+  await init({ gym: { ...johtoGym(), run: { stage: 0, region: 'johto', deck: runDeck } } });
+  await useProfile.getState().beginEliteMatch(0, 'kanto');
+  expect(profile().gym.run?.inMatch).toBeUndefined();
+  await useProfile.getState().beginEliteMatch(0, 'johto');
+  expect(profile().gym.run?.inMatch).toBe(true);
+  await init({ gym: { ...johtoGym(), run: { stage: 0, deck: runDeck } } });
+  await useProfile.getState().beginEliteMatch(0, 'johto');
+  expect(profile().gym.run?.inMatch).toBeUndefined();
+  await useProfile.getState().beginEliteMatch(0);
+  expect(profile().gym.run?.inMatch).toBe(true);
 });

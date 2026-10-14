@@ -139627,6 +139627,72 @@
     "isEx": false,
     "isMega": false
   },
+  "me02.5-102": {
+    "id": "me02.5-102",
+    "name": "Hitmontop",
+    "regulationMark": "J",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/me/me02.5/102",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 100,
+    "types": ["Fighting"],
+    "evolvesFrom": null,
+    "weakness": "Psychic",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Spin and Draw",
+        "cost": ["Colorless"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Shuffle your hand into your deck. Then, draw 6 cards."
+      },
+      {
+        "name": "Low Kick",
+        "cost": ["Fighting", "Colorless"],
+        "damage": 50,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "me02.5-152": {
+    "id": "me02.5-152",
+    "name": "Mega Dragonite ex",
+    "regulationMark": "I",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/me/me02.5/152",
+    "category": "Pokemon",
+    "stage": "Stage2",
+    "hp": 370,
+    "types": ["Dragon"],
+    "evolvesFrom": "Dragonair",
+    "weakness": null,
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Ryuno Glide",
+        "cost": ["Water", "Lightning", "Lightning"],
+        "damage": 330,
+        "damageSuffix": "",
+        "text": "Discard 2 Energy from this Pokémon."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Sky Transport",
+        "text": "Once during your turn, you may use this Ability. Switch your Active Pokémon with 1 of your Benched Pokémon."
+      }
+    ],
+    "isEx": true,
+    "isMega": true
+  },
   "me02.5-155": {
     "id": "me02.5-155",
     "name": "N's Zekrom",
@@ -173535,6 +173601,106 @@
     "text": "You can use this card only if any of your Pokémon were Knocked Out during your opponent's last turn.\n\nEach player shuffles their hand into their deck. Then, you draw 5 cards, and your opponent draws 2 cards.",
     "isAceSpec": true
   },
+  "sv06.5-027": {
+    "id": "sv06.5-027",
+    "name": "Zubat",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv06.5/027",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 50,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Lead",
+        "cost": ["Darkness"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Search your deck for a Supporter card, reveal it, and put it into your hand. Then, shuffle your deck."
+      },
+      {
+        "name": "Darkness Fang",
+        "cost": ["Darkness"],
+        "damage": 10,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv06.5-028": {
+    "id": "sv06.5-028",
+    "name": "Golbat",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv06.5/028",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 80,
+    "types": ["Darkness"],
+    "evolvesFrom": "Zubat",
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Speed Dive",
+        "cost": ["Darkness"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": ""
+      },
+      {
+        "name": "Pitch-Black Blade",
+        "cost": ["Darkness", "Colorless"],
+        "damage": 80,
+        "damageSuffix": "",
+        "text": "During your next turn, this Pokémon can't attack."
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv06.5-029": {
+    "id": "sv06.5-029",
+    "name": "Crobat",
+    "regulationMark": "H",
+    "rarity": "Uncommon",
+    "image": "https://assets.tcgdex.net/en/sv/sv06.5/029",
+    "category": "Pokemon",
+    "stage": "Stage2",
+    "hp": 130,
+    "types": ["Darkness"],
+    "evolvesFrom": "Golbat",
+    "weakness": "Lightning",
+    "resistance": "Fighting",
+    "retreat": 0,
+    "attacks": [
+      {
+        "name": "Poison Fang",
+        "cost": ["Darkness", "Colorless"],
+        "damage": 120,
+        "damageSuffix": "",
+        "text": "Your opponent's Active Pokémon is now Poisoned. During Pokémon Checkup, put 2 damage counters on that Pokémon instead of 1."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Shadowy Envoy",
+        "text": "Once during your turn, if you played Janine's Secret Art from your hand this turn, you may draw cards until you have 8 cards in your hand."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
+  },
   "sv06.5-038": {
     "id": "sv06.5-038",
     "name": "Fezandipiti ex",
@@ -173993,6 +174159,133 @@
     "energyKind": "Special",
     "provides": ["Colorless"],
     "text": "As long as this card is attached to a Pokémon, it provides {C} Energy.\n\nWhen you attach this card from your hand to a Pokémon, draw 4 cards."
+  },
+  "sv08.5-060": {
+    "id": "sv08.5-060",
+    "name": "Umbreon ex",
+    "regulationMark": "H",
+    "rarity": "Double rare",
+    "image": "https://assets.tcgdex.net/en/sv/sv08.5/060",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 280,
+    "types": ["Darkness"],
+    "evolvesFrom": "Eevee",
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 2,
+    "attacks": [
+      {
+        "name": "Moon Mirage",
+        "cost": ["Darkness", "Colorless", "Colorless"],
+        "damage": 160,
+        "damageSuffix": "",
+        "text": "Your opponent's Active Pokémon is now Confused."
+      },
+      {
+        "name": "Onyx",
+        "cost": ["Lightning", "Psychic", "Darkness"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Discard all Energy from this Pokémon, and take a Prize card."
+      }
+    ],
+    "abilities": [],
+    "isEx": true,
+    "isMega": false
+  },
+  "sv08.5-062": {
+    "id": "sv08.5-062",
+    "name": "Houndour",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08.5/062",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 70,
+    "types": ["Darkness"],
+    "evolvesFrom": null,
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Playful Kick",
+        "cost": ["Darkness"],
+        "damage": 20,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv08.5-063": {
+    "id": "sv08.5-063",
+    "name": "Houndoom",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08.5/063",
+    "category": "Pokemon",
+    "stage": "Stage1",
+    "hp": 120,
+    "types": ["Darkness"],
+    "evolvesFrom": "Houndour",
+    "weakness": "Grass",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Call to Muster",
+        "cost": ["Darkness"],
+        "damage": 0,
+        "damageSuffix": "",
+        "text": "Search your deck for up to 2 Basic Energy cards and attach them to your Pokémon in any way you like. Then, shuffle your deck."
+      },
+      {
+        "name": "Pitch-Black Fangs",
+        "cost": ["Darkness", "Colorless", "Colorless"],
+        "damage": 100,
+        "damageSuffix": "",
+        "text": ""
+      }
+    ],
+    "abilities": [],
+    "isEx": false,
+    "isMega": false
+  },
+  "sv08.5-074": {
+    "id": "sv08.5-074",
+    "name": "Eevee",
+    "regulationMark": "H",
+    "rarity": "Common",
+    "image": "https://assets.tcgdex.net/en/sv/sv08.5/074",
+    "category": "Pokemon",
+    "stage": "Basic",
+    "hp": 50,
+    "types": ["Colorless"],
+    "evolvesFrom": null,
+    "weakness": "Fighting",
+    "resistance": null,
+    "retreat": 1,
+    "attacks": [
+      {
+        "name": "Reckless Charge",
+        "cost": ["Colorless", "Colorless"],
+        "damage": 30,
+        "damageSuffix": "",
+        "text": "This Pokémon also does 10 damage to itself."
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Boosted Evolution",
+        "text": "As long as this Pokémon is in the Active Spot, it can evolve during your first turn or the turn you play it."
+      }
+    ],
+    "isEx": false,
+    "isMega": false
   },
   "sv09-056": {
     "id": "sv09-056",
