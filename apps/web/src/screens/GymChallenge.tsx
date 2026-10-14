@@ -8,6 +8,8 @@ import {
   JOHTO_LEADERS,
   JOHTO_TOTAL,
   LEADERS,
+  RED,
+  RED_FIRST_REWARD,
   badgeReward,
   canChallenge,
   canStartElite,
@@ -17,11 +19,18 @@ import {
   johtoBadgeReward,
   johtoUnlocked,
   leadersOf,
+  redUnlocked,
   regionOf,
   type Opponent,
   type Region,
 } from '../game/gym.ts';
-import { runDeckSource, snapshotOf, startEliteMatch, startGymMatch } from '../game/gymMatch.ts';
+import {
+  runDeckSource,
+  snapshotOf,
+  startEliteMatch,
+  startGymMatch,
+  startRedMatch,
+} from '../game/gymMatch.ts';
 import { ScreenFrame } from '../nav/ScreenFrame.tsx';
 import { useNav } from '../nav/useNav.ts';
 import { useProfile } from '../profile/useProfile.ts';
@@ -29,7 +38,7 @@ import { ActiveDeckPanel } from '../ui/ActiveDeckPanel.tsx';
 import { CharacterPortrait } from '../ui/CharacterPortrait.tsx';
 import { Box, Button, DialogBox } from '../ui/retro/index.ts';
 
-type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite'; region: Region };
+type Setup = { kind: 'gym'; leader: Opponent } | { kind: 'elite'; region: Region } | { kind: 'red' };
 
 /** The setup the player was on when they opened the Deck Case, so Back / Use this deck return to it. */
 let resumeSetup: Setup | null = null;
@@ -88,9 +97,11 @@ function LeaderGrid({
 function JohtoGyms({
   onChallenge,
   onStartElite,
+  onChallengeRed,
 }: {
   onChallenge(leader: Opponent): void;
   onStartElite(): void;
+  onChallengeRed(): void;
 }) {
   const gym = useProfile((s) => s.profile.gym);
   if (!johtoUnlocked(gym)) {
@@ -116,6 +127,7 @@ function JohtoGyms({
       />
       <EliteFour region="johto" onStart={onStartElite} />
       <HallOfFame region="johto" />
+      <MtSilver onChallenge={onChallengeRed} />
     </>
   );
 }
@@ -134,7 +146,11 @@ export function GymChallenge() {
     return resumed;
   });
   const [region, setRegion] = useState<Region>(
-    setup?.kind === 'gym' ? (regionOf(setup.leader.id) ?? 'kanto') : (setup?.region ?? 'kanto'),
+    setup?.kind === 'gym'
+      ? (regionOf(setup.leader.id) ?? 'kanto')
+      : setup?.kind === 'red'
+        ? 'johto'
+        : (setup?.region ?? 'kanto'),
   );
   const earned = gym.badges.filter((id) => LEADERS.some((l) => l.id === id)).length;
 
@@ -167,6 +183,7 @@ export function GymChallenge() {
         <JohtoGyms
           onChallenge={challenge}
           onStartElite={() => setSetup({ kind: 'elite', region: 'johto' })}
+          onChallengeRed={() => setSetup({ kind: 'red' })}
         />
       ) : (
         <>
@@ -187,6 +204,33 @@ export function GymChallenge() {
         </>
       )}
     </ScreenFrame>
+  );
+}
+
+/** Red, on Mt. Silver: locked until the Johto Champion has been beaten, then one optional fight. */
+function MtSilver({ onChallenge }: { onChallenge(): void }) {
+  const gym = useProfile((s) => s.profile.gym);
+  const unlocked = redUnlocked(gym);
+  return (
+    <Box title="Mt. Silver">
+      {unlocked ? (
+        <div className="flex flex-wrap items-center gap-4">
+          <CharacterPortrait id={RED.id} name={RED.name} size={80} />
+          <div className="flex min-w-48 flex-1 flex-col items-start gap-2">
+            <p className="text-xl">
+              Red waits at the summit. One optional fight with your active deck.
+              {!gym.redBeaten &&
+                ` First win: ${RED_FIRST_REWARD.credits} credits + ${RED_FIRST_REWARD.packs} Mega Evolution packs.`}
+            </p>
+            <Button aria-label={`${gym.redBeaten ? 'Rematch' : 'Challenge'} Red`} onClick={onChallenge}>
+              {gym.redBeaten ? 'Rematch' : 'Challenge'}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-xl">Beat Champion Lance to find Red on Mt. Silver.</p>
+      )}
+    </Box>
   );
 }
 
@@ -288,7 +332,8 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
   const region = setup.kind === 'elite' ? setup.region : 'kanto';
   const run = setup.kind === 'elite' && (gym.run?.region ?? 'kanto') === region ? gym.run : null;
   const locked = run ? runDeckSource(run.deck) : undefined;
-  const opponent = setup.kind === 'gym' ? setup.leader : eliteOf(region)[run?.stage ?? 0]!;
+  const opponent =
+    setup.kind === 'gym' ? setup.leader : setup.kind === 'red' ? RED : eliteOf(region)[run?.stage ?? 0]!;
   const choosing = !locked;
   const deck: DeckSource | undefined = locked ?? active;
 
@@ -296,6 +341,7 @@ function MatchSetup({ setup, onCancel }: { setup: Setup; onCancel(): void }) {
     if (!deck) return;
     sfx('confirm');
     if (setup.kind === 'gym') return startGymMatch(setup.leader.id, deck);
+    if (setup.kind === 'red') return startRedMatch(deck);
     if (!run) await startEliteRun(snapshotOf(deck), region);
     // The run's saved copy of the deck is what plays, so a deck changed since the run started doesn't matter.
     const current = useProfile.getState().profile.gym.run;

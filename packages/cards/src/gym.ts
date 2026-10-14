@@ -27,6 +27,7 @@ import johtoKoga from './decks/gym/johto-koga.json';
 import johtoBruno from './decks/gym/johto-bruno.json';
 import karen from './decks/gym/karen.json';
 import johtoLance from './decks/gym/johto-lance.json';
+import red from './decks/gym/red.json';
 
 /** The Scarlet & Violet 151 set: the only non-Standard cards the Gym format allows. */
 export const GYM_SET = 'sv03.5';
@@ -58,6 +59,7 @@ export const GYM_DECKS = {
   'johto-bruno': johtoBruno,
   karen,
   'johto-lance': johtoLance,
+  red,
   'blue-fire': blueFire,
   'blue-water': blueWater,
   'blue-grass': blueGrass,
