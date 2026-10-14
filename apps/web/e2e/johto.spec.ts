@@ -25,8 +25,8 @@ const overflow = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 
 /** A Hall of Fame entry in the saved profile, as if the Kanto Champion had been beaten. */
-async function beatKantoChampion(page: Page) {
-  await page.evaluate(async () => {
+async function beatKantoChampion(page: Page, badges: string[] = []) {
+  await page.evaluate(async (earned) => {
     type Store = {
       getState(): { profile: { gym: object }; store: { save(p: object): Promise<void> } };
       setState(s: unknown): void;
@@ -34,10 +34,10 @@ async function beatKantoChampion(page: Page) {
     const store = (window as unknown as { __profile: Store }).__profile;
     const base = store.getState().profile;
     const entry = { date: '2026-10-13', playerName: 'ASH', deckName: 'Deck', cover: 'me01-077' };
-    const profile = { ...base, gym: { ...base.gym, hallOfFame: [entry] } };
+    const profile = { ...base, gym: { ...base.gym, hallOfFame: [entry], badges: earned } };
     await store.getState().store.save(profile);
     store.setState({ profile });
-  });
+  }, badges);
 }
 
 for (const [name, width, height] of [
@@ -65,6 +65,27 @@ for (const [name, width, height] of [
     await page.getByRole('button', { name: 'Challenge Falkner' }).click();
     await expect(page.getByText("Falkner's Gym")).toBeVisible();
     expect(await overflow(page), 'the Johto match setup scrolls sideways').toBeLessThanOrEqual(0);
+    await page.getByRole('button', { name: 'Battle!' }).click();
+    await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
+  });
+}
+
+for (const [name, width, height] of [
+  ['desktop', 1400, 900],
+  ['phone', 390, 844],
+] as const) {
+  test(`${name}: with seven Johto badges Clair is next and her match starts`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await toMenu(page);
+    await beatKantoChampion(page, ['falkner', 'bugsy', 'whitney', 'morty', 'chuck', 'jasmine', 'pryce']);
+    await page.getByRole('menuitem', { name: 'Gym Challenge' }).click();
+    await page.getByRole('tab', { name: 'Johto' }).click();
+    await expect(page.getByText(/Badges: 7 \/ 8/)).toBeVisible();
+    await expect(page.getByText('Coming soon')).toHaveCount(0);
+    expect(await overflow(page), 'the full Johto case scrolls sideways').toBeLessThanOrEqual(0);
+    await page.screenshot({ path: `test-results/johto-full-${name}.png`, fullPage: true });
+    await page.getByRole('button', { name: 'Challenge Clair' }).click();
+    await expect(page.getByText("Clair's Gym")).toBeVisible();
     await page.getByRole('button', { name: 'Battle!' }).click();
     await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
   });
