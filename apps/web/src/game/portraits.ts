@@ -309,6 +309,18 @@ export const LOOKS: Record<string, Look> = {
     topStyle: 'cape',
     extras: ['necklace'],
   },
+  red: {
+    bg: '#d84a3a',
+    skin: '#f0c8a8',
+    hair: '#2a2a2a',
+    hairStyle: 'flat',
+    eyes: 'shades',
+    mouth: 'flat',
+    top: '#d83a3a',
+    trim: '#f8f8f8',
+    accent: '#2a2a2a',
+    topStyle: 'jacket',
+  },
   // The Johto Elite Four and Champion Lance.
   will: {
     bg: '#c070d8',

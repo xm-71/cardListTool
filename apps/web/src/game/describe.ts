@@ -1,5 +1,5 @@
 import type { GameEvent, PlayerId } from '@ptcg/engine';
-import { eliteOf, findLeader } from './gym.ts';
+import { RED, eliteOf, findLeader } from './gym.ts';
 import type { GameConfig } from './store.ts';
 
 /** Who is who, for putting log lines in plain words from one player's side. */
@@ -15,6 +15,7 @@ export interface Names {
 export function opponentName(config: Pick<GameConfig, 'mode' | 'context'>, viewer: PlayerId): string {
   const ctx = config.context;
   if (ctx?.kind === 'gym') return findLeader(ctx.leaderId)?.name ?? 'Rival';
+  if (ctx?.kind === 'red') return RED.name;
   if (ctx?.kind === 'elite') return eliteOf(ctx.region ?? 'kanto')[ctx.stage]?.name ?? 'Rival';
   if (ctx?.kind === 'frontier') return ctx.opponent;
   if (config.mode === 'hotseat') return `Player ${viewer === 0 ? 2 : 1}`;

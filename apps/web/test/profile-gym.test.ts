@@ -24,7 +24,7 @@ beforeEach(() => useProfile.getState().reset());
 
 test('older profiles load with no badges, no run and an empty Hall of Fame', () => {
   const p = normalizeProfile({ version: 1, credits: 5 });
-  expect(p.gym).toEqual({ badges: [], run: null, hallOfFame: [] });
+  expect(p.gym).toEqual({ badges: [], run: null, hallOfFame: [], redBeaten: false });
 });
 
 test('the first win over Brock pays 100 credits and a 151 pack (saved), and adds the badge', async () => {

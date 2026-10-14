@@ -6,6 +6,7 @@ import { createMemoryStore } from './memoryStore.ts';
 import {
   abandonUnfinishedRun,
   applyEliteResult,
+  applyRedResult,
   applyGymResult,
   beginMatch,
   startRun,
@@ -121,6 +122,11 @@ interface ProfileState {
     won: boolean;
     normalCredits: number;
   }): Promise<GymPayout | undefined>;
+  /**
+   * Records a finished match against Red, once per game seed. The first win after the Johto Champion pays his reward
+   * (credits and me02 packs, saved here); anything else pays `normalCredits`.
+   */
+  recordRed(o: { seed: number; won: boolean; normalCredits: number }): Promise<GymPayout | undefined>;
   /** Records a finished Elite Four or Champion match, once per game seed (`draw`: the match is replayed). */
   recordElite(o: {
     seed: number;
@@ -286,6 +292,30 @@ export const useProfile = create<ProfileState>()((set, get) => {
             packs: paid.packs,
             ...(paid.set ? { set: paid.set } : {}),
             badge: !!reward,
+            champion: false,
+          },
+        };
+      });
+    },
+    async recordRed({ seed, won, normalCredits }) {
+      return change((p) => {
+        if (p.awardedGames.includes(seed)) return null;
+        const { next: gym, reward } = applyRedResult(p.gym, won);
+        const paid = pay(p, reward);
+        const credits = reward ? paid.credits : p.credits + normalCredits;
+        return {
+          next: {
+            ...p,
+            gym,
+            collection: paid.collection,
+            credits,
+            awardedGames: [...p.awardedGames, seed].slice(-AWARD_HISTORY),
+          },
+          result: {
+            credits: reward ? reward.credits : normalCredits,
+            packs: paid.packs,
+            ...(paid.set ? { set: paid.set } : {}),
+            badge: false,
             champion: false,
           },
         };

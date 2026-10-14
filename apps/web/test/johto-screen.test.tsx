@@ -286,3 +286,47 @@ test("Battle! does not start a Kanto match while another tab's Johto run is open
   expect(useGame.getState().config).toBeNull();
   expect((await useProfile.getState().store.load())?.gym.run).toEqual(johtoRun);
 });
+
+// ---- Red ----
+const johtoChampion: GymProgress = { ...champion, hallOfFame: [entry, jEntry] };
+
+test('Mt. Silver is locked before the Johto Champion', async () => {
+  await launch({ gym: champion });
+  johtoTab();
+  expect(screen.getByText('Mt. Silver')).toBeInTheDocument();
+  expect(screen.getByText('Beat Champion Lance to find Red on Mt. Silver.')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Red$/ })).toBeNull();
+});
+
+test('after the Johto Champion, Challenge Red shows the first-win reward and Battle! starts a hard game against the red deck', async () => {
+  await launch({ gym: johtoChampion, ownedDecks: ['mega-gengar'], activeDeck: 'mega-gengar' });
+  johtoTab();
+  expect(screen.getByText(/First win: 2000 credits \+ 3 Mega Evolution packs/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Challenge Red' }));
+  expect(screen.getByRole('img', { name: 'Red' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  expect(useGame.getState().config).toMatchObject({
+    difficulty: 'hard',
+    botDeck: GYM_DECKS.red,
+    context: { kind: 'red' },
+  });
+});
+
+test('once Red is beaten the panel says Rematch and drops the first-win line', async () => {
+  await launch({ gym: { ...johtoChampion, redBeaten: true } });
+  johtoTab();
+  expect(screen.getByRole('button', { name: 'Rematch Red' })).toBeEnabled();
+  expect(screen.queryByText(/First win: 2000/)).toBeNull();
+});
+
+test('Back from the Deck Case returns to the Red setup on the Johto tab', async () => {
+  await launch({ gym: johtoChampion });
+  johtoTab();
+  fireEvent.click(screen.getByRole('button', { name: 'Challenge Red' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+  expect(screen.getByRole('button', { name: 'Battle!' })).toBeInTheDocument();
+  expect(screen.getAllByText('Red').length).toBeGreaterThan(0);
+  fireEvent.click(screen.getAllByRole('button', { name: 'Back' }).at(-1)!);
+  expect(screen.getByRole('tab', { name: 'Johto' })).toHaveAttribute('aria-selected', 'true');
+});

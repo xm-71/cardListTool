@@ -123,3 +123,42 @@ for (const [name, width, height] of [
     expect(context).toMatchObject({ kind: 'elite', stage: 0, region: 'johto' });
   });
 }
+
+for (const [name, width, height] of [
+  ['desktop', 1400, 900],
+  ['phone', 390, 844],
+] as const) {
+  test(`${name}: after the Johto Champion, Red can be challenged on Mt. Silver`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await toMenu(page);
+    await page.evaluate(async () => {
+      type Store = {
+        getState(): { profile: { gym: object }; store: { save(p: object): Promise<void> } };
+        setState(s: unknown): void;
+      };
+      const store = (window as unknown as { __profile: Store }).__profile;
+      const base = store.getState().profile;
+      const entry = { date: '2026-10-14', playerName: 'ASH', deckName: 'Deck', cover: 'me01-077' };
+      const gym = { ...base.gym, hallOfFame: [{ ...entry, region: 'johto' }, entry] };
+      const profile = { ...base, gym };
+      await store.getState().store.save(profile);
+      store.setState({ profile });
+    });
+    await page.getByRole('menuitem', { name: 'Gym Challenge' }).click();
+    await page.getByRole('tab', { name: 'Johto' }).click();
+    await expect(page.getByText('Mt. Silver', { exact: true })).toBeVisible();
+    expect(await overflow(page), 'the Mt. Silver panel scrolls sideways').toBeLessThanOrEqual(0);
+    await page.screenshot({ path: `test-results/johto-red-${name}.png`, fullPage: true });
+    await page.getByRole('button', { name: 'Challenge Red' }).click();
+    expect(await overflow(page), 'the Red match setup scrolls sideways').toBeLessThanOrEqual(0);
+    await page.getByRole('button', { name: 'Battle!' }).click();
+    await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
+    const kind = await page.evaluate(
+      () =>
+        (
+          window as unknown as { __game: { getState(): { config: { context: { kind: string } } } } }
+        ).__game.getState().config.context.kind,
+    );
+    expect(kind).toBe('red');
+  });
+}

@@ -1,11 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import { expect, test } from 'vitest';
-import { ELITE, JOHTO_ELITE, JOHTO_LEADERS, LEADERS } from '../src/game/gym.ts';
+import { ELITE, JOHTO_ELITE, JOHTO_LEADERS, LEADERS, RED } from '../src/game/gym.ts';
 import { GRID, LOOKS, portraitGrid, portraitRuns } from '../src/game/portraits.ts';
 import { CharacterPortrait } from '../src/ui/CharacterPortrait.tsx';
 import { GymGameOver } from '../src/ui/GymGameOver.tsx';
 
-const ids = [...LEADERS, ...ELITE, ...JOHTO_LEADERS, ...JOHTO_ELITE].map((o) => o.id);
+const ids = [...LEADERS, ...ELITE, ...JOHTO_LEADERS, ...JOHTO_ELITE, RED].map((o) => o.id);
 
 test('every gym leader (Kanto and Johto), Elite Four member and the Champion has a portrait', () => {
   expect(Object.keys(LOOKS).sort()).toEqual([...ids].sort());

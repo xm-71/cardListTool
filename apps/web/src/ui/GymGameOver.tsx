@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { GameResult, PlayerId } from '@ptcg/engine';
 import { sfx } from '../audio/sfx.ts';
-import { JOHTO_PACK_SET, championStage, eliteOf, findLeader } from '../game/gym.ts';
+import { JOHTO_PACK_SET, RED, championStage, eliteOf, findLeader } from '../game/gym.ts';
 import type { GameContext } from '../game/store.ts';
 import type { GymPayout } from '../profile/useProfile.ts';
 import { CharacterPortrait } from './CharacterPortrait.tsx';
@@ -33,7 +33,11 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
 
   const eliteRegion = context.kind === 'elite' ? (context.region ?? 'kanto') : 'kanto';
   const opponent =
-    context.kind === 'gym' ? findLeader(context.leaderId)! : eliteOf(eliteRegion)[context.stage]!;
+    context.kind === 'gym'
+      ? findLeader(context.leaderId)!
+      : context.kind === 'red'
+        ? RED
+        : eliteOf(eliteRegion)[context.stage]!;
   const packs = payout?.packs ?? [];
   const packName = payout?.set === JOHTO_PACK_SET ? 'Mega Evolution' : 'Scarlet & Violet 151';
   const hasMorePacks = opening < packs.length;
@@ -111,7 +115,7 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
               {draw ? 'Replay' : 'Next'}: {eliteOf(eliteRegion)[nextStage]!.name}
             </Button>
           )}
-          {context.kind === 'gym' && (
+          {(context.kind === 'gym' || context.kind === 'red') && (
             <Button disabled={payout === undefined} variant={won ? 'plain' : 'primary'} onClick={onRematch}>
               {won ? 'Rematch' : 'Try again'}
             </Button>

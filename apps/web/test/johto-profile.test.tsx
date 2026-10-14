@@ -3,7 +3,7 @@ import { GYM_DECKS } from '@ptcg/cards';
 import { beforeEach, expect, test } from 'vitest';
 import { opponentName } from '../src/game/describe.ts';
 import { emptyGym } from '../src/game/gym.ts';
-import { startEliteMatch, startGymMatch, startNextEliteMatch } from '../src/game/gymMatch.ts';
+import { startEliteMatch, startGymMatch, startNextEliteMatch, startRedMatch } from '../src/game/gymMatch.ts';
 import { useGame } from '../src/game/store.ts';
 import { deckById } from '../src/game/catalog.ts';
 import { createMemoryStore } from '../src/profile/memoryStore.ts';
@@ -322,4 +322,61 @@ test('beginEliteMatch only marks a run of the same region', async () => {
   expect(profile().gym.run?.inMatch).toBeUndefined();
   await useProfile.getState().beginEliteMatch(0);
   expect(profile().gym.run?.inMatch).toBe(true);
+});
+
+// ---- Red ----
+const johtoChamp = () => ({ ...emptyGym(), hallOfFame: [{ ...entry, region: 'johto' as const }] });
+
+test('the first win over Red pays 2000 credits and 3 me02 packs and sets redBeaten; a rematch pays normal credits', async () => {
+  await init({ credits: 0, gym: johtoChamp() });
+  const first = await useProfile.getState().recordRed({ seed: 40, won: true, normalCredits: 60 });
+  expect(first).toMatchObject({ credits: 2000, set: 'me02' });
+  expect(first!.packs).toHaveLength(3);
+  expect(profile().gym.redBeaten).toBe(true);
+  expect(profile().credits).toBe(2000);
+  const again = await useProfile.getState().recordRed({ seed: 41, won: true, normalCredits: 60 });
+  expect(again).toMatchObject({ credits: 60, packs: [] });
+  expect(profile().credits).toBe(2060);
+  const loss = await useProfile.getState().recordRed({ seed: 42, won: false, normalCredits: 10 });
+  expect(loss).toMatchObject({ credits: 10, packs: [] });
+});
+
+test('recordRed ignores a replayed seed, and a win before the Johto Champion pays normal credits only', async () => {
+  await init({ credits: 0, gym: johtoChamp() });
+  await useProfile.getState().recordRed({ seed: 50, won: true, normalCredits: 60 });
+  expect(await useProfile.getState().recordRed({ seed: 50, won: true, normalCredits: 60 })).toBeUndefined();
+  await init({ credits: 0, gym: { ...emptyGym(), hallOfFame: [entry] } });
+  const early = await useProfile.getState().recordRed({ seed: 51, won: true, normalCredits: 60 });
+  expect(early).toMatchObject({ credits: 60, packs: [] });
+  expect(profile().gym.redBeaten).toBe(false);
+});
+
+test('startRedMatch plays the red deck with the Hard bot and a red context', () => {
+  startRedMatch(sourceOf());
+  expect(useGame.getState().config).toMatchObject({
+    difficulty: 'hard',
+    botDeck: GYM_DECKS.red,
+    context: { kind: 'red', deck: { kind: sourceOf().kind, id: sourceOf().id } },
+  });
+});
+
+test('Red is named in the log and shown on the game over screen with Rematch', () => {
+  const config = { mode: 'bot', context: { kind: 'red', deck: { kind: 'starter', id: 'x' } } } as Parameters<
+    typeof opponentName
+  >[0];
+  expect(opponentName(config, 0)).toBe('Red');
+  gameOver(
+    { kind: 'red', deck: { kind: 'starter', id: 'x' } },
+    {
+      credits: 2000,
+      packs: [['me02-001'], ['me02-002'], ['me02-003']],
+      set: 'me02',
+      badge: false,
+      champion: false,
+    },
+  );
+  expect(screen.getByRole('heading', { name: 'You win!' })).toBeInTheDocument();
+  expect(screen.getByText(/Red:/)).toBeInTheDocument();
+  expect(screen.getByText('You won 3 Mega Evolution packs!')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Rematch' })).toBeInTheDocument();
 });
