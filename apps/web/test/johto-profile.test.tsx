@@ -151,17 +151,15 @@ test('beginEliteMatch then abandonUnfinishedRun ends a Johto run', async () => {
 
 test('beating Lance adds a Johto entry and pays 1500 credits and 3 me02 packs, then 400 and 1', async () => {
   await init({ credits: 0, gym: { ...johtoGym(), run: { stage: 4, region: 'johto', deck: runDeck } } });
-  const first = await useProfile
-    .getState()
-    .recordElite({
-      seed: 20,
-      stage: 4,
-      region: 'johto',
-      won: true,
-      draw: false,
-      deckName: 'Gengar',
-      cover: 'me02-056',
-    });
+  const first = await useProfile.getState().recordElite({
+    seed: 20,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'Gengar',
+    cover: 'me02-056',
+  });
   expect(first).toMatchObject({ credits: 1500, champion: true, counted: true });
   expect(first!.packs).toHaveLength(3);
   expect(first!.set).toBe('me02');
@@ -177,34 +175,30 @@ test('beating Lance adds a Johto entry and pays 1500 credits and 3 me02 packs, t
       run: { stage: 4, region: 'johto', deck: runDeck },
     },
   });
-  const again = await useProfile
-    .getState()
-    .recordElite({
-      seed: 21,
-      stage: 4,
-      region: 'johto',
-      won: true,
-      draw: false,
-      deckName: 'Gengar',
-      cover: 'me02-056',
-    });
+  const again = await useProfile.getState().recordElite({
+    seed: 21,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'Gengar',
+    cover: 'me02-056',
+  });
   expect(again).toMatchObject({ credits: 400 });
   expect(again!.packs).toHaveLength(1);
 });
 
 test('a Johto result against a Kanto run counts for nothing; a Kanto Champion win is unchanged', async () => {
   await init({ credits: 0, gym: { ...johtoGym(), run: { stage: 4, deck: runDeck } } });
-  const stale = await useProfile
-    .getState()
-    .recordElite({
-      seed: 22,
-      stage: 4,
-      region: 'johto',
-      won: true,
-      draw: false,
-      deckName: 'D',
-      cover: 'me02-056',
-    });
+  const stale = await useProfile.getState().recordElite({
+    seed: 22,
+    stage: 4,
+    region: 'johto',
+    won: true,
+    draw: false,
+    deckName: 'D',
+    cover: 'me02-056',
+  });
   expect(stale).toMatchObject({ counted: false, credits: 0 });
   expect(profile().gym.run).toEqual({ stage: 4, deck: runDeck });
   const kanto = await useProfile
