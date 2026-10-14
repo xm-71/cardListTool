@@ -5,6 +5,7 @@ import { MAX_NAME, useProfile } from '../profile/useProfile.ts';
 import { THEMES, type Theme } from '../settings/theme.ts';
 import { ANIMATION_SPEEDS, useSettings, type AnimationSpeed } from '../settings/useSettings.ts';
 import { Box, Button } from '../ui/retro/index.ts';
+import { AccountSection } from '../ui/account/AccountSection.tsx';
 import { OfflineSettings } from './OfflineSettings.tsx';
 
 const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
@@ -27,6 +28,7 @@ export function Options() {
   const [name, setNameDraft] = useState(current ?? '');
   return (
     <ScreenFrame>
+      <AccountSection />
       <Box title="Options">
         <div className="flex flex-col gap-5">
           <label className="flex items-center gap-3 font-pixel text-xs">

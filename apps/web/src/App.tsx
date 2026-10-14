@@ -17,6 +17,7 @@ import { MainMenu } from './screens/MainMenu.tsx';
 import { Options } from './screens/Options.tsx';
 import { Shop } from './screens/Shop.tsx';
 import { Title } from './screens/Title.tsx';
+import { useCloud } from './cloud/useCloud.ts';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
@@ -47,6 +48,9 @@ export function App({ botClient, botDelayMs = 700, startAt }: Props) {
     if (startAt) useNav.setState({ route: startAt });
   });
   const client = useMemo(() => botClient ?? createWorkerBotClient(), [botClient]);
+  useEffect(() => {
+    if (!useCloud.getState().ready) void useCloud.getState().init();
+  }, []);
   useEffect(() => {
     if (useProfile.getState().ready) return;
     void connectProfileStore().then(({ store, persistent }) => useProfile.getState().init(store, persistent));
