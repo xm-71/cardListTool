@@ -52,7 +52,11 @@ export function startGymMatch(leaderId: string, deck: DeckSource): void {
 }
 
 /** Starts the Elite Four or Champion match for `stage` of `region` with the run's locked deck. */
-export async function startEliteMatch(stage: number, deck: DeckSource, region: Region = 'kanto'): Promise<void> {
+export async function startEliteMatch(
+  stage: number,
+  deck: DeckSource,
+  region: Region = 'kanto',
+): Promise<void> {
   // Saved first, so quitting or reloading from here on counts as a loss.
   await useProfile.getState().beginEliteMatch(stage);
   const opponent = eliteOf(region)[stage]!;

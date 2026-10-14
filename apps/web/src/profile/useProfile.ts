@@ -300,14 +300,11 @@ export const useProfile = create<ProfileState>()((set, get) => {
           deckName,
           cover,
         };
-        const { next: gym, reward, stale } = applyEliteResult(
-          p.gym,
-          stage,
-          won,
-          entry,
-          draw,
-          region ?? 'kanto',
-        );
+        const {
+          next: gym,
+          reward,
+          stale,
+        } = applyEliteResult(p.gym, stage, won, entry, draw, region ?? 'kanto');
         const paid = pay(p, reward);
         return {
           next: {

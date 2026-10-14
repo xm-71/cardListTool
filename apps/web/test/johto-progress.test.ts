@@ -171,14 +171,33 @@ describe('normalizeGym', () => {
 
 describe('the Johto Elite Four', () => {
   const johtoBadges = JOHTO_LEADERS.map((l) => l.id);
-  const deck = { kind: 'starter' as const, id: 'x', name: 'Deck', cover: 'me01-077', cards: [{ id: 'mee-001', count: 60 }] };
+  const deck = {
+    kind: 'starter' as const,
+    id: 'x',
+    name: 'Deck',
+    cover: 'me01-077',
+    cards: [{ id: 'mee-001', count: 60 }],
+  };
   const jEntry = { ...entry, region: 'johto' as const };
   const johtoReady = (): GymProgress => ({ ...emptyGym(), badges: [...johtoBadges] });
-  const johtoRun = (stage: number): GymProgress => ({ ...johtoReady(), run: { stage, region: 'johto', deck } });
-  const kantoRun = (stage: number): GymProgress => ({ ...emptyGym(), badges: [...kanto], run: { stage, deck } });
+  const johtoRun = (stage: number): GymProgress => ({
+    ...johtoReady(),
+    run: { stage, region: 'johto', deck },
+  });
+  const kantoRun = (stage: number): GymProgress => ({
+    ...emptyGym(),
+    badges: [...kanto],
+    run: { stage, deck },
+  });
 
   test('JOHTO_ELITE is Will, Koga, Bruno, Karen and Champion Lance, all Hard with real decks', () => {
-    expect(JOHTO_ELITE.map((o) => o.id)).toEqual(['will', 'johto-koga', 'johto-bruno', 'karen', 'johto-lance']);
+    expect(JOHTO_ELITE.map((o) => o.id)).toEqual([
+      'will',
+      'johto-koga',
+      'johto-bruno',
+      'karen',
+      'johto-lance',
+    ]);
     expect(JOHTO_ELITE.map((o) => o.name)).toEqual(['Will', 'Koga', 'Bruno', 'Karen', 'Champion Lance']);
     expect(JOHTO_ELITE.every((o) => o.difficulty === 'hard')).toBe(true);
     for (const o of JOHTO_ELITE) expect(GYM_DECKS[o.deck], o.id).toBeDefined();
@@ -228,8 +247,16 @@ describe('the Johto Elite Four', () => {
   });
 
   test('winning moves on, a draw replays the stage, a loss ends the run', () => {
-    expect(applyEliteResult(johtoRun(0), 0, true, jEntry).next.run).toEqual({ stage: 1, region: 'johto', deck });
-    expect(applyEliteResult(johtoRun(2), 2, true, jEntry, true).next.run).toEqual({ stage: 2, region: 'johto', deck });
+    expect(applyEliteResult(johtoRun(0), 0, true, jEntry).next.run).toEqual({
+      stage: 1,
+      region: 'johto',
+      deck,
+    });
+    expect(applyEliteResult(johtoRun(2), 2, true, jEntry, true).next.run).toEqual({
+      stage: 2,
+      region: 'johto',
+      deck,
+    });
     expect(applyEliteResult(johtoRun(2), 2, false, jEntry).next.run).toBeNull();
   });
 
@@ -246,9 +273,17 @@ describe('the Johto Elite Four', () => {
 
   test('a Johto result against a Kanto run, or a stale stage, counts for nothing', () => {
     const k = kantoRun(2);
-    expect(applyEliteResult(k, 2, true, jEntry, false, 'johto')).toEqual({ next: k, reward: null, stale: true });
+    expect(applyEliteResult(k, 2, true, jEntry, false, 'johto')).toEqual({
+      next: k,
+      reward: null,
+      stale: true,
+    });
     const j = johtoRun(2);
-    expect(applyEliteResult(j, 2, true, entry, false, 'kanto')).toEqual({ next: j, reward: null, stale: true });
+    expect(applyEliteResult(j, 2, true, entry, false, 'kanto')).toEqual({
+      next: j,
+      reward: null,
+      stale: true,
+    });
     expect(applyEliteResult(j, 1, true, jEntry).stale).toBe(true);
   });
 
@@ -266,10 +301,17 @@ describe('the Johto Elite Four', () => {
 
   test('normalizeGym keeps a Johto run and entries, defaults the rest to Kanto, and bounds the stage', () => {
     const base = { badges: [...kanto, ...johtoBadges] };
-    expect(normalizeGym({ ...base, run: { stage: 3, region: 'johto', deck } }).run).toEqual({ stage: 3, region: 'johto', deck });
+    expect(normalizeGym({ ...base, run: { stage: 3, region: 'johto', deck } }).run).toEqual({
+      stage: 3,
+      region: 'johto',
+      deck,
+    });
     expect(normalizeGym({ ...base, run: { stage: 3, deck } }).run).toEqual({ stage: 3, deck });
     expect(normalizeGym({ ...base, run: { stage: 5, region: 'johto', deck } }).run).toBeNull();
-    expect(normalizeGym({ ...base, run: { stage: 3, region: 'nowhere', deck } }).run).toEqual({ stage: 3, deck });
+    expect(normalizeGym({ ...base, run: { stage: 3, region: 'nowhere', deck } }).run).toEqual({
+      stage: 3,
+      deck,
+    });
     expect(normalizeGym({ badges: kanto, run: { stage: 1, region: 'johto', deck } }).run).toBeNull();
     expect(normalizeGym({ badges: johtoBadges, run: { stage: 1, deck } }).run).toBeNull();
     const h = normalizeGym({ hallOfFame: [entry, jEntry, { ...entry, region: 'mars' }] }).hallOfFame;

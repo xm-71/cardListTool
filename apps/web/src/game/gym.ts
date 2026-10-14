@@ -243,7 +243,8 @@ export const JOHTO_ELITE: readonly Opponent[] = [
     type: 'Fighting',
     deck: 'johto-bruno',
     difficulty: 'hard',
-    intro: 'I am Bruno of the Elite Four! I have lifted every weight and faced every punch. Show me your strength!',
+    intro:
+      'I am Bruno of the Elite Four! I have lifted every weight and faced every punch. Show me your strength!',
     win: 'Hmm. You are stronger than your training shows. Go, face the next one!',
     lose: 'Hoo hah! You lack the strength to go on. The run ends here. Train and return!',
   },
@@ -389,10 +390,12 @@ export const regionOf = (id: string): Region | null =>
 const entryRegion = (e: HallOfFameEntry): Region => (e.region === 'johto' ? 'johto' : 'kanto');
 
 /** The Kanto Champion has been beaten at least once. */
-export const kantoChampion = (g: GymProgress): boolean => g.hallOfFame.some((e) => entryRegion(e) === 'kanto');
+export const kantoChampion = (g: GymProgress): boolean =>
+  g.hallOfFame.some((e) => entryRegion(e) === 'kanto');
 
 /** The Johto Champion has been beaten at least once. */
-export const johtoChampion = (g: GymProgress): boolean => g.hallOfFame.some((e) => entryRegion(e) === 'johto');
+export const johtoChampion = (g: GymProgress): boolean =>
+  g.hallOfFame.some((e) => entryRegion(e) === 'johto');
 
 /** Johto opens once the Kanto Champion has been beaten. */
 export const johtoUnlocked = (g: GymProgress): boolean => kantoChampion(g);
@@ -537,14 +540,24 @@ export function applyEliteResult(
   if (!run || run.stage !== stage || (run.region ?? 'kanto') !== region) {
     return { next: g, reward: null, stale: true };
   }
-  const { inMatch: _inMatch, ...kept } = run;
+  // The run as it continues: the same stage and deck, with the match no longer started.
+  const kept: EliteRun = { stage: run.stage, ...(run.region ? { region: run.region } : {}), deck: run.deck };
   if (draw) return { next: { ...g, run: kept }, reward: null };
   if (!won) return { next: { ...g, run: null }, reward: null };
-  if (stage < championStage(region)) return { next: { ...g, run: { ...kept, stage: stage + 1 } }, reward: null };
+  if (stage < championStage(region))
+    return { next: { ...g, run: { ...kept, stage: stage + 1 } }, reward: null };
   const first = !g.hallOfFame.some((e) => entryRegion(e) === region);
-  const { region: _region, ...plain } = entry;
+  const plain = {
+    date: entry.date,
+    playerName: entry.playerName,
+    deckName: entry.deckName,
+    cover: entry.cover,
+  };
   const stamped: HallOfFameEntry = region === 'johto' ? { ...plain, region } : plain;
-  return { next: { ...g, run: null, hallOfFame: [stamped, ...g.hallOfFame] }, reward: championReward(first, region) };
+  return {
+    next: { ...g, run: null, hallOfFame: [stamped, ...g.hallOfFame] },
+    reward: championReward(first, region),
+  };
 }
 
 /** Marks the run's match for `stage` as started (see `EliteRun.inMatch`). */

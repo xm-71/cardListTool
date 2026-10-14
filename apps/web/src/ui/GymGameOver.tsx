@@ -32,7 +32,8 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
   }, [won, draw]);
 
   const eliteRegion = context.kind === 'elite' ? (context.region ?? 'kanto') : 'kanto';
-  const opponent = context.kind === 'gym' ? findLeader(context.leaderId)! : eliteOf(eliteRegion)[context.stage]!;
+  const opponent =
+    context.kind === 'gym' ? findLeader(context.leaderId)! : eliteOf(eliteRegion)[context.stage]!;
   const packs = payout?.packs ?? [];
   const packName = payout?.set === JOHTO_PACK_SET ? 'Mega Evolution' : 'Scarlet & Violet 151';
   const hasMorePacks = opening < packs.length;
@@ -91,7 +92,9 @@ export function GymGameOver({ context, result, human, payout, onBack, onRematch,
               )}
               {packs.length > 0 && (
                 <p className="text-xl">
-                  {packs.length === 1 ? `You won a ${packName} pack!` : `You won ${packs.length} ${packName} packs!`}
+                  {packs.length === 1
+                    ? `You won a ${packName} pack!`
+                    : `You won ${packs.length} ${packName} packs!`}
                 </p>
               )}
             </>
