@@ -18,6 +18,7 @@ import { Options } from './screens/Options.tsx';
 import { Shop } from './screens/Shop.tsx';
 import { Title } from './screens/Title.tsx';
 import { useCloud } from './cloud/useCloud.ts';
+import { RecoveryDialog } from './ui/account/RecoveryDialog.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
@@ -58,6 +59,7 @@ export function App({ botClient, botDelayMs = 700, startAt }: Props) {
   return (
     <ErrorBoundary>
       <Game client={client} delay={botDelayMs} />
+      <RecoveryDialog />
     </ErrorBoundary>
   );
 }
