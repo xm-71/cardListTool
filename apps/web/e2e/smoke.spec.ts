@@ -206,6 +206,7 @@ test('with a crowded mid-game board, the hand stays on screen at 1280×720 and 1
     expect(hand, 'hand visible').not.toBeNull();
     expect(hand!.y + hand!.height, `hand bottom at ${width}x${height}`).toBeLessThanOrEqual(height);
     expect(hand!.height, 'hand not squashed').toBeGreaterThan(60);
+    await expect(page.locator('[data-hand-count-of]').first()).toHaveText('Hand 7');
   }
 });
 

@@ -45,6 +45,17 @@ describe('GameScreen', () => {
     expect(useGame.getState().state!.players[0].bench.map((b) => b.stack[0])).toContain(uid);
   });
 
+  test('your own hand count is shown and follows the hand', () => {
+    useGame.getState().start(botCfg(1));
+    finishSetupInStore();
+    turnOf(0);
+    render(<GameScreen />);
+    const count = () => document.querySelector('[data-hand-count-of="0"]')!;
+    expect(count()).toHaveTextContent(`Hand ${useGame.getState().state!.players[0].hand.length}`);
+    mutate((s) => void giveCard(s, 0, 'me02-062'));
+    expect(count()).toHaveTextContent(`Hand ${useGame.getState().state!.players[0].hand.length}`);
+  });
+
   test("the opponent's hand is shown only as a count", () => {
     useGame.getState().start(botCfg(1));
     finishSetupInStore();
