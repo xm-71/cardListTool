@@ -8,7 +8,6 @@ import {
   ELITE,
   JOHTO_LEADERS,
   JOHTO_TOTAL,
-  JOHTO_UPCOMING,
   LEADERS,
   badgeReward,
   canChallenge,
@@ -35,17 +34,15 @@ let resumeSetup: Setup | null = null;
 
 const art = (cover: string) => `${registry.defs[cover]!.image}/low.webp`;
 
-/** One tile per leader; `nextReward` is the first-win line for the gym that is next to be beaten. */
+/** One tile per leader; `reward` is the first-win line for the gym that is next to be beaten. */
 function LeaderGrid({
   label,
   leaders,
-  upcoming = [],
   reward,
   onChallenge,
 }: {
   label: string;
   leaders: readonly Opponent[];
-  upcoming?: readonly { id: string; name: string; type: string }[];
   reward(index: number): string;
   onChallenge(leader: Opponent): void;
 }) {
@@ -81,23 +78,6 @@ function LeaderGrid({
           </li>
         );
       })}
-      {upcoming.map((leader) => (
-        <li
-          key={leader.id}
-          aria-label={leader.name}
-          className="retro-box flex flex-col items-center gap-2 p-3 text-center opacity-60"
-        >
-          <div
-            aria-hidden
-            className="flex size-20 items-center justify-center border-4 border-ink font-pixel text-2xl"
-          >
-            ?
-          </div>
-          <h3 className="font-pixel text-[10px]">{leader.name}</h3>
-          <p className="text-lg">{leader.type}</p>
-          <p className="font-pixel text-[8px] opacity-70">Coming soon</p>
-        </li>
-      ))}
     </ul>
   );
 }
@@ -117,14 +97,12 @@ function JohtoGyms({ onChallenge }: { onChallenge(leader: Opponent): void }) {
     <>
       <Box title="Johto Gym Challenge">
         <p className="text-xl">
-          Beat the Johto Gym Leaders in order to earn their badges. More leaders are on their way. Badges:{' '}
-          {earned} / {JOHTO_TOTAL}
+          Beat the Johto Gym Leaders in order to earn their badges. Badges: {earned} / {JOHTO_TOTAL}
         </p>
       </Box>
       <LeaderGrid
         label="Johto badge case"
         leaders={JOHTO_LEADERS}
-        upcoming={JOHTO_UPCOMING}
         reward={(i) => `${johtoBadgeReward(i).credits} credits + a Mega Evolution pack`}
         onChallenge={onChallenge}
       />

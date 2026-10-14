@@ -46,6 +46,22 @@ test('Bugsy, the second Johto gym, pays 175', async () => {
   expect(paid?.credits).toBe(175);
 });
 
+test('Chuck pays 250 credits and Clair 325, each with a me02 pack', async () => {
+  const first4 = ['falkner', 'bugsy', 'whitney', 'morty'];
+  await init({ credits: 0, gym: { ...unlocked, badges: first4 } });
+  const chuck = await useProfile
+    .getState()
+    .recordGym({ seed: 10, leaderId: 'chuck', won: true, normalCredits: 40 });
+  expect(chuck).toMatchObject({ credits: 250, badge: true });
+  expect(chuck!.packs[0]!.every((id) => id.startsWith('me02-'))).toBe(true);
+  await init({ credits: 0, gym: { ...unlocked, badges: [...first4, 'chuck', 'jasmine', 'pryce'] } });
+  const clair = await useProfile
+    .getState()
+    .recordGym({ seed: 11, leaderId: 'clair', won: true, normalCredits: 40 });
+  expect(clair).toMatchObject({ credits: 325, badge: true });
+  expect(profile().gym.badges).toHaveLength(8);
+});
+
 test('a rematch win over a beaten Johto leader pays the normal credits and no pack or badge', async () => {
   await init({ credits: 0, gym: { ...unlocked, badges: ['falkner'] } });
   const rematch = await useProfile

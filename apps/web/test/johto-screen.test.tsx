@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { GYM_DECKS } from '@ptcg/cards';
 import { beforeEach, expect, test } from 'vitest';
 import { App } from '../src/App.tsx';
@@ -47,7 +47,7 @@ test('Johto is locked until the Kanto Champion has been beaten', async () => {
   expect(screen.queryByRole('list', { name: 'Johto badge case' })).toBeNull();
 });
 
-test('with a Hall of Fame entry the Johto tab shows the badge case, four leaders and four coming soon', async () => {
+test('with a Hall of Fame entry the Johto tab shows the badge case with all eight leaders', async () => {
   await launch({ gym: champion });
   johtoTab();
   expect(screen.getByText(/Badges: 0 \/ 8/)).toBeInTheDocument();
@@ -62,9 +62,8 @@ test('with a Hall of Fame entry the Johto tab shows the badge case, four leaders
     'Pryce',
     'Clair',
   ]);
-  for (const name of ['Chuck', 'Jasmine', 'Pryce', 'Clair']) {
-    expect(within(screen.getByRole('listitem', { name })).getByText('Coming soon')).toBeInTheDocument();
-  }
+  expect(screen.queryByText('Coming soon')).toBeNull();
+  expect(screen.queryByText(/More leaders/)).toBeNull();
   expect(screen.getByRole('button', { name: 'Challenge Falkner' })).toBeEnabled();
   expect(
     within(screen.getByRole('listitem', { name: 'Falkner' })).getByText(/150 credits/),
@@ -100,6 +99,29 @@ test('Challenge Falkner then Battle! starts a Medium-bot game against his deck; 
     botDeck: GYM_DECKS.falkner,
     context: { kind: 'gym', leaderId: 'falkner' },
   });
+});
+
+test('Chuck waits for Morty, then pays 250 credits', async () => {
+  await launch({ gym: { ...champion, badges: ['falkner', 'bugsy', 'whitney'] } });
+  johtoTab();
+  expect(within(screen.getByRole('listitem', { name: 'Chuck' })).getByRole('button')).toBeDisabled();
+  cleanup();
+  await launch({ gym: { ...champion, badges: ['falkner', 'bugsy', 'whitney', 'morty'] } });
+  johtoTab();
+  expect(screen.getByRole('button', { name: 'Challenge Chuck' })).toBeEnabled();
+  expect(
+    within(screen.getByRole('listitem', { name: 'Chuck' })).getByText(/250 credits/),
+  ).toBeInTheDocument();
+});
+
+test('Clair is fought with the Hard bot and her own deck', async () => {
+  const badges = ['falkner', 'bugsy', 'whitney', 'morty', 'chuck', 'jasmine', 'pryce'];
+  await launch({ gym: { ...champion, badges } });
+  johtoTab();
+  expect(screen.getByText(/Badges: 7 \/ 8/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Challenge Clair' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Battle!' }));
+  expect(useGame.getState().config).toMatchObject({ difficulty: 'hard', botDeck: GYM_DECKS.clair });
 });
 
 test('Whitney is fought with the Hard bot', async () => {
