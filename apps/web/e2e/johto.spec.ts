@@ -90,3 +90,36 @@ for (const [name, width, height] of [
     await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
   });
 }
+
+for (const [name, width, height] of [
+  ['desktop', 1400, 900],
+  ['phone', 390, 844],
+] as const) {
+  test(`${name}: with eight Johto badges the Elite Four starts with Will`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await toMenu(page);
+    const all = ['brock', 'misty', 'surge', 'erika', 'koga', 'sabrina', 'blaine', 'giovanni'];
+    const johto = ['falkner', 'bugsy', 'whitney', 'morty', 'chuck', 'jasmine', 'pryce', 'clair'];
+    await beatKantoChampion(page, [...all, ...johto]);
+    await page.getByRole('menuitem', { name: 'Gym Challenge' }).click();
+    await page.getByRole('tab', { name: 'Johto' }).click();
+    await expect(page.getByText(/Badges: 8 \/ 8/)).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Elite Four order' })).toContainText('Champion Lance');
+    expect(await overflow(page), 'the Johto Elite Four panel scrolls sideways').toBeLessThanOrEqual(0);
+    await page.screenshot({ path: `test-results/johto-elite-${name}.png`, fullPage: true });
+    await page.getByRole('button', { name: 'Start Elite Four' }).click();
+    await expect(page.getByText('Will', { exact: true }).first()).toBeVisible();
+    expect(await overflow(page), 'the Elite Four match setup scrolls sideways').toBeLessThanOrEqual(0);
+    await page.getByRole('button', { name: 'Battle!' }).click();
+    await expect(page.getByRole('region', { name: 'Opponent' })).toBeVisible();
+    const context = await page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __game: { getState(): { config: { context: { kind: string; stage: number; region?: string } } } };
+          }
+        ).__game.getState().config.context,
+    );
+    expect(context).toMatchObject({ kind: 'elite', stage: 0, region: 'johto' });
+  });
+}
