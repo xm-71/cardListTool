@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { CloudError, type CloudApi, type CloudUser } from './cloudApi.ts';
 import { cloudConfig } from './config.ts';
 import { friendlyMessage } from './errors.ts';
+import { linkErrorFromHash } from './linkError.ts';
 import { loadSupabaseApi } from './supabaseApi.ts';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,7 +21,11 @@ interface CloudState {
   user: CloudUser | null;
   /** The player followed a password-reset link and must choose a new password. */
   recovering: boolean;
+  /** The password was just changed from the reset-link dialog, which still shows the success message. */
+  recoverySaved: boolean;
   busy: boolean;
+  /** A confirmation or reset link in the address bar was expired or invalid (the plain sentence to show). */
+  linkProblem: string | null;
   error: string | null;
   notice: string | null;
   /** Starts the store with `api`, or with the configured Supabase project when omitted; `null` means no accounts. */
@@ -30,6 +35,10 @@ interface CloudState {
   signOut(): Promise<void>;
   requestReset(email: string): Promise<void>;
   setNewPassword(password: string): Promise<void>;
+  /** Leaves the reset-link dialog without choosing a password (signs out of the link's session). */
+  cancelRecovery(): Promise<void>;
+  acknowledgeRecovery(): void;
+  dismissLinkProblem(): void;
   clearMessages(): void;
   reset(): void;
 }
@@ -39,7 +48,9 @@ const initial = {
   ready: false,
   user: null,
   recovering: false,
+  recoverySaved: false,
   busy: false,
+  linkProblem: null,
   error: null,
   notice: null,
 } as const;
@@ -82,7 +93,14 @@ export const useCloud = create<CloudState>((set) => {
       }
       unsubscribe = api.onAuthChange((event, user) => {
         if (event === 'signedOut') set({ user: null, recovering: false });
-        else set({ user, ...(event === 'passwordRecovery' ? { recovering: true } : {}) });
+        else {
+          set({
+            user,
+            ...(event === 'passwordRecovery'
+              ? { recovering: true, recoverySaved: false, error: null, notice: null }
+              : {}),
+          });
+        }
       });
       let user: CloudUser | null = null;
       try {
@@ -90,7 +108,8 @@ export const useCloud = create<CloudState>((set) => {
       } catch {
         user = null;
       }
-      set({ enabled: true, ready: true, user });
+      const problem = linkErrorFromHash(location.hash);
+      set({ enabled: true, ready: true, user, linkProblem: problem ? friendlyMessage(problem) : null });
     },
     signUp: (email, password) => {
       const problem = validateCredentials(email, password);
@@ -136,8 +155,17 @@ export const useCloud = create<CloudState>((set) => {
       }
       return run(async (a) => {
         await a.updatePassword(password);
-        set({ recovering: false, notice: 'Password updated. You are signed in.' });
+        set({ recovering: false, recoverySaved: true, notice: 'Password updated. You are signed in.' });
       });
+    },
+    async cancelRecovery() {
+      await run((a) => a.signOut());
+      set({ user: null, recovering: false, error: null });
+    },
+    acknowledgeRecovery: () => set({ recoverySaved: false }),
+    dismissLinkProblem() {
+      history.replaceState(null, '', location.pathname + location.search);
+      set({ linkProblem: null });
     },
     clearMessages: () => set({ error: null, notice: null }),
     reset() {

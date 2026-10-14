@@ -38,9 +38,8 @@ export function createFakeCloud(): { api: CloudApi; server: FakeServer; emit(e: 
     async signIn(email, password) {
       reachable();
       const u = server.users.get(email);
-      if (!u || u.password !== password || !u.confirmed) {
-        throw new CloudError('invalidCredentials');
-      }
+      if (!u || u.password !== password) throw new CloudError('invalidCredentials');
+      if (!u.confirmed) throw new CloudError('emailNotConfirmed');
       session = { id: u.id, email };
       emit('signedIn');
       return session;

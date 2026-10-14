@@ -3,6 +3,7 @@ import { CloudError, type CloudErrorCode } from '../src/cloud/cloudApi.ts';
 import { cloudConfig } from '../src/cloud/config.ts';
 import { friendlyMessage } from '../src/cloud/errors.ts';
 import { createFakeCloud } from '../src/cloud/fakeApi.ts';
+import { linkErrorFromHash } from '../src/cloud/linkError.ts';
 import { createSupabaseApi, type SupabaseLike } from '../src/cloud/supabaseApi.ts';
 import { newProfile } from '../src/profile/types.ts';
 
@@ -29,6 +30,7 @@ describe('friendlyMessage', () => {
       'network',
       'unavailable',
       'unknown',
+      'emailNotConfirmed',
     ];
     for (const c of codes) expect(friendlyMessage(c).length).toBeGreaterThan(10);
     expect(friendlyMessage('emailInUse')).toBe('That email is already in use.');
@@ -41,6 +43,9 @@ describe('the fake cloud', () => {
     const { api, server } = createFakeCloud();
     expect(await api.signUp('ash@example.com', 'pikachu99')).toEqual({ needsConfirmation: true });
     await expect(api.signIn('ash@example.com', 'pikachu99')).rejects.toMatchObject({
+      code: 'emailNotConfirmed',
+    });
+    await expect(api.signIn('ash@example.com', 'wrongwrong')).rejects.toMatchObject({
       code: 'invalidCredentials',
     });
     server.users.get('ash@example.com')!.confirmed = true;
@@ -109,6 +114,8 @@ describe('the fake cloud', () => {
 type Err = { message: string; code?: string; status?: number } | null;
 
 function stubClient(parts: {
+  signUpUser?: { id: string; email?: string; identities?: unknown[] };
+  signOutArgs?: unknown[];
   signUpError?: Err;
   signInError?: Err;
   updateRows?: unknown[];
@@ -120,9 +127,16 @@ function stubClient(parts: {
   return {
     auth: {
       getSession: () => Promise.resolve({ data: { session: { user } }, error: null }),
-      signUp: () => Promise.resolve({ data: { user, session: null }, error: parts.signUpError ?? null }),
+      signUp: () =>
+        Promise.resolve({
+          data: { user: parts.signUpUser ?? user, session: null },
+          error: parts.signUpError ?? null,
+        }),
       signInWithPassword: () => Promise.resolve({ data: { user }, error: parts.signInError ?? null }),
-      signOut: () => Promise.resolve({ error: null }),
+      signOut: (o?: unknown) => {
+        parts.signOutArgs?.push(o);
+        return Promise.resolve({ error: null });
+      },
       resetPasswordForEmail: () => Promise.resolve({ error: null }),
       updateUser: () => Promise.resolve({ error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
@@ -192,5 +206,46 @@ describe('createSupabaseApi', () => {
       stubClient({ insertResult: { data: null, error: { message: 'duplicate key', code: '23505' } } }),
     );
     expect(await dup.saveSave(newProfile(), 0)).toEqual({ ok: false });
+  });
+});
+
+describe('what real Supabase does that the first version missed', () => {
+  test('signing up with an email that already has an account (an obfuscated user) is emailInUse', async () => {
+    const api = createSupabaseApi(stubClient({ signUpUser: { id: 'u9', email: 'a@b.co', identities: [] } }));
+    await expect(api.signUp('a@b.co', 'longenough')).rejects.toMatchObject({ code: 'emailInUse' });
+    const fresh = createSupabaseApi(
+      stubClient({ signUpUser: { id: 'u9', email: 'a@b.co', identities: [{}] } }),
+    );
+    expect(await fresh.signUp('a@b.co', 'longenough')).toEqual({ needsConfirmation: true });
+  });
+
+  test('"Email not confirmed" is its own code, not wrong credentials', async () => {
+    const api = createSupabaseApi(stubClient({ signInError: { message: 'Email not confirmed' } }));
+    await expect(api.signIn('a@b.co', 'longenough')).rejects.toMatchObject({ code: 'emailNotConfirmed' });
+    expect(friendlyMessage('emailNotConfirmed')).toBe('Confirm your email first (check your inbox).');
+  });
+
+  test('signing out only signs out this device', async () => {
+    const signOutArgs: unknown[] = [];
+    await createSupabaseApi(stubClient({ signOutArgs })).signOut();
+    expect(signOutArgs).toEqual([{ scope: 'local' }]);
+  });
+});
+
+describe('linkErrorFromHash', () => {
+  test('an expired or invalid link in the URL hash is invalidLink', () => {
+    expect(
+      linkErrorFromHash(
+        '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired',
+      ),
+    ).toBe('invalidLink');
+    expect(linkErrorFromHash('#error_code=otp_expired')).toBe('invalidLink');
+    expect(linkErrorFromHash('#error=access_denied')).toBe('invalidLink');
+  });
+
+  test('anything else is null', () => {
+    expect(linkErrorFromHash('')).toBeNull();
+    expect(linkErrorFromHash('#access_token=abc&type=recovery')).toBeNull();
+    expect(linkErrorFromHash('#/gym')).toBeNull();
   });
 });

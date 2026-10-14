@@ -65,7 +65,14 @@ for (const [name, width, height] of [
     expect(await overflow(page), 'the recovery dialog scrolls sideways').toBeLessThanOrEqual(0);
     await page.getByLabel('New password', { exact: true }).fill('newpassword1');
     await page.getByRole('button', { name: 'Save password' }).click();
+    await expect(
+      page
+        .getByRole('dialog', { name: 'Choose a new password' })
+        .getByText('Password updated. You are signed in.'),
+    ).toBeVisible();
+    await page.getByRole('button', { name: 'Continue' }).click();
     await expect(page.getByRole('dialog', { name: 'Choose a new password' })).toHaveCount(0);
+    await expect(page.getByText('Signed in as ash@example.com')).toBeVisible();
 
     await page.getByRole('button', { name: 'Sign out' }).click();
     await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();

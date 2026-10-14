@@ -116,4 +116,29 @@ describe('useCloud', () => {
     await pending;
     expect(useCloud.getState().busy).toBe(false);
   });
+
+  test('an expired link in the URL when the app opens sets a link problem that can be dismissed', async () => {
+    history.replaceState(null, '', '/#error=access_denied&error_code=otp_expired');
+    const fake = createFakeCloud();
+    await useCloud.getState().init(fake.api);
+    expect(useCloud.getState().linkProblem).toBe('That link has expired. Ask for a new one.');
+    useCloud.getState().dismissLinkProblem();
+    expect(useCloud.getState().linkProblem).toBeNull();
+    expect(location.hash).toBe('');
+  });
+
+  test('no link problem for a normal URL', async () => {
+    history.replaceState(null, '', '/');
+    await useCloud.getState().init(createFakeCloud().api);
+    expect(useCloud.getState().linkProblem).toBeNull();
+  });
+
+  test('a recovery event clears stale messages', async () => {
+    const fake = await confirmed();
+    await useCloud.getState().init(fake.api);
+    await useCloud.getState().signIn('ash@example.com', 'wrongwrong');
+    expect(useCloud.getState().error).not.toBeNull();
+    fake.emit('passwordRecovery');
+    expect(useCloud.getState()).toMatchObject({ error: null, notice: null, recovering: true });
+  });
 });

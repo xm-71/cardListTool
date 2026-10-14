@@ -18,7 +18,7 @@ import { Options } from './screens/Options.tsx';
 import { Shop } from './screens/Shop.tsx';
 import { Title } from './screens/Title.tsx';
 import { useCloud } from './cloud/useCloud.ts';
-import { RecoveryDialog } from './ui/account/RecoveryDialog.tsx';
+import { LinkProblemDialog, RecoveryDialog } from './ui/account/RecoveryDialog.tsx';
 import { connectProfileStore, useProfile } from './profile/useProfile.ts';
 import { ErrorBoundary, ErrorScreen } from './ui/ErrorScreen.tsx';
 import { GameOver } from './ui/GameOver.tsx';
@@ -49,6 +49,8 @@ export function App({ botClient, botDelayMs = 700, startAt }: Props) {
     if (startAt) useNav.setState({ route: startAt });
   });
   const client = useMemo(() => botClient ?? createWorkerBotClient(), [botClient]);
+  // A reset-link or link-problem dialog has to be answered first: nothing behind it can be reached.
+  const blocked = useCloud((s) => s.recovering || s.recoverySaved || s.linkProblem !== null);
   useEffect(() => {
     if (!useCloud.getState().ready) void useCloud.getState().init();
   }, []);
@@ -58,8 +60,11 @@ export function App({ botClient, botDelayMs = 700, startAt }: Props) {
   }, []);
   return (
     <ErrorBoundary>
-      <Game client={client} delay={botDelayMs} />
+      <div className="contents" inert={blocked}>
+        <Game client={client} delay={botDelayMs} />
+      </div>
       <RecoveryDialog />
+      <LinkProblemDialog />
     </ErrorBoundary>
   );
 }

@@ -9,6 +9,8 @@ interface SbError {
 interface SbUser {
   id: string;
   email?: string;
+  /** Empty for the obfuscated user Supabase returns when the email already has an account. */
+  identities?: unknown[];
 }
 
 /** The small part of the Supabase client this file uses, so tests can pass a stub. */
@@ -23,7 +25,7 @@ export interface SupabaseLike {
       data: { user: SbUser | null };
       error: SbError | null;
     }>;
-    signOut(): Promise<{ error: SbError | null }>;
+    signOut(o?: { scope: 'local' | 'global' | 'others' }): Promise<{ error: SbError | null }>;
     resetPasswordForEmail(email: string, o?: { redirectTo?: string }): Promise<{ error: SbError | null }>;
     updateUser(a: { password: string }): Promise<{ error: SbError | null }>;
     onAuthStateChange(cb: (event: string, session: { user: SbUser } | null) => void): {
@@ -56,9 +58,8 @@ export function mapError(e: unknown): CloudError {
   const m = (err.message ?? '').toLowerCase();
   if (m.includes('already registered') || m.includes('already been registered'))
     return new CloudError('emailInUse');
-  if (m.includes('invalid login credentials') || m.includes('email not confirmed')) {
-    return new CloudError('invalidCredentials');
-  }
+  if (m.includes('email not confirmed')) return new CloudError('emailNotConfirmed');
+  if (m.includes('invalid login credentials')) return new CloudError('invalidCredentials');
   if (m.includes('password should be') || m.includes('weak password')) return new CloudError('weakPassword');
   if (m.includes('session missing') || m.includes('expired') || m.includes('invalid token')) {
     return new CloudError('invalidLink');
@@ -105,6 +106,11 @@ export function createSupabaseApi(client: SupabaseLike): CloudApi {
       const { data } = await guard(() =>
         client.auth.signUp({ email, password, options: { emailRedirectTo: redirect } }),
       );
+      // With email confirmation on, Supabase answers a sign-up for an existing account with no error and an
+      // obfuscated user that has no identities.
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        throw new CloudError('emailInUse');
+      }
       return { needsConfirmation: data.session == null };
     },
     async signIn(email, password) {
@@ -114,7 +120,7 @@ export function createSupabaseApi(client: SupabaseLike): CloudApi {
       return user;
     },
     async signOut() {
-      await guard(() => client.auth.signOut());
+      await guard(() => client.auth.signOut({ scope: 'local' }));
     },
     async requestPasswordReset(email) {
       await guard(() => client.auth.resetPasswordForEmail(email, { redirectTo: redirect }));

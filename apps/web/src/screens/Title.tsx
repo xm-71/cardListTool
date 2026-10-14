@@ -19,22 +19,26 @@ export function Title() {
 
   useEffect(() => {
     if (!ready) return;
+    const inDialog = (e: Event) => e.target instanceof Element && !!e.target.closest('[role="dialog"]');
     const start = () => {
       unlockAudio();
       sfx('confirm');
       useNav.getState().go(introDone ? 'menu' : 'intro');
     };
     const onKey = (e: KeyboardEvent) => {
-      if (!START_KEYS.test(e.key)) return;
+      if (!START_KEYS.test(e.key) || inDialog(e)) return;
       // Keep this key from also reaching the next screen (e.g. submitting or typing into the name field).
       e.preventDefault();
       start();
     };
     window.addEventListener('keydown', onKey);
-    window.addEventListener('click', start);
+    const onClick = (e: MouseEvent) => {
+      if (!inDialog(e)) start();
+    };
+    window.addEventListener('click', onClick);
     return () => {
       window.removeEventListener('keydown', onKey);
-      window.removeEventListener('click', start);
+      window.removeEventListener('click', onClick);
     };
   }, [ready, introDone]);
 

@@ -12,6 +12,7 @@ export type CloudErrorCode =
   | 'invalidCredentials'
   | 'weakPassword'
   | 'invalidLink'
+  | 'emailNotConfirmed'
   | 'network'
   | 'unavailable'
   | 'unknown';
