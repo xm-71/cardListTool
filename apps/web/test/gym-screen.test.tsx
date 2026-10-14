@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { GYM_DECKS } from '@ptcg/cards';
 import { App } from '../src/App.tsx';
-import { LEADERS, type GymProgress, type RunDeck } from '../src/game/gym.ts';
+import { LEADERS, emptyGym, type GymProgress, type RunDeck } from '../src/game/gym.ts';
 import { DECKS } from '../src/game/catalog.ts';
 import { useGame } from '../src/game/store.ts';
 import { useNav, type Route } from '../src/nav/useNav.ts';
@@ -423,6 +423,47 @@ describe('rematch', () => {
       { kind: 'custom', id: 'mine' },
       { decks: [{ id: 'mine', name: 'Mine', cards: [{ id: 'sv03.5-074', count: 60 }] }] },
     );
+    fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
+    expect(useGame.getState().state).toBeNull();
+    expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
+  });
+
+  async function lostRedWith(deck: { kind: 'starter' | 'theme' | 'custom'; id: string }) {
+    await launch('gym', {
+      credits: 0,
+      gym: {
+        ...emptyGym(),
+        hallOfFame: [{ date: 'd', playerName: 'P', deckName: 'D', cover: 'me01-077', region: 'johto' }],
+      },
+    });
+    act(() =>
+      useGame.getState().start({
+        mode: 'bot',
+        difficulty: 'hard',
+        humanDeck: DECKS[0]!.list,
+        botDeck: GYM_DECKS.red,
+        seed: 2,
+        context: { kind: 'red', deck },
+      }),
+    );
+    act(() => useGame.getState().dispatch(0, { type: 'concede' }));
+    return screen.findByRole('dialog', { name: 'Game over' });
+  }
+
+  test('a Red rematch starts a new hard match against the red deck', async () => {
+    const over = await lostRedWith({ kind: 'starter', id: 'mega-gengar' });
+    expect(within(over).getByText(/Red:/)).toBeInTheDocument();
+    fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(useGame.getState().state?.result).toBeNull());
+    expect(useGame.getState().config).toMatchObject({
+      difficulty: 'hard',
+      botDeck: GYM_DECKS.red,
+      context: { kind: 'red' },
+    });
+  });
+
+  test('a Red rematch whose deck was deleted goes back to the Gym Challenge', async () => {
+    const over = await lostRedWith({ kind: 'custom', id: 'ghost' });
     fireEvent.click(within(over).getByRole('button', { name: 'Try again' }));
     expect(useGame.getState().state).toBeNull();
     expect(await screen.findByRole('list', { name: 'Badge case' })).toBeInTheDocument();
