@@ -2,13 +2,33 @@ import {
   maxHp,
   standard2026,
   type CardRegistry,
+  type Engine,
   type GameState,
   type PlayerId,
+  type PokemonDef,
   type SlotRef,
 } from '@ptcg/engine';
+import { estimateDamage, type DamageCache } from './damage.ts';
+import type { DeckPlan } from './plan.ts';
+import { trainerRole } from './roles.ts';
 
-/** Heuristic value of `state` for `me` (higher is better). */
-export function evaluate(state: GameState, me: PlayerId, registry: CardRegistry): number {
+/** What the smarter scoring needs: an engine to play attacks out in, the damage cache and both seats' plans. */
+export interface EvalContext {
+  engine: Engine;
+  damage: DamageCache;
+  plans: [DeckPlan, DeckPlan];
+}
+
+/** Today's heuristic, kept as it was (Easy-rollout Hard and the strength comparison use it). */
+export function evaluateLegacy(state: GameState, me: PlayerId, registry: CardRegistry): number {
+  return evaluate(state, me, registry);
+}
+
+/**
+ * Heuristic value of `state` for `me` (higher is better). With `ctx` it also sees scripted damage, counts the
+ * Knock Outs each side still needs, and values a board and hand by the deck's plan.
+ */
+export function evaluate(state: GameState, me: PlayerId, registry: CardRegistry, ctx?: EvalContext): number {
   const opp: PlayerId = me === 0 ? 1 : 0;
   if (state.result) return state.result.winner === me ? 100000 : state.result.winner === 'draw' ? 0 : -100000;
   const env = { registry, ruleset: standard2026 };
@@ -41,9 +61,11 @@ export function evaluate(state: GameState, me: PlayerId, registry: CardRegistry)
     const d = registry.defs[state.cards[def.stack[def.stack.length - 1]!]!.defId];
     if (a?.category !== 'Pokemon' || d?.category !== 'Pokemon') return 0;
     let dmg = 0;
-    for (const at of a.attacks) {
+    for (const [i, at] of a.attacks.entries()) {
       if (at.cost.length > atk.energy.length + extraEnergy) continue;
-      let x = at.damage;
+      let x = ctx
+        ? estimateDamage(ctx.engine, state, { player: p, zone: 'active' }, i, ctx.damage, extraEnergy)
+        : at.damage;
       if (d.weakness && a.types.includes(d.weakness)) x *= 2;
       if (d.resistance && a.types.includes(d.resistance)) x -= 30;
       dmg = Math.max(dmg, x);
@@ -62,8 +84,65 @@ export function evaluate(state: GameState, me: PlayerId, registry: CardRegistry)
   if (best(me, 0) >= remaining(opp)) score += 40 * prizeValue(opp);
   if (best(opp, 1) >= remaining(me)) score -= 60 * prizeValue(me);
   score += 4 * state.players[me].bench.length - 2 * state.players[opp].bench.length;
-  score += Math.min(8, state.players[me].hand.length);
+  if (ctx) score += planTerms(state, me, registry, ctx);
+  else score += Math.min(8, state.players[me].hand.length);
   if (state.players[me].deck.length < 8) score -= (8 - state.players[me].deck.length) * 6;
   if (!state.players[me].active) score -= 50;
   return score;
+}
+
+const prizeOf = (d: PokemonDef): number => standard2026.prizeValue(d);
+
+/** Knock Outs `p` still needs: the biggest Prize values among the other side's Pokémon first, then 1 per new one. */
+function knockOutsNeeded(state: GameState, p: PlayerId, registry: CardRegistry): number {
+  const other = state.players[p === 0 ? 1 : 0];
+  const values = [other.active, ...other.bench]
+    .flatMap((slot) => {
+      const d = slot && registry.defs[state.cards[slot.stack[slot.stack.length - 1]!]!.defId];
+      return d?.category === 'Pokemon' ? [prizeOf(d)] : [];
+    })
+    .sort((a, b) => b - a);
+  let remaining = state.players[p].prizes.length;
+  let kos = 0;
+  for (const v of values) {
+    if (remaining <= 0) break;
+    remaining -= v;
+    kos++;
+  }
+  return kos + Math.max(0, remaining);
+}
+
+/** Terms that need the deck's plan: the Prize map, off-plan ex on the Bench, setup, and a useful hand. */
+function planTerms(state: GameState, me: PlayerId, registry: CardRegistry, ctx: EvalContext): number {
+  const opp: PlayerId = me === 0 ? 1 : 0;
+  const plan = ctx.plans[me];
+  const defOf = (uid: string) => registry.defs[state.cards[uid]!.defId]!;
+  const topDef = (slot: { stack: string[] }) => defOf(slot.stack[slot.stack.length - 1]!);
+  const inPlan = (name: string) =>
+    plan.attackers.some((a) => (plan.lines[a] ?? [a]).includes(name)) || plan.support.includes(name);
+  let score = 30 * (knockOutsNeeded(state, opp, registry) - knockOutsNeeded(state, me, registry));
+
+  const bench = state.players[me].bench;
+  const handNames = new Set(state.players[me].hand.map((u) => defOf(u).name));
+  let readyAttacker = false;
+  let evolutionInHand = false;
+  for (const slot of bench) {
+    const d = topDef(slot);
+    if (d.category !== 'Pokemon') continue;
+    if ((d.isEx || d.isMega) && !inPlan(d.name)) score -= 15;
+    const line = plan.attackers.map((a) => plan.lines[a] ?? [a]).find((l) => l.includes(d.name));
+    if (line && slot.energy.length > 0) readyAttacker = true;
+    if (line && handNames.has(line[line.indexOf(d.name) + 1] ?? '')) evolutionInHand = true;
+  }
+  if (readyAttacker) score += 10;
+  if (evolutionInHand) score += 6;
+
+  // A hand is worth the cards the deck can use: plan Pokémon, Energy and working Trainers.
+  const useful = state.players[me].hand.filter((u) => {
+    const d = defOf(u);
+    if (d.category === 'Pokemon') return plan.priority.includes(d.name);
+    if (d.category === 'Energy') return true;
+    return trainerRole(d) !== 'other' || d.trainerType !== 'Item';
+  }).length;
+  return score + Math.min(8, useful);
 }
