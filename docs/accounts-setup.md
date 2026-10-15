@@ -13,9 +13,13 @@ browser) and the Account section in Options is hidden. You do these steps once; 
    to the Redirect URLs. Confirmation and password-reset links come back to this address.
 5. **Copy the project URL and the anon key.** Project settings → API: the Project URL and the `anon` public key. Both
    are meant to be public; the table's row rules are what protect each save.
-6. **Give them to the game.** In Vercel (project `ptcg-web`) → Settings → Environment Variables add
-   `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Production and Preview, then redeploy. For development put
-   the same two lines in `apps/web/.env.local`.
+6. **Give them to the game.** If you connected Supabase to the Vercel project with the Vercel integration, the
+   variables are already there (Production only): the game reads `NEXT_PUBLIC_SUPABASE_URL` with
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Nothing else from the integration (the
+   service-role key, JWT secret, database URLs) ever reaches the browser. Otherwise add `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_ANON_KEY` in Vercel → Settings → Environment Variables. Preview deployments only show the Account
+   section if the variables are also set for Preview. For development put the same two lines in
+   `apps/web/.env.local` (it is git-ignored). Redeploy after changing variables.
 
 ## Good to know
 

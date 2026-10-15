@@ -31,6 +31,9 @@ function serviceWorker(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), serviceWorker()],
+  // Besides the default VITE_ names, the public (NEXT_PUBLIC_) Supabase values the Vercel integration adds are
+  // readable by the app. Secret integration variables (service role, JWT secret, database URLs) have no such prefix.
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_SUPABASE_'],
   worker: { format: 'es' },
   // Source maps let a bug report's stack trace be mapped back to the source.
   build: { sourcemap: true },

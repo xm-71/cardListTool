@@ -20,6 +20,40 @@ describe('cloudConfig', () => {
   });
 });
 
+describe('cloudConfig with the Vercel Supabase integration names', () => {
+  test('reads NEXT_PUBLIC_SUPABASE_URL with the anon key or the publishable key', () => {
+    const url = 'https://x.supabase.co';
+    expect(cloudConfig({ NEXT_PUBLIC_SUPABASE_URL: url, NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon' })).toEqual({
+      url,
+      key: 'anon',
+    });
+    expect(
+      cloudConfig({ NEXT_PUBLIC_SUPABASE_URL: url, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'pub' }),
+    ).toEqual({
+      url,
+      key: 'pub',
+    });
+  });
+
+  test('the VITE_ names win, and a URL without any key is still null', () => {
+    expect(
+      cloudConfig({
+        VITE_SUPABASE_URL: 'https://mine.supabase.co',
+        VITE_SUPABASE_ANON_KEY: 'mine',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://other.supabase.co',
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'other',
+      }),
+    ).toEqual({ url: 'https://mine.supabase.co', key: 'mine' });
+    expect(cloudConfig({ NEXT_PUBLIC_SUPABASE_URL: 'https://x.supabase.co' })).toBeNull();
+  });
+
+  test('secret integration variables are never read', () => {
+    expect(
+      cloudConfig({ SUPABASE_URL: 'https://x.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'secret' }),
+    ).toBeNull();
+  });
+});
+
 describe('friendlyMessage', () => {
   test('has a sentence for every code', () => {
     const codes: CloudErrorCode[] = [
