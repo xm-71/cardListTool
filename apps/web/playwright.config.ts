@@ -17,7 +17,9 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'pnpm build && pnpm preview --port 4173 --strictPort',
+    // The e2e build ignores a local .env.local: the account service is switched on in tests only by ?cloud=fake.
+    command:
+      'VITE_SUPABASE_URL= VITE_SUPABASE_ANON_KEY= NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY= pnpm build && pnpm preview --port 4173 --strictPort',
     port: 4173,
     reuseExistingServer: true,
     timeout: 120_000,
