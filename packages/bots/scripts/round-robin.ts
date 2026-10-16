@@ -3,6 +3,7 @@
  * Usage: npx tsx scripts/round-robin.ts [gamesPerPair=40]
  *        npx tsx scripts/round-robin.ts --gym [gamesPerPair=20]   (each Gym deck vs the 9 decks, both seats)
  *        npx tsx scripts/round-robin.ts --hard [gamesPerPair=4]   (Hard vs Medium on every ordered deck pair)
+ *        npx tsx scripts/round-robin.ts --smart [gamesPerPair=4]  (smart Hard vs legacy Hard on every ordered deck pair)
  */
 import { createEngine, type DeckList } from '@ptcg/engine';
 import * as cards from '@ptcg/cards';
@@ -34,6 +35,7 @@ const DECKS: [string, DeckList][] = [
 const args = process.argv.slice(2);
 const gym = args.includes('--gym');
 const hardMode = args.includes('--hard');
+const smartMode = args.includes('--smart');
 /** With --medium the Gym deck is piloted by the Medium bot (as in the game for gyms 5–8, Elite Four and Champion). */
 const medium = args.includes('--medium');
 const numeric = args.filter((a) => !a.startsWith('--'));
@@ -106,6 +108,48 @@ if (hardMode) {
   console.log(
     `Hard think time over ${searched.length} searched decisions: median ${q(0.5).toFixed(0)} ms, p95 ${q(0.95).toFixed(0)} ms  target <= ${P95_TARGET_MS} ms  ${q(0.95) <= P95_TARGET_MS ? 'PASS' : 'FAIL'}`,
   );
+  process.exit(0);
+}
+
+if (smartMode) {
+  // The smart policy against today's Hard (Easy rollouts and the old scoring, kept as `legacy`), same decks both ways.
+  const perPair = Number(numeric[0] ?? 4);
+  const WIN_TARGET = 60;
+  const rounds = Number(process.env.HARD_ROUNDS ?? 8);
+  const [shard, shards] = (process.env.HARD_SHARD ?? '0/1').split('/').map(Number) as [number, number];
+  const byDeck = new Map(DECKS.map(([n]) => [n, { wins: 0, games: 0 }]));
+  let wins = 0;
+  let played = 0;
+  let seed = 1 + shard * 100000;
+  for (const [i0, [n0, d0]] of DECKS.entries())
+    for (const [n1, d1] of DECKS) {
+      if (i0 % shards !== shard) continue;
+      for (let g = 0; g < perPair; g++) {
+        const smartSeat = (g % 2) as 0 | 1;
+        const decks: [DeckList, DeckList] = [d0, d1];
+        const opts = { maxRounds: rounds, now: () => 0 };
+        const smart = createHardBot(registry, decks, smartSeat, opts);
+        const legacy = createHardBot(registry, decks, (1 - smartSeat) as 0 | 1, { ...opts, legacy: true });
+        const bots = (smartSeat === 0 ? [smart, legacy] : [legacy, smart]) as [typeof bot, typeof bot];
+        const r = runMatch({ engine, decks, seed: seed++, bots });
+        const mine = byDeck.get(smartSeat === 0 ? n0 : n1)!;
+        mine.games++;
+        played++;
+        if (r.result?.winner === smartSeat) {
+          wins++;
+          mine.wins++;
+        }
+      }
+    }
+  for (const [name, { wins: w, games }] of byDeck)
+    console.log(
+      `${name.padEnd(20)} smart ${((100 * w) / Math.max(1, games)).toFixed(1).padStart(5)}%  (${w}/${games})`,
+    );
+  const pct = (100 * wins) / Math.max(1, played);
+  console.log(
+    `Smart Hard vs legacy Hard: ${pct.toFixed(1)}% (${wins}/${played})  target >= ${WIN_TARGET}%  ${pct >= WIN_TARGET ? 'PASS' : 'FAIL'}`,
+  );
+  console.log(`TALLY ${wins} ${played}`);
   process.exit(0);
 }
 
