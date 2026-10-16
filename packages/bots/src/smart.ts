@@ -13,7 +13,7 @@ import {
   type SlotView,
 } from '@ptcg/engine';
 import type { DeckList } from '@ptcg/engine';
-import type { DamageCache } from './damage.ts';
+import { damageVariant, type DamageCache } from './damage.ts';
 import { deckPlan, type DeckPlan } from './plan.ts';
 import { trainerRole } from './roles.ts';
 import type { Bot } from './types.ts';
@@ -81,7 +81,15 @@ export function reader(
       const d = top(slot);
       const atk = d.attacks[index];
       if (!atk) return 0;
-      let dmg = damage?.get(d.id, index, slot.energy.length) ?? atk.damage;
+      const scripted = !!registry.scripts[d.id]?.attacks?.[index]?.damage;
+      const variant = damageVariant(
+        scripted,
+        slot.damage,
+        view.you.prizeCount,
+        view.opponent.prizeCount,
+        provides(slot),
+      );
+      let dmg = damage?.get(d.id, index, slot.energy.length, variant) ?? atk.damage;
       if (target?.weakness && d.types.includes(target.weakness)) dmg *= 2;
       if (target?.resistance && d.types.includes(target.resistance)) dmg -= 30;
       return Math.max(0, dmg);
@@ -139,6 +147,7 @@ function slotAnswer(r: Reader, opts: PromptOption[], message: string): PromptOpt
   const theirs = opts.filter((o) => o.slot && o.slot.player !== view.me);
   const mine = opts.filter((o) => o.slot && o.slot.player === view.me);
   const target = view.opponent.active ? r.top(view.opponent.active) : null;
+  const counters = /damage counter/i.test(message);
   if (theirs.length && !/heal/i.test(message)) {
     // Knock Out first (the biggest Prize value among those), else the most Prizes for the least HP left.
     const myActive = view.you.active;
@@ -148,7 +157,8 @@ function slotAnswer(r: Reader, opts: PromptOption[], message: string): PromptOpt
       const d = r.top(slot);
       const left = (slot.hp ?? d.hp) - slot.damage;
       const reach = myActive ? r.bestNow(myActive, d) : 0;
-      const ko = reach >= left;
+      // Damage counters: only what is put on the target counts, so a Knock Out is a target with 10 HP or less left.
+      const ko = counters ? left <= 10 : reach >= left;
       return (ko ? 1000 : 0) + prizeOf(d) * 100 + (slot.damage / (slot.hp ?? d.hp)) * 10 + d.retreat * 0.1;
     });
   }
@@ -298,6 +308,19 @@ function cardAnswer(r: Reader, prompt: NonNullable<PlayerView['prompt']>, legal:
   const fromHand = options.length > 0 && options.every((o) => handIds.has(o.uid!));
   const choosable = options.filter((o) => byId.has(o.id));
   if (!choosable.length) return done;
+
+  // "Discard up to 2 Energy (140 damage each)": the discard is the attack's price and is worth paying in full.
+  if (
+    /\bdamage\b/i.test(prompt.message) &&
+    !/damage counter/i.test(prompt.message) &&
+    prompt.min < prompt.max
+  ) {
+    const hand = r.view.you.hand;
+    const cheapest = [...choosable].sort((a, b) =>
+      fromHand ? keepScore(r, card(a), hand) - keepScore(r, card(b), hand) : 0,
+    );
+    return byId.get(cheapest[0]!.id)!;
+  }
 
   if (fromHand) {
     // Discarding: the least useful card first. Past the minimum, only cards that are plainly junk.

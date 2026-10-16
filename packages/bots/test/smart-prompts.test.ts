@@ -23,6 +23,7 @@ const DRAGAPULT = 'sv06-130';
 const MUNKIDORI = 'sv06-095';
 const FEZANDIPITI = 'sv06.5-038';
 const BUDEW = 'me02.5-016';
+const MEOWTH = 'me03-062';
 const RARE_CANDY = 'me01-125';
 const FIRE = 'mee-002';
 const PSYCHIC = 'mee-005';
@@ -34,6 +35,13 @@ function position(): { s: GameState; me: PlayerId; opp: PlayerId } {
     engine.createGame({ decks: [metaDragapultDeck, metaOgerponBoxDeck], seed: 3 }),
   );
   return { s, me: 0, opp: 1 };
+}
+
+/** Active Dragapult ex holding Fire + Psychic (Phantom Dive ready). */
+function readyDragapult(s: GameState, me: PlayerId): void {
+  swapActiveTo(s, me, DRAGAPULT);
+  attachFromDeck(s, me, FIRE);
+  attachFromDeck(s, me, PSYCHIC);
 }
 
 let extra = 0;
@@ -172,6 +180,50 @@ describe('smart prompt answers', () => {
       selected: ['picked-already'],
     });
     expect(a).toEqual({ type: 'answer', optionId: 'done' });
+  });
+
+  test('pays Energy from the hand for an attack that deals damage for each card discarded', () => {
+    const { s, me } = position();
+    swapActiveTo(s, me, DREEPY);
+    benchFromHand(s, me, giveCard(s, me, DRAGAPULT)); // short of Energy: Energy would normally be kept
+    s.players[me].deck.push(...s.players[me].hand);
+    s.players[me].hand = [];
+    const energies = [giveCard(s, me, PSYCHIC), giveCard(s, me, FIRE)];
+    const picks: string[] = [];
+    for (let i = 0; i < 2; i++) {
+      const a = ask(s, me, {
+        kind: 'cards',
+        message: 'Discard up to 2 Basic {W} Energy (140 damage each)',
+        options: energies.filter((u) => !picks.includes(u)).map((u) => cardOption(s, u)),
+        min: 0,
+        max: 2,
+        selected: [...picks],
+      });
+      expect((a as { optionId: string }).optionId).not.toBe('done');
+      picks.push((a as { optionId: string }).optionId);
+    }
+    expect(picks.sort()).toEqual([...energies].sort());
+  });
+
+  test('damage counters finish a Knock Out before stacking on a bigger target', () => {
+    const { s, me, opp } = position();
+    readyDragapult(s, me);
+    swapActiveTo(s, opp, 'sv06-025');
+    benchFromHand(s, opp, addToHand(s, opp, MEOWTH)); // 170 HP, full: within the attack's reach, worth 2 Prizes
+    benchFromHand(s, opp, giveCard(s, opp, BUDEW)); // 30 HP
+    s.players[opp].bench[1]!.damage = 20; // 10 HP left: one counter finishes it
+    const options: PromptOption[] = [
+      { id: 'b0', label: 'Meowth ex', slot: { player: opp, zone: 'bench', index: 0 } },
+      { id: 'b1', label: 'Budew', slot: { player: opp, zone: 'bench', index: 1 } },
+    ];
+    const a = ask(s, me, {
+      kind: 'slot',
+      message: 'Put a damage counter on a Benched Pokémon (6 left)',
+      options,
+      min: 1,
+      max: 1,
+    });
+    expect(a).toEqual({ type: 'answer', optionId: 'b1' });
   });
 
   test('answers a forced choice even when every option is protected', () => {

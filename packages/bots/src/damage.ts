@@ -12,19 +12,37 @@ import { createEngine } from '@ptcg/engine';
 
 const TARGET = 'sandbox-target';
 
-/** Raw damage (before Weakness and Resistance) by `${defId}|${attackIndex}|${attached Energy}`. */
+/**
+ * Raw damage (before Weakness and Resistance) by card, attack, attached Energy count and a `variant`. The variant
+ * is empty for an attack with a fixed damage; for a scripted one it describes what the script may read (see
+ * `damageVariant`), so a value worked out in one position is not reused in another.
+ */
 export class DamageCache {
   private readonly values = new Map<string, number>();
-  private static key(defId: string, attackIndex: number, energy: number): string {
-    return `${defId}|${attackIndex}|${energy}`;
+  private static key(defId: string, attackIndex: number, energy: number, variant: string): string {
+    return `${defId}|${attackIndex}|${energy}|${variant}`;
   }
-  get(defId: string, attackIndex: number, energy: number): number | undefined {
-    return this.values.get(DamageCache.key(defId, attackIndex, energy));
+  get(defId: string, attackIndex: number, energy: number, variant = ''): number | undefined {
+    return this.values.get(DamageCache.key(defId, attackIndex, energy, variant));
   }
-  set(defId: string, attackIndex: number, energy: number, damage: number): void {
-    this.values.set(DamageCache.key(defId, attackIndex, energy), damage);
+  set(defId: string, attackIndex: number, energy: number, damage: number, variant = ''): void {
+    this.values.set(DamageCache.key(defId, attackIndex, energy, variant), damage);
   }
 }
+
+/** What a scripted damage most often depends on: the attacker's own damage, both Prize counts and its Energy types. */
+export function damageVariant(
+  scripted: boolean,
+  damageOnAttacker: number,
+  myPrizes: number,
+  oppPrizes: number,
+  energyTypes: string[],
+): string {
+  return scripted ? `${damageOnAttacker}/${myPrizes}/${oppPrizes}/${[...energyTypes].sort().join(',')}` : '';
+}
+
+/** The attack cannot be played out in the sandbox right now (not payable, not available): nothing to remember. */
+class Unavailable extends Error {}
 
 /** One engine per registry whose card list also holds a 9999-HP target with no Weakness or Resistance. */
 const sandboxes = new WeakMap<CardRegistry, Engine>();
@@ -50,7 +68,10 @@ function sandboxEngine(engine: Engine): Engine {
       isEx: false,
       isMega: false,
     };
-    sb = createEngine({ defs: { ...engine.registry.defs, [TARGET]: target }, scripts: engine.registry.scripts });
+    sb = createEngine({
+      defs: { ...engine.registry.defs, [TARGET]: target },
+      scripts: engine.registry.scripts,
+    });
     sandboxes.set(engine.registry, sb);
   }
   return sb;
@@ -83,15 +104,24 @@ export function estimateDamage(
   const def = engine.registry.defs[defId] as PokemonDef;
   const printed = def.attacks[attackIndex]?.damage ?? 0;
   const energy = slot.energy.length + extraEnergy;
-  const known = cache.get(defId, attackIndex, energy);
+  const scripted = !!engine.registry.scripts[defId]?.attacks?.[attackIndex]?.damage;
+  const types = slot.energy.flatMap((uid) => {
+    const d = engine.registry.defs[state.cards[uid]!.defId];
+    return d?.category === 'Energy' ? d.provides : [];
+  });
+  const other = state.players[attacker.player === 0 ? 1 : 0];
+  const variant = damageVariant(scripted, slot.damage, side.prizes.length, other.prizes.length, types);
+  const known = cache.get(defId, attackIndex, energy, variant);
   if (known !== undefined) return known;
   let damage: number;
   try {
     damage = playOut(engine, state, attacker, attackIndex, def, extraEnergy);
-  } catch {
+  } catch (e) {
+    // Not payable or not available right now: the printed damage is only a stand-in, so it is not remembered.
+    if (e instanceof Unavailable) return printed;
     damage = printed;
   }
-  cache.set(defId, attackIndex, energy, damage);
+  cache.set(defId, attackIndex, energy, damage, variant);
   return damage;
 }
 
@@ -124,19 +154,21 @@ function playOut(
   const slot = p.active!;
   clearTrouble(slot);
 
-  const missing = (def.attacks[attackIndex]?.cost ?? []).find((t) => t !== 'Colorless') as EnergyType | undefined;
+  const missing = (def.attacks[attackIndex]?.cost ?? []).find((t) => t !== 'Colorless') as
+    EnergyType | undefined;
   for (let i = 0; i < extraEnergy; i++) {
     const energyDef = Object.values(engine.registry.defs).find(
-      (d) => d.category === 'Energy' && d.energyKind === 'Basic' && (!missing || d.provides.includes(missing)),
+      (d) =>
+        d.category === 'Energy' && d.energyKind === 'Basic' && (!missing || d.provides.includes(missing)),
     );
-    if (!energyDef) throw new Error('no Basic Energy to attach');
+    if (!energyDef) throw new Unavailable('no Basic Energy to attach');
     const uid = `sandbox-energy-${i}`;
     s.cards[uid] = { uid, defId: energyDef.id, owner: me };
     slot.energy.push(uid);
   }
 
   const target = s.players[opp].active;
-  if (!target) throw new Error('nothing to attack');
+  if (!target) throw new Unavailable('nothing to attack');
   const topUid = target.stack[target.stack.length - 1]!;
   s.cards[topUid]!.defId = TARGET;
   target.stack = [topUid];
@@ -146,7 +178,7 @@ function playOut(
   clearTrouble(target);
 
   if (!sb.getLegalActions(s, me).some((a) => a.type === 'attack' && a.attackIndex === attackIndex)) {
-    throw new Error('attack not available');
+    throw new Unavailable('attack not available');
   }
   const after = sb.applyAction(s, me, { type: 'attack', attackIndex }).state;
   if (after.prompt) throw new Error('attack asks a question');
