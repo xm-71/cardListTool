@@ -10,6 +10,56 @@
     "logo": "https://assets.tcgdex.net/en/me/me02/logo"
   },
   {
+    "id": "me03",
+    "name": "Perfect Order",
+    "logo": "https://assets.tcgdex.net/en/me/me03/logo"
+  },
+  {
+    "id": "me02.5",
+    "name": "Ascended Heroes",
+    "logo": "https://assets.tcgdex.net/en/me/me02.5/logo"
+  },
+  {
+    "id": "sv09",
+    "name": "Journey Together",
+    "logo": "https://assets.tcgdex.net/en/sv/sv09/logo"
+  },
+  {
+    "id": "sv07",
+    "name": "Stellar Crown",
+    "logo": "https://assets.tcgdex.net/en/sv/sv07/logo"
+  },
+  {
+    "id": "sv06.5",
+    "name": "Shrouded Fable",
+    "logo": "https://assets.tcgdex.net/en/sv/sv06.5/logo"
+  },
+  {
+    "id": "sv06",
+    "name": "Twilight Masquerade",
+    "logo": "https://assets.tcgdex.net/en/sv/sv06/logo"
+  },
+  {
+    "id": "sv05",
+    "name": "Temporal Forces",
+    "logo": ""
+  },
+  {
+    "id": "sv04",
+    "name": "Paradox Rift",
+    "logo": "https://assets.tcgdex.net/en/sv/sv04/logo"
+  },
+  {
+    "id": "sv02",
+    "name": "Paldea Evolved",
+    "logo": "https://assets.tcgdex.net/en/sv/sv02/logo"
+  },
+  {
+    "id": "sv01",
+    "name": "Scarlet & Violet",
+    "logo": "https://assets.tcgdex.net/en/sv/sv01/logo"
+  },
+  {
     "id": "base1",
     "name": "Base Set",
     "logo": "https://assets.tcgdex.net/en/base/base1/logo"
