@@ -171,10 +171,12 @@ export function resolvePrompts(s: GameState): GameState {
 }
 
 /**
- * A Gym deck is 60 cards, every card playable by the engine and Gym-legal (Basic Energy, regulation mark H or
- * later, or any 151 card), with at most 4 copies of each name (Basic Energy aside) and at most 1 ACE SPEC.
+ * A Gym deck is 60 cards, every card playable by the engine and legal for the pool, with at most 4 copies of each
+ * name (Basic Energy aside) and at most 1 ACE SPEC. The 'gym' pool (default) is Basic Energy, regulation mark H or
+ * later, or any 151 card; the 'leader' pool, for the Elite Four, Champions and Red, widens it to regulation mark D
+ * or later (Sword & Shield onwards) and every Mega Evolution card.
  */
-export function assertGymDeck(deck: DeckList): void {
+export function assertGymDeck(deck: DeckList, pool: 'gym' | 'leader' = 'gym'): void {
   expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
   const names = new Map<string, number>();
   let aceSpecs = 0;
@@ -183,9 +185,13 @@ export function assertGymDeck(deck: DeckList): void {
     expect(d, c.id).toBeDefined();
     expect(isPlayable(d, registry), `${c.id} is playable`).toBe(true);
     const basicEnergy = d.category === 'Energy' && d.energyKind === 'Basic';
+    const minMark = pool === 'leader' ? 'D' : 'H';
     expect(
-      basicEnergy || (d.regulationMark !== null && d.regulationMark >= 'H') || c.id.startsWith(`${GYM_SET}-`),
-      `${c.id} is Gym-legal`,
+      basicEnergy ||
+        (d.regulationMark !== null && d.regulationMark >= minMark) ||
+        c.id.startsWith(`${GYM_SET}-`) ||
+        (pool === 'leader' && c.id.startsWith('me')),
+      `${c.id} is ${pool}-legal`,
     ).toBe(true);
     if (basicEnergy) continue;
     names.set(d.name, (names.get(d.name) ?? 0) + c.count);
