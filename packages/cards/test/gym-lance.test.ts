@@ -1,9 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { getRetreatCost, type DeckList, type GameState } from '@ptcg/engine';
 import { GYM_DECKS } from '../src/gym.ts';
-import { isPlayable } from '../src/playable.ts';
+import { metaDragapultDeck } from '../src/index.ts';
 import {
   act,
+  assertGymDeck,
   attachFromDeck,
   benchFromHand,
   engine,
@@ -40,10 +41,12 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   s.players[opp].active!.damage = -400;
 };
 
-test('Lance deck: 60 playable cards', () => {
+test("Lance plays the Dragapult ex deck: 60 playable cards in the leader pool, the Worlds 2026 list's cards", () => {
   const deck = GYM_DECKS.lance as DeckList;
-  expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
-  for (const c of deck.cards) expect(isPlayable(registry.defs[c.id]!, registry), c.id).toBe(true);
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lance's Dragapult Deck");
+  const counts = (d: DeckList) => Object.fromEntries(d.cards.map((c) => [c.id, c.count]));
+  expect(counts(deck)).toEqual(counts(metaDragapultDeck));
 });
 
 describe('Dragonair', () => {
