@@ -23,8 +23,22 @@ describe('whole-set imports', () => {
   test('the new sets are imported whole', () => {
     for (const [set, n] of Object.entries(SIZES)) expect(idsOf(set).length, set).toBe(n);
   });
-  test('every card of the new sets becomes a card definition', () => {
-    for (const set of Object.keys(SIZES)) for (const id of idsOf(set)) expect(registry.defs[id], id).toBeDefined();
+  test('every card of the new sets is structurally complete', () => {
+    for (const set of Object.keys(SIZES))
+      for (const id of idsOf(set)) {
+        const d = registry.defs[id]!;
+        expect(d.name, id).toBeTruthy();
+        if (d.category === 'Pokemon') {
+          expect(d.hp, id).toBeGreaterThan(0);
+          expect(['Basic', 'Stage1', 'Stage2'], id).toContain(d.stage);
+          expect(d.types.length, id).toBeGreaterThan(0);
+        } else if (d.category === 'Trainer') {
+          expect(['Item', 'Supporter', 'Stadium', 'Tool'], id).toContain(d.trainerType);
+        } else {
+          expect(['Basic', 'Special'], id).toContain(d.energyKind);
+          expect(d.provides.length, id).toBeGreaterThan(0);
+        }
+      }
   });
   test('the new sets are shop sets', () => {
     for (const set of Object.keys(SIZES)) expect(setIds, set).toContain(set);

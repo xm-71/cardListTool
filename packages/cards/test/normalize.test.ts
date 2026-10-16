@@ -173,3 +173,35 @@ test('an attack TCGdex has no name for is called "Attack"', () => {
   });
   expect(def).toMatchObject({ attacks: [{ name: 'Attack', damage: 30 }] });
 });
+
+describe('import errors name the card', () => {
+  test('a modern Trainer without a trainer type fails instead of becoming an Item', () => {
+    expect(() =>
+      normalizeTcgdexCard({ id: 'sv99-001', name: 'Mystery', category: 'Trainer', rarity: 'Common' }),
+    ).toThrow(/sv99-001/);
+  });
+  test('an unknown energy type names the card', () => {
+    expect(() =>
+      normalizeTcgdexCard({
+        id: 'sv99-002',
+        name: 'Odd',
+        category: 'Pokemon',
+        stage: 'Basic',
+        hp: 50,
+        types: ['Sparkle'],
+      }),
+    ).toThrow(/sv99-002/);
+  });
+  test('an unparseable damage names the card', () => {
+    expect(() =>
+      normalizeTcgdexCard({
+        id: 'sv99-003',
+        name: 'Odd',
+        category: 'Pokemon',
+        stage: 'Basic',
+        hp: 50,
+        attacks: [{ name: 'Hit', cost: ['Colorless'], damage: 'lots' }],
+      }),
+    ).toThrow(/sv99-003/);
+  });
+});
