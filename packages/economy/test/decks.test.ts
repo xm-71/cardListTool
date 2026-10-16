@@ -261,3 +261,15 @@ describe('ACE SPEC Energy', () => {
     expect(deckRuleProblems(one, registry)).toEqual([]);
   });
 });
+
+describe('sets imported for the leader decks', () => {
+  test('a newly imported mark G card is not legal for the player', () => {
+    const iono = base.defs['sv02-185']!; // Paldea Evolved, regulation mark G
+    expect(iono.regulationMark).toBe('G');
+    expect(isStandardLegal(iono)).toBe(false);
+    expect(isGymLegal(iono)).toBe(false);
+  });
+  test('a newly imported mark H card stays legal', () => {
+    expect(isStandardLegal(base.defs['sv06-163']!)).toBe(true); // Secret Box, Twilight Masquerade
+  });
+});

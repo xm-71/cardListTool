@@ -75,7 +75,14 @@ export function layoutRarities(era: PackEra): string[] {
   const slots = LAYOUTS[era];
   if (!slots) {
     const rates = era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
-    for (const r of [...REVERSE_RARITIES, 'Illustration rare', 'Common', 'Uncommon', ...Object.keys(rates)])
+    for (const r of [
+      ...REVERSE_RARITIES,
+      'Illustration rare',
+      'Common',
+      'Uncommon',
+      ...Object.keys(rates),
+      ACE_SPEC_RARITY,
+    ])
       out.add(r);
   }
   for (const slot of slots ?? []) {
@@ -94,6 +101,16 @@ const pack = (setId: string, name: string, era: PackEra): PackDef => ({
 export const PACKS: readonly PackDef[] = [
   pack('me01', 'Mega Evolution', 'mega'),
   pack('me02', 'Phantasmal Flames', 'mega'),
+  pack('me03', 'Perfect Order', 'mega'),
+  pack('me02.5', 'Ascended Heroes', 'mega'),
+  pack('sv09', 'Journey Together', 'sv'),
+  pack('sv07', 'Stellar Crown', 'sv'),
+  pack('sv06.5', 'Shrouded Fable', 'sv'),
+  pack('sv06', 'Twilight Masquerade', 'sv'),
+  pack('sv05', 'Temporal Forces', 'sv'),
+  pack('sv04', 'Paradox Rift', 'sv'),
+  pack('sv02', 'Paldea Evolved', 'sv'),
+  pack('sv01', 'Scarlet & Violet', 'sv'),
   pack('base1', 'Base Set', 'classic'),
   pack('base2', 'Jungle', 'classic'),
   pack('base3', 'Fossil', 'classic'),
@@ -190,6 +207,10 @@ export const SV_SLOT10_RATES: Readonly<Record<string, number>> = {
   'Hyper rare': 0.06,
 };
 
+/** A modern set with ACE SPEC cards gives them this share of slot 10, taken from Rare. */
+export const ACE_SPEC_RATE = 0.03;
+const ACE_SPEC_RARITY = 'ACE SPEC Rare';
+
 /** Chance that reverse-holo slot 9 is an Illustration rare. */
 export const SLOT9_ILLUSTRATION_RATE = 0.12;
 
@@ -213,7 +234,11 @@ export function openPack(
     if (pool.length === 0) throw new Error(`Set ${setId} has no cards for a pack slot`);
     return pool[Math.floor(random() * pool.length)]!.id;
   };
-  const rates = PACKS.find((p) => p.setId === setId)?.era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
+  const baseRates = PACKS.find((p) => p.setId === setId)?.era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
+  const rates: Readonly<Record<string, number>> =
+    byRarity(ACE_SPEC_RARITY).length > 0
+      ? { ...baseRates, Rare: baseRates.Rare! - ACE_SPEC_RATE, [ACE_SPEC_RARITY]: ACE_SPEC_RATE }
+      : baseRates;
   const rareOrBetter = (): CardDef[] => {
     let roll = random();
     for (const [rarity, rate] of Object.entries(rates)) {

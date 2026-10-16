@@ -43,7 +43,8 @@ async function startBotGame() {
 
 const actor = () => actorOf(useGame.getState().state!);
 
-describe('bot games', () => {
+// The waits below allow 8 s for the bot to play its turn; the test itself must not give up sooner on a busy runner.
+describe('bot games', { timeout: 20_000 }, () => {
   test('the bot completes its own setup', async () => {
     await startBotGame();
     expect(useGame.getState().state!.players[1].active).not.toBeNull();

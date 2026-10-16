@@ -17,12 +17,20 @@ async function withProfile(p: Partial<Profile> = {}) {
 
 beforeEach(() => useSettings.setState({ sound: false, skipTitle: false }));
 
-test('the Shop has a Scarlet & Violet section with the 151 pack', async () => {
+test('the Shop has a Scarlet & Violet section with the 151 pack and the other Scarlet & Violet packs', async () => {
   await withProfile();
   render(<Shop />);
   const section = screen.getByRole('region', { name: 'Scarlet & Violet' });
-  expect(within(section).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(1);
+  expect(within(section).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(9);
   expect(within(section).getByRole('group', { name: 'Scarlet & Violet 151' })).toBeInTheDocument();
+  for (const name of [
+    'Paldea Evolved',
+    'Paradox Rift',
+    'Temporal Forces',
+    'Twilight Masquerade',
+    'Journey Together',
+  ])
+    expect(within(section).getByRole('group', { name })).toBeInTheDocument();
 });
 
 test('buying a 151 pack opens 10 cards from sv03.5', async () => {
@@ -47,7 +55,7 @@ test('the Binder lists 151 under Scarlet & Violet, with Playable badges on scrip
   await withProfile({ collection: { [gyarados.id]: 1, [kabuto.id]: 1 } });
   render(<Binder />);
   const picker = screen.getByRole('group', { name: 'Sets' });
-  expect(within(picker).getByText('Scarlet & Violet')).toBeInTheDocument();
+  expect(within(picker).getAllByText('Scarlet & Violet').length).toBeGreaterThan(0);
   fireEvent.click(within(picker).getByRole('button', { name: '151' }));
   const item = (c: { id: string; name: string }) =>
     screen.getByRole('listitem', { name: `${c.name} #${c.id.split('-')[1]}` });

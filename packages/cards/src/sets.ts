@@ -31,7 +31,7 @@ const PT = new Set(Array.from({ length: 4 }, (_, i) => `pl${i + 1}`));
 const HGSS = new Set(['hgss1', 'hgss2', 'hgss3', 'hgss4', 'col1']);
 
 /** Scarlet & Violet sets: collectible, and playable only in the Gym format. */
-const SV = new Set(['sv03.5']);
+const SV = new Set(['sv01', 'sv02', 'sv03.5', 'sv04', 'sv05', 'sv06', 'sv06.5', 'sv07', 'sv09']);
 
 export const SETS: readonly { id: string; name: string; logo: string; era: Era }[] = sets.map((s) => ({
   ...s,

@@ -38,6 +38,9 @@ export function parseDamage(raw: number | string | undefined): Pick<AttackDef, '
   return { damage: Number(m[1]), damageSuffix: suffix };
 }
 
+/** Card ids of the modern eras, whose Trainers always say what they are. */
+const MODERN_SET = /^(sv|me|swsh|sm|xy|bw)\d/;
+
 function energyType(raw: string): EnergyType {
   if (!(ENERGY_TYPES as readonly string[]).includes(raw)) throw new Error(`Unknown energy type: ${raw}`);
   return raw as EnergyType;
@@ -91,8 +94,19 @@ const SYMBOL_TYPE: Record<string, EnergyType> = {
   C: 'Colorless',
 };
 
+/** Turns one TCGdex card into a card definition; any failure names the card. */
 export function normalizeTcgdexCard(input: unknown): CardDef {
-  const raw = input as RawCard;
+  try {
+    return normalizeRaw(input as RawCard);
+  } catch (e) {
+    const id = (input as RawCard | null)?.id;
+    const message = e instanceof Error ? e.message : String(e);
+    if (id && !message.includes(id)) throw new Error(`${message} (card ${id})`);
+    throw e;
+  }
+}
+
+function normalizeRaw(raw: RawCard): CardDef {
   const base = {
     id: raw.id,
     name: raw.name,
@@ -131,6 +145,8 @@ export function normalizeTcgdexCard(input: unknown): CardDef {
     }
     case 'Trainer': {
       // Classic (WotC-era) Trainers have no sub-type: they behave like Items.
+      if (raw.trainerType === undefined && MODERN_SET.test(raw.id))
+        throw new Error(`Trainer ${raw.id} has no trainer type`);
       const t = TRAINER_TYPES[raw.trainerType ?? 'Item'];
       if (!t) throw new Error(`Unsupported trainer type ${raw.trainerType} on ${raw.id}`);
       return {

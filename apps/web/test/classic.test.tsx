@@ -42,7 +42,7 @@ test('the shop groups packs by era and sells all 12 classic sets', async () => {
   render(<Shop />);
   const mega = screen.getByRole('region', { name: 'Mega Evolution era' });
   const classic = screen.getByRole('region', { name: 'Classic' });
-  expect(within(mega).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(2);
+  expect(within(mega).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(4);
   expect(within(classic).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(12);
   for (const name of [
     'Base Set',
