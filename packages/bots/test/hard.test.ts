@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest';
-import { createEngine, type Action, type CardRegistry, type GameState, type PlayerId } from '@ptcg/engine';
+import {
+  createEngine,
+  type Action,
+  type CardRegistry,
+  type GameState,
+  type PlayerId,
+  type PlayerView,
+} from '@ptcg/engine';
 import {
   act,
   attachFromDeck,
@@ -13,7 +20,6 @@ import {
 } from '@ptcg/engine/testing';
 import { createEasyBot } from '../src/easy.ts';
 import { createHardBot, type HardOptions } from '../src/hard.ts';
-import { createMediumBot } from '../src/medium.ts';
 
 const tank = pokemon('tank', {
   hp: 200,
@@ -65,14 +71,12 @@ const legalFor = (s: GameState, me: PlayerId): Action[] => engine.getLegalAction
 const frozen = (o: HardOptions = {}): HardOptions => ({ now: () => 0, ...o });
 
 describe('hard bot', () => {
-  test('retreats an ex Pokémon the opponent can Knock Out next turn; Medium does not', () => {
+  test('retreats an ex Pokémon the opponent can Knock Out next turn', () => {
     const { s, me } = threatened();
     const view = engine.viewFor(s, me);
     const legal = legalFor(s, me);
     const hard = createHardBot(registry, decks, me, frozen({ maxRounds: 2 }))(view, legal, 7);
     expect(hard.action.type).toBe('retreat');
-    const medium = createMediumBot(registry, decks, me, 2)(view, legal, 7);
-    expect(medium.action.type).not.toBe('retreat');
   });
 
   test('answers a promotion prompt for its own seat during the opponent reply', () => {
@@ -215,5 +219,51 @@ describe('hard bot', () => {
       )(engine.viewFor(s, me), legal, seed);
       expect(out.action, `seed ${seed}`).toEqual(legal[0]);
     }
+  });
+});
+
+describe('hard bot prompt answers', () => {
+  /** Hard's tank holds 4 Energy (Slam: 100). The opponent's Bench: a 200-HP tank first, a 60-HP spare second. */
+  function gustPrompt(): { view: PlayerView; legal: Action[]; me: PlayerId } {
+    let s = started(engine, spec, spec, 7);
+    s = act(engine, s, { type: 'endTurn' });
+    const me = s.current;
+    const opp: PlayerId = me === 0 ? 1 : 0;
+    swapActiveTo(s, me, 'tank');
+    for (let i = 0; i < 4; i++) attachFromDeck(s, me, 't-dark');
+    swapActiveTo(s, opp, 'spare');
+    benchFromHand(s, opp, giveCard(s, opp, 'tank'));
+    benchFromHand(s, opp, giveCard(s, opp, 'spare'));
+    const options = [0, 1].map((i) => ({
+      id: `b${i}`,
+      label: `bench ${i}`,
+      slot: { player: opp, zone: 'bench', index: i } as const,
+    }));
+    const prompt = {
+      player: me,
+      kind: 'slot' as const,
+      message: 'Choose a Pokémon',
+      options,
+      min: 1,
+      max: 1,
+      selected: [],
+    };
+    const view = { ...engine.viewFor(s, me), prompt };
+    const legal: Action[] = options.map((o) => ({ type: 'answer', optionId: o.id }));
+    return { view, legal, me };
+  }
+
+  test('answers a gust prompt with the Knock Out target', () => {
+    const { view, legal, me } = gustPrompt();
+    const hard = createHardBot(registry, decks, me, frozen({ maxRounds: 1 }));
+    for (let rng = 1; rng <= 12; rng++)
+      expect(hard(view, legal, rng).action).toEqual({ type: 'answer', optionId: 'b1' });
+  });
+
+  test('legacy option keeps the old prompt answers', () => {
+    const { view, legal, me } = gustPrompt();
+    const hard = createHardBot(registry, decks, me, frozen({ maxRounds: 1, legacy: true }));
+    const easy = createEasyBot(registry);
+    for (let rng = 1; rng <= 12; rng++) expect(hard(view, legal, rng)).toEqual(easy(view, legal, rng));
   });
 });

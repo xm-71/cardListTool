@@ -9,8 +9,11 @@ import {
   type PlayerView,
 } from '@ptcg/engine';
 import { determinize } from './determinize.ts';
+import { DamageCache } from './damage.ts';
 import { createEasyBot } from './easy.ts';
-import { evaluate } from './evaluate.ts';
+import { evaluate, type EvalContext } from './evaluate.ts';
+import { deckPlan } from './plan.ts';
+import { createSmartBot } from './smart.ts';
 import { dedupe, pickBest, PROMOTE, rolloutTurn } from './search.ts';
 import type { Bot } from './types.ts';
 
@@ -28,6 +31,11 @@ export interface HardOptions {
   maxRounds?: number;
   /** Clock in ms. Default `performance.now`. Tests, fuzz runs and balance runs pass a fake one. */
   now?: () => number;
+  /**
+   * Behave exactly as before the smart policy: Easy plays out the look-ahead and answers prompts, and the board is
+   * scored the old way. For strength comparisons only.
+   */
+  legacy?: boolean;
   /** Called after each finished round with its 1-based number (tests and timing only). */
   onRound?: (round: number) => void;
   /** Called for every move scored in every guessed world (tests only); impossible moves score -1e9. */
@@ -36,9 +44,9 @@ export interface HardOptions {
 
 /**
  * Hard bot: like Medium, but after finishing its own turn it also plays out the opponent's whole next turn
- * (with the Easy policy) before scoring, so it sees replies that punish a move. It keeps trying fresh guesses of
+ * (with the smart policy) before scoring, so it sees replies that punish a move. It keeps trying fresh guesses of
  * the hidden cards, scoring every move once per round, until the clock budget is spent.
- * Other prompts are answered by the Easy policy, as in Medium.
+ * Other prompts are answered by the smart policy, as in Medium.
  */
 export function createHardBot(
   registry: CardRegistry,
@@ -51,16 +59,20 @@ export function createHardBot(
   const maxRounds = options.maxRounds ?? 16;
   const now = options.now ?? (() => performance.now());
   const engine = createEngine(registry);
-  const easy = createEasyBot(registry);
+  const damage = new DamageCache();
+  const policy: Bot = options.legacy ? createEasyBot(registry) : createSmartBot(registry, decks, damage);
+  const ctx: EvalContext | undefined = options.legacy
+    ? undefined
+    : { engine, damage, plans: [deckPlan(decks[0], registry), deckPlan(decks[1], registry)] };
 
   /** Finish `me`'s turn, then the opponent's reply, and score the board from `me`'s side. */
   const scoreAfter = (start: GameState, me: PlayerId, rngIn: number): { score: number; rng: number } => {
     const opp: PlayerId = me === 0 ? 1 : 0;
-    let { state, rng } = rolloutTurn(engine, easy, start, me, rngIn);
+    let { state, rng } = rolloutTurn(engine, policy, start, me, rngIn);
     if (!state.result && state.current === opp) {
-      ({ state, rng } = rolloutTurn(engine, easy, state, opp, rng, REPLY_STEPS));
+      ({ state, rng } = rolloutTurn(engine, policy, state, opp, rng, REPLY_STEPS));
     }
-    return { score: evaluate(state, me, registry), rng };
+    return { score: evaluate(state, me, registry, ctx), rng };
   };
 
   /** Rounds of fresh guesses; `scoreOf` values one candidate in one guessed world (throwing if it can't be played). */
@@ -109,7 +121,9 @@ export function createHardBot(
       const s = structuredClone(world);
       const p = s.players[me];
       p.active = p.bench.splice(ref.index, 1)[0]!;
-      return evaluate(s, me, registry);
+      // Their Knock Out ended their turn: my move comes next (the scoring uses who moves next).
+      if (s.current !== me) s.current = me;
+      return evaluate(s, me, registry, ctx);
     };
 
   return (view, legal, rng) => {
@@ -120,7 +134,7 @@ export function createHardBot(
     );
     if (view.prompt || candidates.length <= 1) {
       const promoting = view.prompt?.kind === 'slot' && view.prompt.message === PROMOTE;
-      if (!(promoting && candidates.length > 1)) return easy(view, legal, rng);
+      if (!(promoting && candidates.length > 1)) return policy(view, legal, rng);
     }
     try {
       const promoting = view.prompt?.kind === 'slot' && view.prompt.message === PROMOTE;
@@ -133,7 +147,7 @@ export function createHardBot(
           : (world, action, r) => scoreAfter(engine.applyAction(world, me, action).state, me, r).score,
       );
     } catch {
-      return easy(view, legal, rng);
+      return policy(view, legal, rng);
     }
   };
 }

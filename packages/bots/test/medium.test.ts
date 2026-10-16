@@ -1,9 +1,16 @@
 import { describe, expect, test } from 'vitest';
 import { createEngine, type DeckList } from '@ptcg/engine';
 import { attachFromDeck, finishSetup, giveCard, swapActiveTo, act } from '@ptcg/engine/testing';
-import { buildRegistry, megaDiancieDeck, megaGengarDeck, megaLucarioDeck } from '@ptcg/cards';
+import {
+  buildRegistry,
+  megaDiancieDeck,
+  megaGengarDeck,
+  megaLucarioDeck,
+  metaDragapultDeck,
+} from '@ptcg/cards';
 import { createEasyBot } from '../src/easy.ts';
 import { createMediumBot } from '../src/medium.ts';
+import { createSmartBot } from '../src/smart.ts';
 import { runMatch } from '../src/runMatch.ts';
 
 const registry = buildRegistry();
@@ -93,7 +100,7 @@ describe('medium bot', () => {
 });
 
 describe('medium bot robustness', () => {
-  test('falls back to the Easy move when its simulation fails (e.g. wrong decklists)', () => {
+  test('falls back to the smart move when its simulation fails (e.g. wrong decklists)', () => {
     const decks: [DeckList, DeckList] = [megaGengarDeck, megaDiancieDeck];
     let s = finishSetup(engine, engine.createGame({ decks, seed: 8 }));
     s = act(engine, s, { type: 'endTurn' });
@@ -102,7 +109,7 @@ describe('medium bot robustness', () => {
     const bot = createMediumBot(registry, wrong, me);
     const view = engine.viewFor(s, me);
     const legal = engine.getLegalActions(s, me);
-    expect(bot(view, legal, 5)).toEqual(easy(view, legal, 5));
+    expect(bot(view, legal, 5)).toEqual(createSmartBot(registry, wrong)(view, legal, 5));
   });
 });
 
@@ -162,7 +169,7 @@ describe('bots never concede', () => {
 });
 
 describe('medium bot refactor guard', () => {
-  test('plays exactly as before the search.ts refactor', () => {
+  test('plays exactly as recorded for the smart policy', () => {
     const decks: [DeckList, DeckList] = [megaGengarDeck, megaDiancieDeck];
     const out = [2001, 2002, 2003].map((seed) => {
       const mediumSeat = (seed % 2) as 0 | 1;
@@ -171,10 +178,44 @@ describe('medium bot refactor guard', () => {
       const r = runMatch({ engine, decks, seed, bots });
       return [r.actions, r.turns, r.result?.winner];
     });
+    // Re-recorded when Medium moved to the smart policy (smart-bots plan, Task 7) and again after the damage-cache fix; guards later refactors.
     expect(out).toEqual([
-      [169, 33, 1],
-      [131, 20, 0],
-      [219, 39, 1],
+      [189, 33, 1],
+      [153, 35, 0],
+      [189, 33, 0],
     ]);
   }, 120_000);
+});
+
+describe('medium bot prompt answers', () => {
+  test('answers a search prompt from its plan', () => {
+    const dragapult = metaDragapultDeck;
+    const decks: [DeckList, DeckList] = [dragapult, megaGengarDeck];
+    let s = finishSetup(engine, engine.createGame({ decks, seed: 3 }));
+    const me = s.current;
+    const decksForMe: [DeckList, DeckList] = me === 0 ? decks : [megaGengarDeck, dragapult];
+    s = finishSetup(engine, engine.createGame({ decks: decksForMe, seed: 3 }));
+    swapActiveTo(s, me, 'sv06-128'); // Dreepy
+    const p = s.players[me];
+    const out = p.hand.filter((u) => ['sv06-129', 'sv06-130'].includes(s.cards[u]!.defId));
+    p.hand = p.hand.filter((u) => !out.includes(u));
+    p.deck.push(...out);
+    const find = (defId: string) => p.deck.find((u) => s.cards[u]!.defId === defId)!;
+    const [dreepy, drakloak] = [find('sv06-128'), find('sv06-129')];
+    const option = (uid: string) => ({ id: uid, label: 'card', uid, defId: s.cards[uid]!.defId });
+    const prompt = {
+      player: me,
+      kind: 'cards' as const,
+      message: 'Choose a Pokémon',
+      options: [option(dreepy), option(drakloak)],
+      min: 1,
+      max: 1,
+      selected: [],
+    };
+    const view = { ...engine.viewFor(s, me), prompt };
+    const legal = prompt.options.map((o) => ({ type: 'answer' as const, optionId: o.id }));
+    const bot = createMediumBot(registry, decksForMe, me);
+    for (let rng = 1; rng <= 8; rng++)
+      expect(bot(view, legal, rng).action).toEqual({ type: 'answer', optionId: drakloak });
+  });
 });
