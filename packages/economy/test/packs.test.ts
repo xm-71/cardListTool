@@ -81,10 +81,12 @@ describe('openPack', () => {
   });
 });
 
-test('both sets are on sale at the configured price', () => {
+test('every Mega Evolution set is on sale at the configured price', () => {
   expect(PACKS.filter((p) => p.era === 'mega').map((p) => [p.setId, p.price])).toEqual([
     ['me01', 150],
     ['me02', 150],
+    ['me03', 150],
+    ['me02.5', 150],
   ]);
   expect(CREDITS.start).toBe(500);
 });
@@ -362,5 +364,60 @@ describe('packContents', () => {
   test('always starts with the real number of cards in a pack', () => {
     for (const p of PACKS)
       expect(packContents(p.setId), p.setId).toMatch(new RegExp(`^${packSize(p.setId)} cards: `));
+  });
+});
+
+describe('packs for the sets imported whole', () => {
+  const NEW_PACKS = [
+    ['me03', 'Perfect Order', 'mega'],
+    ['me02.5', 'Ascended Heroes', 'mega'],
+    ['sv09', 'Journey Together', 'sv'],
+    ['sv07', 'Stellar Crown', 'sv'],
+    ['sv06.5', 'Shrouded Fable', 'sv'],
+    ['sv06', 'Twilight Masquerade', 'sv'],
+    ['sv05', 'Temporal Forces', 'sv'],
+    ['sv04', 'Paradox Rift', 'sv'],
+    ['sv02', 'Paldea Evolved', 'sv'],
+    ['sv01', 'Scarlet & Violet', 'sv'],
+  ] as const;
+
+  test('the new sets are sold as packs in their eras', () => {
+    for (const [setId, name, era] of NEW_PACKS) {
+      const pack = PACKS.find((p) => p.setId === setId);
+      expect(pack, setId).toBeDefined();
+      expect([pack!.name, pack!.era], setId).toEqual([name, era]);
+    }
+  });
+
+  test('every rarity in each new shop set can be pulled', () => {
+    for (const [setId, , era] of NEW_PACKS) {
+      const pullable = new Set(layoutRarities(era));
+      for (const rarity of new Set(setCards(setId).map((c) => c.rarity)))
+        expect(pullable.has(rarity), `${setId}: ${rarity}`).toBe(true);
+    }
+  });
+
+  test('every new pack opens a full pack of its own cards', () => {
+    for (const [setId] of NEW_PACKS) {
+      const { cards } = openPack(setId, setCards(setId), 7);
+      expect(cards, setId).toHaveLength(packSize(setId));
+      for (const id of cards) expect(id.startsWith(`${setId}-`), id).toBe(true);
+    }
+  });
+
+  test('a set with ACE SPEC cards opens them in the last slot at 3%, taken from Rare', () => {
+    const cards = setCards('sv06');
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    const n = 6000;
+    const last = new Map<string, number>();
+    let rng = 5;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('sv06', cards, rng);
+      rng = pack.rng;
+      const r = rarity.get(pack.cards[9]!)!;
+      last.set(r, (last.get(r) ?? 0) + 1);
+    }
+    expect(Math.abs((last.get('ACE SPEC Rare') ?? 0) / n - 0.03)).toBeLessThanOrEqual(0.015);
+    expect(Math.abs((last.get('Rare') ?? 0) / n - 0.52)).toBeLessThanOrEqual(0.02);
   });
 });

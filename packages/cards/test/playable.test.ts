@@ -85,6 +85,9 @@ test('every shop set has an era, classic sets included', () => {
   expect(SETS.map((s) => [s.id, s.era])).toEqual([
     ['me01', 'mega'],
     ['me02', 'mega'],
+    ['me03', 'mega'],
+    ['me02.5', 'mega'],
+    ...['sv09', 'sv07', 'sv06.5', 'sv06', 'sv05', 'sv04', 'sv02', 'sv01'].map((id) => [id, 'sv']),
     ['base1', 'classic'],
     ['base2', 'classic'],
     ['base3', 'classic'],
