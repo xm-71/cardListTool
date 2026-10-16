@@ -1,4 +1,4 @@
-# Meta decks, PR 1: foundation and Kanto Elite Four — Implementation Plan
+# Meta decks, part 1: foundation and Kanto Elite Four (three PRs) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -12,8 +12,8 @@ new card behaviour is a script per card under `packages/cards/src/scripts/<set>/
 
 **Tech Stack:** TypeScript, vitest, pnpm workspaces, TCGdex REST API (`https://api.tcgdex.net/v2/en`).
 
-**Spec:** `docs/superpowers/specs/2026-10-16-meta-decks-sv-me-design.md` (this plan covers its PR 1; PRs 2 and 3 get
-their own plans).
+**Spec:** `docs/superpowers/specs/2026-10-16-meta-decks-sv-me-design.md` (this plan covers the spec's first delivery,
+split into PRs A, B and C below; the spec's deliveries 2 and 3 get their own plans).
 
 ## Global Constraints
 
@@ -26,7 +26,20 @@ their own plans).
 - Probe bands (win rate of the leader's deck with its in-game bot): Kanto Elite Four 55–65%.
 - Rulings carried from the spec: Technical Machine: Evolution / Devolution and Flutter Mane need engine features the
   engine lacks (Tool-granted attacks, Ability lock), so they are left out; `GYM_TARGETS` loses its entries for replaced
-  decks (they are measured by `--probe` with `PROBE_TARGETS` instead, which is the measure the spec defines).
+  decks, in the PR that replaces each deck (they are measured by `--probe` with `PROBE_TARGETS` instead, which is
+  the measure the spec defines).
+
+## Delivery
+
+Three PRs, in order, each from the dev branch reset to `master` after the previous one merges:
+
+- **PR A, foundation** (Tasks 1–5): leader legality mode, the ten sets imported whole, their shop packs, `--probe`,
+  the Battle Frontier check. Ships on its own: the new sets appear in the shop; no leader changes yet.
+- **PR B, Lance and Bruno** (Tasks 6–8): Dragapult ex and Mega Lucario ex, with their balance pass.
+- **PR C, Lorelei and Agatha** (Tasks 9–11): Chien-Pao ex and Gardevoir ex, with their balance pass.
+
+Each PR: final whole-branch review of that PR's tasks, CI green, probe numbers in the description, and the player's
+go-ahead before merging.
 
 ## Review Focus
 
@@ -37,11 +50,13 @@ their own plans).
 3. The player's rules must not widen: a Paldea Evolved card (mark G) stays out of the player's Standard decks. → Task 3
    test `a newly imported mark G card is not Standard-legal for the player`.
 4. Unscripted cards from the new sets must never end up in a leader deck, a premade deck or a Battle Frontier deck. →
-   Task 1 (`assertGymDeck` checks playability) and Task 9 test `frontier pool only uses playable cards`.
+   Task 1 (`assertGymDeck` checks playability) and Task 5 test `frontier pool only uses playable cards`.
 5. Deck plans for the new decks must pick the real attacker (e.g. Chien-Pao ex, Gardevoir ex), or the bot fuels the
-   wrong Pokémon. → Tasks 7 and 8 plan tests.
+   wrong Pokémon. → Tasks 9 and 10 plan tests.
 
 ---
+
+## PR A — Foundation: card pool, whole sets, shop, probe
 
 ### Task 1: Leader legality mode
 
@@ -141,12 +156,27 @@ test('the new sets are shop sets', () => {
 
 - [ ] **Step 1: Implement** the mode: each leader deck with its difficulty's bot (Easy / Medium / Hard with
   `maxRounds: HARD_ROUNDS, now: () => 0`) vs the 6 meta + 3 Mega premade decks piloted by Hard (same options), both
-  seats, `gamesPerOpponent` per seat; delete the `GYM_TARGETS` entries of the four replaced leaders.
+  seats, `gamesPerOpponent` per seat. `GYM_TARGETS` is not touched here (the old decks still play in PR A).
 - [ ] **Step 2: Verify** `GYM_ONLY=brock npx tsx scripts/round-robin.ts --probe` — Expected: one `brock` line with a
   win rate and `band - -` (no target) and a `TALLY` line; `pnpm lint` and `pnpm typecheck` clean.
 - [ ] **Step 3: Commit** `git commit -m "Bots: --probe mode for leader deck strength"`.
 
-### Task 5: Lance — Dragapult ex
+### Task 5: Battle Frontier only builds playable decks
+
+**Files:**
+- Modify: `apps/web/src/game/frontier/pool.ts` only if the test fails
+- Test: `apps/web/test/frontier-pool.test.ts` (extended)
+
+- [ ] **Step 1: Write the test** `frontier pool only uses playable cards`: every card of every deck the Battle
+  Frontier pool can build is `isPlayable`, with the new sets imported.
+- [ ] **Step 2: Run** `pnpm --filter @ptcg/web exec vitest run test/frontier-pool.test.ts` — Expected: PASS (if it
+  fails, filter the pool by `isPlayable`, then PASS).
+- [ ] **Step 3: Full checks** `pnpm typecheck && pnpm lint && pnpm test` — Expected: all PASS.
+- [ ] **Step 4: Commit** `git commit -m "Frontier: check decks only use playable cards"` (if anything changed).
+
+## PR B — Lance and Bruno
+
+### Task 6: Lance — Dragapult ex
 
 **Files:**
 - Modify: `packages/cards/src/decks/gym/lance.json`, `apps/web/src/game/gym.ts` (Lance `type: 'Dragon'`)
@@ -161,7 +191,7 @@ test('the new sets are shop sets', () => {
   PASS.
 - [ ] **Step 5: Commit** `git commit -m "Gym: Lance plays Dragapult ex"`.
 
-### Task 6: Bruno — Mega Lucario ex
+### Task 7: Bruno — Mega Lucario ex
 
 **Files:**
 - Create: `packages/cards/src/scripts/me01/072.ts` (Makuhita), registered in `src/scripts/index.ts`
@@ -182,7 +212,23 @@ Determination `me01-119`, 2 Boss's Orders `me01-114`, 1 Iono `sv02-185`, 4 Ultra
 - [ ] **Step 4: Run** the test and `gym-fuzz.test.ts` — Expected: PASS.
 - [ ] **Step 5: Commit** `git commit -m "Gym: Bruno plays Mega Lucario ex"`.
 
-### Task 7: Lorelei — Chien-Pao ex / Baxcalibur
+### Task 8: Balance pass for Lance and Bruno
+
+**Files:**
+- Modify: the deck JSONs of Lance and Bruno or `packages/bots/src/plans.ts` only as tuning needs
+- Modify: `packages/bots/scripts/round-robin.ts` — delete the `GYM_TARGETS` entries for `lance` and `bruno` (they are
+  measured by `--probe` now)
+
+- [ ] **Step 1: Probe** `GYM_ONLY=lance,bruno npx tsx scripts/round-robin.ts --probe` (shards in parallel via
+  `HARD_SHARD`) — Expected: each leader in 55–65%. Outside the band: change the list within the Global Constraints
+  (counts, staples) or the deck plan, rerun; record each change in the ledger. If a band cannot be reached after three
+  tuning rounds, stop tuning and report the numbers.
+- [ ] **Step 2: Full checks** `pnpm typecheck && pnpm lint && pnpm test` — Expected: all PASS.
+- [ ] **Step 3: Commit** `git commit -m "Gym: tune Lance and Bruno"` (if anything changed).
+
+## PR C — Lorelei and Agatha
+
+### Task 9: Lorelei — Chien-Pao ex / Baxcalibur
 
 **Files:**
 - Create scripts (each registered in `src/scripts/index.ts`): `sv02/061.ts` Chien-Pao ex, `sv02/057.ts` Frigibax,
@@ -215,7 +261,7 @@ Determination `me01-119`, 2 Boss's Orders `me01-114`, 1 Iono `sv02-185`, 4 Ultra
   `first: ['Frigibax', 'Baxcalibur']`); run — Expected: PASS.
 - [ ] **Step 7: Run** `gym-fuzz.test.ts` — Expected: PASS. **Commit** `git commit -m "Gym: Lorelei plays Chien-Pao ex"`.
 
-### Task 8: Agatha — Gardevoir ex
+### Task 10: Agatha — Gardevoir ex
 
 **Files:**
 - Create scripts (registered): `me01/058.ts` Ralts, `me01/059.ts` Kirlia, `sv01/086.ts` Gardevoir ex, `sv04/086.ts`
@@ -246,18 +292,17 @@ Flutter Mane: +1 Rare Candy, +1 Ralts, +1 Kirlia, +1 Bravery Charm.)
   ex']` and attackers include `'Gardevoir ex'` or `'Munkidori'`; add a `DECK_PLANS` entry if needed; run — PASS.
 - [ ] **Step 7: Run** `gym-fuzz.test.ts` — PASS. **Commit** `git commit -m "Gym: Agatha plays Gardevoir ex"`.
 
-### Task 9: Balance pass and checks
+### Task 11: Balance pass for Lorelei and Agatha
 
 **Files:**
-- Modify: the four deck JSONs or `packages/bots/src/plans.ts` only as tuning needs
-- Test: `apps/web/test/frontier-pool.test.ts` (extended)
+- Modify: the deck JSONs of Lorelei and Agatha or `packages/bots/src/plans.ts` only as tuning needs
+- Modify: `packages/bots/scripts/round-robin.ts` — delete the `GYM_TARGETS` entries for `lorelei` and `agatha` (they are
+  measured by `--probe` now)
 
-- [ ] **Step 1: Test** `frontier pool only uses playable cards`: every card of every deck the Battle Frontier pool can
-  build is `isPlayable` after the new sets are imported. Run `pnpm --filter @ptcg/web exec vitest run test/frontier-pool.test.ts` —
-  Expected: PASS (if it fails, filter the pool by `isPlayable`, then PASS).
-- [ ] **Step 2: Probe** `GYM_ONLY=lorelei,bruno,agatha,lance npx tsx scripts/round-robin.ts --probe` (4 shards in
-  parallel) — Expected: each leader in 55–65%. Outside the band: change the list within the Global Constraints (counts,
-  staples) or the deck plan, rerun; record each change in the ledger. If a band cannot be reached after three tuning
-  rounds, stop tuning and report the numbers.
-- [ ] **Step 3: Full checks** `pnpm typecheck && pnpm lint && pnpm test` — Expected: all PASS.
-- [ ] **Step 4: Commit** `git commit -m "Gym: tune the Kanto Elite Four meta decks"` (if anything changed).
+- [ ] **Step 1: Probe** `GYM_ONLY=lorelei,agatha npx tsx scripts/round-robin.ts --probe` (shards in parallel via
+  `HARD_SHARD`) — Expected: each leader in 55–65%. Outside the band: change the list within the Global Constraints
+  (counts, staples) or the deck plan, rerun; record each change in the ledger. If a band cannot be reached after three
+  tuning rounds, stop tuning and report the numbers.
+- [ ] **Step 2: Full checks** `pnpm typecheck && pnpm lint && pnpm test` — Expected: all PASS.
+- [ ] **Step 3: Commit** `git commit -m "Gym: tune Lorelei and Agatha"` (if anything changed).
+
