@@ -13,7 +13,6 @@ const ogerpon = cards.metaOgerponBoxDeck;
 const bot = createSmartBot(registry, [dragapult, ogerpon]);
 
 const DREEPY = 'sv06-128';
-const DRAKLOAK = 'sv06-129';
 const DRAGAPULT = 'sv06-130';
 const MUNKIDORI = 'sv06-095';
 const FEZANDIPITI = 'sv06.5-038';

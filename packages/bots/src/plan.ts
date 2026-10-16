@@ -27,7 +27,7 @@ export function deckPlan(deck: DeckList, registry: CardRegistry): DeckPlan {
   const lines: Record<string, string[]> = {};
   for (const final of pokemon.filter((p) => !evolvesInto.has(p.name))) {
     const line = [final.name];
-    for (let cur = final; cur.evolvesFrom; ) {
+    for (let cur = final; cur.evolvesFrom;) {
       const prev = byName.get(cur.evolvesFrom);
       if (!prev) break;
       line.unshift(prev.name);

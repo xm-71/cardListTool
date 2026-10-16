@@ -20,7 +20,6 @@ import {
 } from '@ptcg/engine/testing';
 import { createEasyBot } from '../src/easy.ts';
 import { createHardBot, type HardOptions } from '../src/hard.ts';
-import { createMediumBot } from '../src/medium.ts';
 
 const tank = pokemon('tank', {
   hp: 200,

@@ -117,7 +117,6 @@ function knockOutsNeeded(state: GameState, p: PlayerId, registry: CardRegistry):
 
 /** Terms that need the deck's plan: the Prize map, off-plan ex on the Bench, setup, and a useful hand. */
 function planTerms(state: GameState, me: PlayerId, registry: CardRegistry, ctx: EvalContext): number {
-  const opp: PlayerId = me === 0 ? 1 : 0;
   const plan = ctx.plans[me];
   const defOf = (uid: string) => registry.defs[state.cards[uid]!.defId]!;
   const topDef = (slot: { stack: string[] }) => defOf(slot.stack[slot.stack.length - 1]!);
