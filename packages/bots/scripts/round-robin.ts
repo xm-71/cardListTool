@@ -4,6 +4,7 @@
  *        npx tsx scripts/round-robin.ts --gym [gamesPerPair=20]   (each Gym deck vs the 9 decks, both seats)
  *        npx tsx scripts/round-robin.ts --hard [gamesPerPair=4]   (Hard vs Medium on every ordered deck pair)
  *        npx tsx scripts/round-robin.ts --smart [gamesPerPair=4]  (smart Hard vs legacy Hard on every ordered deck pair)
+ *        npx tsx scripts/round-robin.ts --probe [gamesPerSeat=1]  (each leader deck, with its in-game bot, vs 9 Hard-piloted decks)
  */
 import { createEngine, type DeckList } from '@ptcg/engine';
 import * as cards from '@ptcg/cards';
@@ -36,9 +37,108 @@ const args = process.argv.slice(2);
 const gym = args.includes('--gym');
 const hardMode = args.includes('--hard');
 const smartMode = args.includes('--smart');
+const probeMode = args.includes('--probe');
 /** With --medium the Gym deck is piloted by the Medium bot (as in the game for gyms 5–8, Elite Four and Champion). */
 const medium = args.includes('--medium');
 const numeric = args.filter((a) => !a.startsWith('--'));
+
+/** The bot each leader uses in the game (copied from apps/web/src/game/gym.ts). */
+const LEADER_DIFFICULTY: Record<string, 'easy' | 'medium' | 'hard'> = {
+  brock: 'easy',
+  misty: 'easy',
+  surge: 'easy',
+  erika: 'easy',
+  koga: 'medium',
+  sabrina: 'medium',
+  blaine: 'medium',
+  giovanni: 'medium',
+  lorelei: 'medium',
+  bruno: 'medium',
+  agatha: 'medium',
+  lance: 'medium',
+  'blue-fire': 'medium',
+  'blue-water': 'medium',
+  'blue-grass': 'medium',
+  falkner: 'medium',
+  bugsy: 'medium',
+  whitney: 'hard',
+  morty: 'hard',
+  chuck: 'hard',
+  jasmine: 'hard',
+  pryce: 'hard',
+  clair: 'hard',
+  will: 'hard',
+  'johto-koga': 'hard',
+  'johto-bruno': 'hard',
+  karen: 'hard',
+  'johto-lance': 'hard',
+  red: 'hard',
+};
+
+/** Win-rate bands (percent) for the leaders with meta decks, from the meta-decks spec. Later PRs add theirs. */
+const PROBE_TARGETS: Record<string, [number, number]> = {
+  lorelei: [55, 65],
+  bruno: [55, 65],
+  agatha: [55, 65],
+  lance: [55, 65],
+};
+
+if (probeMode) {
+  // Each leader deck, played by the bot it has in the game, against the 6 meta and 3 Mega premade decks piloted by
+  // the Hard bot. GYM_ONLY=a,b limits the leaders; HARD_SHARD=k/n splits them; HARD_ROUNDS sets Hard's search rounds.
+  const perSeat = Number(numeric[0] ?? 1);
+  const rounds = Number(process.env.HARD_ROUNDS ?? 8);
+  const [shard, shards] = (process.env.HARD_SHARD ?? '0/1').split('/').map(Number) as [number, number];
+  const only = process.env.GYM_ONLY?.split(',');
+  const opponents = DECKS.slice(9).concat(
+    DECKS.filter(([n]) => ['Mega Gengar ex', 'Mega Lucario ex', 'Mega Charizard X ex'].includes(n)),
+  );
+  const ids = Object.keys(cards.GYM_DECKS)
+    .filter((id) => !only || only.includes(id))
+    .filter((_, i) => i % shards === shard);
+  let seed = 1 + shard * 100000;
+  let totalWins = 0;
+  let totalGames = 0;
+  for (const id of ids) {
+    const leaderDeck = (cards.GYM_DECKS as Record<string, DeckList>)[id]!;
+    const difficulty = LEADER_DIFFICULTY[id] ?? 'medium';
+    let wins = 0;
+    let games = 0;
+    const turns: number[] = [];
+    for (const [, opp] of opponents)
+      for (const leaderSeat of [0, 1] as const)
+        for (let g = 0; g < perSeat; g++) {
+          const decks = (leaderSeat === 0 ? [leaderDeck, opp] : [opp, leaderDeck]) as [DeckList, DeckList];
+          const options = { maxRounds: rounds, now: () => 0 };
+          const leaderBot =
+            difficulty === 'easy'
+              ? createEasyBot(registry)
+              : difficulty === 'medium'
+                ? createMediumBot(registry, decks, leaderSeat)
+                : createHardBot(registry, decks, leaderSeat, options);
+          const oppBot = createHardBot(registry, decks, (1 - leaderSeat) as 0 | 1, options);
+          const bots = (leaderSeat === 0 ? [leaderBot, oppBot] : [oppBot, leaderBot]) as [
+            typeof bot,
+            typeof bot,
+          ];
+          const r = runMatch({ engine, decks, seed: seed++, bots });
+          games++;
+          turns.push(r.turns);
+          if (r.result?.winner === leaderSeat) wins++;
+        }
+    const pct = (100 * wins) / games;
+    const median = [...turns].sort((a, b) => a - b)[Math.floor(turns.length / 2)] ?? 0;
+    const band = PROBE_TARGETS[id];
+    const verdict = band ? (pct >= band[0] && pct <= band[1] ? 'PASS' : 'FAIL') : '';
+    console.log(
+      `${id.padEnd(12)} ${difficulty.padEnd(6)} win ${pct.toFixed(0).padStart(3)}%  medTurns ${median}  band ${band ? `${band[0]}-${band[1]}` : '-'} ${verdict}`.trimEnd(),
+    );
+    totalWins += wins;
+    totalGames += games;
+  }
+  console.log(`TALLY ${totalWins} ${totalGames}`);
+  process.exit(0);
+}
 
 if (hardMode) {
   const perPair = Number(numeric[0] ?? 4);
