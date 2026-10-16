@@ -91,7 +91,8 @@ export function reader(
       return Math.max(
         0,
         ...top(slot).attacks.map((a, i) =>
-          missing(a.cost, have) === 0 ? r.attackDamage(slot, i, target) : 0,
+          // A payable attack counts as at least 1: a script-only effect still means "can attack".
+          missing(a.cost, have) === 0 ? Math.max(1, r.attackDamage(slot, i, target)) : 0,
         ),
       );
     },

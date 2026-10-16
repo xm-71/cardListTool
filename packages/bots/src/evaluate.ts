@@ -82,7 +82,10 @@ export function evaluate(state: GameState, me: PlayerId, registry: CardRegistry,
     return d?.category === 'Pokemon' ? standard2026.prizeValue(d) : 1;
   };
   if (best(me, 0) >= remaining(opp)) score += 40 * prizeValue(opp);
-  if (best(opp, 1) >= remaining(me)) score -= 60 * prizeValue(me);
+  // With the smarter scoring, a Knock Out I get in first (it is my move next) takes the sting out of their threat.
+  const iMoveFirst = state.current === me || state.prompt?.player === me;
+  const koFirst = !!ctx && iMoveFirst && best(me, 0) >= remaining(opp);
+  if (best(opp, 1) >= remaining(me)) score -= 60 * prizeValue(me) * (koFirst ? 0.3 : 1);
   score += 4 * state.players[me].bench.length - 2 * state.players[opp].bench.length;
   if (ctx) score += planTerms(state, me, registry, ctx);
   else score += Math.min(8, state.players[me].hand.length);
@@ -120,7 +123,10 @@ function planTerms(state: GameState, me: PlayerId, registry: CardRegistry, ctx: 
   const topDef = (slot: { stack: string[] }) => defOf(slot.stack[slot.stack.length - 1]!);
   const inPlan = (name: string) =>
     plan.attackers.some((a) => (plan.lines[a] ?? [a]).includes(name)) || plan.support.includes(name);
-  let score = 30 * (knockOutsNeeded(state, opp, registry) - knockOutsNeeded(state, me, registry));
+  // Prize map: Prizes I still need minus the Knock Outs it takes on their board (big Pokémon there are a saving).
+  // Only my side of the map counts: charging me for my own ex would make the bot never develop its attackers;
+  // the danger to my board is covered by the threat terms and the off-plan ex penalty below.
+  let score = 30 * (state.players[me].prizes.length - knockOutsNeeded(state, me, registry));
 
   const bench = state.players[me].bench;
   const handNames = new Set(state.players[me].hand.map((u) => defOf(u).name));
