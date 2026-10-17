@@ -1,15 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import type { DeckList, GameState } from '@ptcg/engine';
 import { GYM_DECKS } from '../src/gym.ts';
-import { isPlayable } from '../src/playable.ts';
 import {
   act,
+  assertGymDeck,
   attachFromDeck,
   benchFromHand,
   engine,
   game,
   giveCard,
-  registry,
   resolvePrompts,
   sv,
   swapActiveTo,
@@ -41,10 +40,32 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   s.players[opp].active!.damage = -400;
 };
 
-test('Bruno deck: 60 playable cards', () => {
+test("Bruno plays the Mega Lucario ex deck: 60 playable cards in the leader pool", () => {
   const deck = GYM_DECKS.bruno as DeckList;
-  expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
-  for (const c of deck.cards) expect(isPlayable(registry.defs[c.id]!, registry), c.id).toBe(true);
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Bruno's Mega Lucario Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'me01-076': 4,
+    'me01-077': 3,
+    'me01-072': 2,
+    'me01-073': 2,
+    'me01-075': 2,
+    'me01-074': 2,
+    'sv06.5-038': 1,
+    'me01-119': 4,
+    'me01-114': 2,
+    'sv02-185': 1,
+    'me01-131': 4,
+    'me01-167': 4,
+    'me01-116': 4,
+    'me01-124': 3,
+    'me01-173': 2,
+    'me01-130': 2,
+    'me01-166': 1,
+    'sv05-157': 1,
+    'mee-006': 16,
+  });
 });
 
 describe('Machop, Machoke, Machamp', () => {
