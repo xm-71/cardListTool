@@ -47,24 +47,23 @@ test("Bruno plays the Mega Lucario ex deck: 60 playable cards in the leader pool
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
     'me01-076': 4,
-    'me01-077': 3,
+    'me01-077': 2,
     'me01-072': 2,
     'me01-073': 2,
     'me01-075': 2,
     'me01-074': 2,
     'sv06.5-038': 1,
     'me01-119': 4,
-    'me01-114': 2,
+    'me01-114': 1,
     'sv02-185': 1,
     'me01-131': 4,
     'me01-167': 4,
-    'me01-116': 4,
-    'me01-124': 3,
+    'me01-116': 3,
+    'me01-124': 1,
     'me01-173': 2,
-    'me01-130': 2,
+    'me01-130': 3,
     'me01-166': 1,
-    'sv05-157': 1,
-    'mee-006': 16,
+    'mee-006': 21,
   });
 });
 
