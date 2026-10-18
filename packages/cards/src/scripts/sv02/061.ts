@@ -1,19 +1,13 @@
 import type { CardScript } from '@ptcg/engine';
 import { inPlayRefs, isBasicEnergy, searchDeck } from '../util.ts';
 
-const ABILITY = 'Shivery Chill';
-
 export const name = 'Chien-Pao ex';
 export const script: CardScript = {
   abilities: {
     // Shivery Chill: once during your turn, if this Pokémon is Active, search for up to 2 Basic {W} Energy.
-    [ABILITY]: {
-      canUse: (ctx) =>
-        ctx.source?.kind === 'ability' &&
-        ctx.source.slot.zone === 'active' &&
-        !ctx.usedAbilityNameThisTurn(ABILITY),
+    'Shivery Chill': {
+      canUse: (ctx) => ctx.source?.kind === 'ability' && ctx.source.slot.zone === 'active',
       use(ctx) {
-        ctx.markAbilityName(ABILITY);
         const picks = searchDeck(ctx, {
           filter: (d) => isBasicEnergy(d, 'Water'),
           max: 2,

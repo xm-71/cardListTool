@@ -31,7 +31,7 @@ const spec = {
   [KIRLIA]: 3,
   [GARDEVOIR]: 2,
   [SCREAM_TAIL]: 1,
-  [MEW]: 1,
+  [MEW]: 2,
   [MUNKIDORI]: 2,
   [COUNTER_CATCHER]: 2,
   [CHARM]: 2,
@@ -163,6 +163,30 @@ describe('Mew ex', () => {
   });
 });
 
+describe('Mew ex mirror', () => {
+  test('Genome Hacking is not offered against another Mew ex, which would only copy itself forever', () => {
+    const { s: s0, me, opp } = game(spec);
+    swapActiveTo(s0, me, MEW);
+    for (let i = 0; i < 3; i++) attachFromDeck(s0, me, PSYCHIC);
+    swapActiveTo(s0, opp, MEW);
+    expect(engine.getLegalActions(s0, me)).not.toContainEqual({ type: 'attack', attackIndex: 0 });
+  });
+
+  test('each Mew ex may use Restart once a turn', () => {
+    const { s: s0, me } = game(spec);
+    swapActiveTo(s0, me, MEW);
+    s0.players[me].deck.push(...s0.players[me].hand.splice(0));
+    s0.players[me].deck.push(...s0.players[me].bench.splice(0).map((b) => b.stack[0]!));
+    const second = giveCard(s0, me, MEW);
+    benchFromHand(s0, me, second);
+    emptyHand(s0, me);
+    const s1 = act(engine, s0, ability(me, 'Restart'));
+    expect(s1.players[me].hand).toHaveLength(3);
+    s1.players[me].hand.splice(0, 3).forEach((u) => s1.players[me].deck.push(u));
+    expect(engine.getLegalActions(s1, me)).toContainEqual(ability(me, 'Restart', 'bench', 0));
+  });
+});
+
 describe('Counter Catcher', () => {
   test('is playable only while you have more Prize cards remaining than the opponent', () => {
     const { s, me, opp } = game(spec);
@@ -226,7 +250,7 @@ describe('Artazon', () => {
   });
 
   test('cannot be used when the deck has no Basic Pokémon without a Rule Box', () => {
-    const { s: s0, me } = game({ [GARDEVOIR]: 2, [MEW]: 1, [ARTAZON]: 1, [PSYCHIC]: 10 });
+    const { s: s0, me } = game({ [GARDEVOIR]: 2, [MEW]: 2, [ARTAZON]: 1, [PSYCHIC]: 10 });
     emptyHand(s0, me);
     const s = act(engine, s0, playTrainer(giveCard(s0, me, ARTAZON)));
     expect(engine.getLegalActions(s, me)).not.toContainEqual({ type: 'useStadium' });
