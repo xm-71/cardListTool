@@ -263,8 +263,6 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   sabrina: [40, 60],
   blaine: [40, 60],
   giovanni: [40, 60],
-  lorelei: [45, 65],
-  agatha: [45, 65],
   'blue-fire': [45, 65],
   'blue-water': [45, 65],
   'blue-grass': [45, 65],
