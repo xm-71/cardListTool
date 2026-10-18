@@ -34,7 +34,10 @@ export const script: CardScript = {
         const options = inPlayRefs(ctx, ctx.me).flatMap((ref) =>
           ctx
             .slot(ref)
-            .energy.filter((u) => isBasicEnergy(ctx.def(u), 'Water') || ctx.def(u).provides.includes('Water'))
+            .energy.filter((u) => {
+              const d = ctx.def(u);
+              return d.category === 'Energy' && d.provides.includes('Water');
+            })
             .map((uid) => ({ ref, uid })),
         );
         if (options.length === 0) return 0;

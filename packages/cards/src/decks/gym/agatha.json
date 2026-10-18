@@ -1,23 +1,97 @@
 {
-  "name": "Agatha's Ghost Deck",
+  "name": "Agatha's Gardevoir Deck",
   "cards": [
-    { "id": "me01-119", "count": 4 },
-    { "id": "sv09-149", "count": 2 },
-    { "id": "me01-114", "count": 2 },
-    { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 3 },
-    { "id": "me01-121", "count": 2 },
-    { "id": "me01-130", "count": 2 },
-    { "id": "me01-173", "count": 2 },
-    { "id": "me01-132", "count": 2 },
-    { "id": "me01-125", "count": 3 },
-    { "id": "sv03.5-092", "count": 4 },
-    { "id": "sv03.5-093", "count": 3 },
-    { "id": "sv03.5-094", "count": 3 },
-    { "id": "me02-056", "count": 2 },
-    { "id": "sv03.5-041", "count": 3 },
-    { "id": "sv03.5-042", "count": 2 },
-    { "id": "mee-005", "count": 10 },
-    { "id": "mee-007", "count": 7 }
+    {
+      "id": "me01-058",
+      "count": 4
+    },
+    {
+      "id": "me01-059",
+      "count": 3
+    },
+    {
+      "id": "sv01-086",
+      "count": 2
+    },
+    {
+      "id": "sv06-095",
+      "count": 4
+    },
+    {
+      "id": "sv04-086",
+      "count": 1
+    },
+    {
+      "id": "sv09-056",
+      "count": 1
+    },
+    {
+      "id": "sv03.5-151",
+      "count": 1
+    },
+    {
+      "id": "sv06.5-038",
+      "count": 1
+    },
+    {
+      "id": "sv09-155",
+      "count": 4
+    },
+    {
+      "id": "sv02-185",
+      "count": 4
+    },
+    {
+      "id": "sv01-166",
+      "count": 2
+    },
+    {
+      "id": "me01-131",
+      "count": 4
+    },
+    {
+      "id": "sv04-163",
+      "count": 3
+    },
+    {
+      "id": "me01-125",
+      "count": 3
+    },
+    {
+      "id": "sv04-160",
+      "count": 2
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "sv01-181",
+      "count": 2
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "sv06-163",
+      "count": 1
+    },
+    {
+      "id": "sv02-173",
+      "count": 2
+    },
+    {
+      "id": "sv02-171",
+      "count": 2
+    },
+    {
+      "id": "mee-005",
+      "count": 7
+    },
+    {
+      "id": "mee-007",
+      "count": 4
+    }
   ]
 }

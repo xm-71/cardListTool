@@ -184,7 +184,7 @@ export const ELITE: readonly Opponent[] = [
   {
     id: 'agatha',
     name: 'Agatha',
-    type: 'Psychic + Darkness',
+    type: 'Psychic',
     deck: 'agatha',
     difficulty: 'medium',
     intro:

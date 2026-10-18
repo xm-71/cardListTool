@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import type { DeckList, GameState } from '@ptcg/engine';
 import { GYM_DECKS } from '../src/gym.ts';
-import { isPlayable } from '../src/playable.ts';
 import {
+  assertGymDeck,
   ID,
   act,
   answer,
@@ -11,7 +11,6 @@ import {
   engine,
   game,
   giveCard,
-  registry,
   resolvePrompts,
   sv,
   swapActiveTo,
@@ -45,10 +44,36 @@ const buffer = (s: GameState, opp: 0 | 1) => {
 };
 
 describe('Agatha deck', () => {
-  test('60 playable cards', () => {
+  test('Agatha plays the Gardevoir ex deck: 60 playable cards in the leader pool', () => {
     const deck = GYM_DECKS.agatha as DeckList;
-    expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
-    for (const c of deck.cards) expect(isPlayable(registry.defs[c.id]!, registry), c.id).toBe(true);
+    assertGymDeck(deck, 'leader');
+    expect(deck.name).toBe("Agatha's Gardevoir Deck");
+    const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+    expect(counts).toEqual({
+      'me01-058': 4,
+      'me01-059': 3,
+      'sv01-086': 2,
+      'sv06-095': 4,
+      'sv04-086': 1,
+      'sv09-056': 1,
+      'sv03.5-151': 1,
+      'sv06.5-038': 1,
+      'sv09-155': 4,
+      'sv02-185': 4,
+      'sv01-166': 2,
+      'me01-131': 4,
+      'sv04-163': 3,
+      'me01-125': 3,
+      'sv04-160': 2,
+      'me01-173': 2,
+      'sv01-181': 2,
+      'sv02-188': 1,
+      'sv06-163': 1,
+      'sv02-173': 2,
+      'sv02-171': 2,
+      'mee-005': 7,
+      'mee-007': 4,
+    });
   });
 
   test('Haunter 093 satisfies Mega Gengar ex’s evolve-from-Haunter rule', () => {

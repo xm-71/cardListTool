@@ -8,6 +8,14 @@ import * as me01_166 from './me01/166.ts';
 import * as me02_092 from './me02/092.ts';
 import * as sv01_166 from './sv01/166.ts';
 import * as sv02_185 from './sv02/185.ts';
+import * as me01_058 from './me01/058.ts';
+import * as me01_059 from './me01/059.ts';
+import * as sv01_086 from './sv01/086.ts';
+import * as sv02_171 from './sv02/171.ts';
+import * as sv02_173 from './sv02/173.ts';
+import * as sv03_5_151 from './sv03.5/151.ts';
+import * as sv04_086 from './sv04/086.ts';
+import * as sv04_160 from './sv04/160.ts';
 import * as sv02_060 from './sv02/060.ts';
 import * as sv02_061 from './sv02/061.ts';
 import * as sv02_169 from './sv02/169.ts';
@@ -351,6 +359,14 @@ export const scriptModules: { id: string; name: string; set?: string; script: Ca
   { id: 'me02-092', ...me02_092 },
   { id: 'sv01-166', ...sv01_166 },
   { id: 'sv02-185', ...sv02_185 },
+  { id: 'me01-058', ...me01_058 },
+  { id: 'me01-059', ...me01_059 },
+  { id: 'sv01-086', ...sv01_086 },
+  { id: 'sv02-171', ...sv02_171 },
+  { id: 'sv02-173', ...sv02_173 },
+  { id: 'sv03.5-151', ...sv03_5_151 },
+  { id: 'sv04-086', ...sv04_086 },
+  { id: 'sv04-160', ...sv04_160 },
   { id: 'sv02-060', ...sv02_060 },
   { id: 'sv02-061', ...sv02_061 },
   { id: 'sv02-169', ...sv02_169 },
