@@ -195,7 +195,7 @@ export const ELITE: readonly Opponent[] = [
   {
     id: 'lance',
     name: 'Lance',
-    type: 'Water + Lightning',
+    type: 'Dragon',
     deck: 'lance',
     difficulty: 'medium',
     intro: "I've been waiting for you! I am Lance, the dragon master. Prepare to face my Dragon Pokémon!",

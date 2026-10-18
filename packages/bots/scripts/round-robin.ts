@@ -264,9 +264,7 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   blaine: [40, 60],
   giovanni: [40, 60],
   lorelei: [45, 65],
-  bruno: [45, 65],
   agatha: [45, 65],
-  lance: [45, 65],
   'blue-fire': [45, 65],
   'blue-water': [45, 65],
   'blue-grass': [45, 65],
@@ -300,6 +298,7 @@ if (gym) {
   const only = process.env.GYM_ONLY?.split(',');
   for (const [id, deck] of Object.entries(cards.GYM_DECKS)) {
     if (only && !only.includes(id)) continue;
+    if (!GYM_TARGETS[id]) continue; // meta-deck leaders are measured by --probe
     let wins = 0;
     let played = 0;
     for (const [, opp] of DECKS)
