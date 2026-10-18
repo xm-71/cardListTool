@@ -1,21 +1,81 @@
 {
-  "name": "Lorelei's Frost Deck",
+  "name": "Lorelei's Chien-Pao Deck",
   "cards": [
-    { "id": "me01-119", "count": 4 },
-    { "id": "sv09-149", "count": 2 },
-    { "id": "me01-114", "count": 2 },
-    { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 3 },
-    { "id": "me01-130", "count": 2 },
-    { "id": "me01-173", "count": 2 },
-    { "id": "me01-166", "count": 2 },
-    { "id": "sv03.5-086", "count": 4 },
-    { "id": "sv03.5-087", "count": 3 },
-    { "id": "sv03.5-090", "count": 3 },
-    { "id": "sv03.5-091", "count": 3 },
-    { "id": "sv03.5-131", "count": 2 },
-    { "id": "sv03.5-124", "count": 2 },
-    { "id": "sv03.5-144", "count": 1 },
-    { "id": "mee-003", "count": 21 }
+    {
+      "id": "sv02-061",
+      "count": 4
+    },
+    {
+      "id": "sv02-057",
+      "count": 4
+    },
+    {
+      "id": "sv02-059",
+      "count": 1
+    },
+    {
+      "id": "sv02-060",
+      "count": 3
+    },
+    {
+      "id": "sv02-169",
+      "count": 1
+    },
+    {
+      "id": "sv06.5-038",
+      "count": 1
+    },
+    {
+      "id": "sv09-155",
+      "count": 4
+    },
+    {
+      "id": "sv02-185",
+      "count": 2
+    },
+    {
+      "id": "me01-114",
+      "count": 2
+    },
+    {
+      "id": "me01-131",
+      "count": 4
+    },
+    {
+      "id": "sv01-181",
+      "count": 4
+    },
+    {
+      "id": "me01-125",
+      "count": 3
+    },
+    {
+      "id": "sv02-189",
+      "count": 4
+    },
+    {
+      "id": "sv04-163",
+      "count": 2
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "sv05-157",
+      "count": 1
+    },
+    {
+      "id": "me01-167",
+      "count": 2
+    },
+    {
+      "id": "mee-003",
+      "count": 15
+    }
   ]
 }

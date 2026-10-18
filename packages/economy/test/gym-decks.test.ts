@@ -10,7 +10,7 @@ const ownAll = Object.fromEntries(Object.keys(registry.defs).map((id) => [id, 99
 const EXPECTED_DECKS = 29;
 
 /** Leaders on meta decks draw from the wider leader pool (mark D or later); `assertGymDeck(deck, 'leader')` in the cards tests checks them. */
-const META_LEADERS = new Set(['lance', 'bruno']);
+const META_LEADERS = new Set(['lorelei', 'bruno', 'agatha', 'lance']);
 
 test('every Kanto and Johto gym deck is registered', () => {
   expect(Object.keys(GYM_DECKS)).toHaveLength(EXPECTED_DECKS);

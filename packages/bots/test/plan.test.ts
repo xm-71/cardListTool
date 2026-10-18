@@ -21,6 +21,11 @@ describe('deckPlan', () => {
     expect(d.attackers).toContain('Dragapult ex');
     expect(deckPlan(metaCrustleDeck, registry).lines['Crustle']).toEqual(['Dwebble', 'Crustle']);
   });
+  test('Lorelei plays Chien-Pao ex and the Baxcalibur line', () => {
+    const p = deckPlan(GYM_DECKS.lorelei, registry);
+    expect(p.attackers).toContain('Chien-Pao ex');
+    expect(p.lines['Baxcalibur']).toEqual(['Frigibax', 'Arctibax', 'Baxcalibur']);
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);
