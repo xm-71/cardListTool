@@ -51,12 +51,10 @@ describe('Agatha deck', () => {
     const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
     expect(counts).toEqual({
       'me01-058': 4,
-      'me01-059': 3,
-      'sv01-086': 2,
-      'sv06-095': 4,
-      'sv04-086': 1,
+      'me01-059': 4,
+      'sv01-086': 3,
+      'sv06-095': 3,
       'sv09-056': 1,
-      'sv03.5-151': 1,
       'sv06.5-038': 1,
       'sv09-155': 4,
       'sv02-185': 4,
@@ -71,7 +69,7 @@ describe('Agatha deck', () => {
       'sv06-163': 1,
       'sv02-173': 2,
       'sv02-171': 2,
-      'mee-005': 7,
+      'mee-005': 8,
       'mee-007': 4,
     });
   });
