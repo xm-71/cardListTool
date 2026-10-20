@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { getRetreatCost, type DeckList, type GameState } from '@ptcg/engine';
 import { GYM_DECKS } from '../src/gym.ts';
-import { isPlayable } from '../src/playable.ts';
 import {
+  assertGymDeck,
   act,
   answer,
   attachFromDeck,
@@ -46,10 +46,26 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   s.players[opp].active!.damage = -400;
 };
 
-test('Lorelei deck: 60 playable cards', () => {
+test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool', () => {
   const deck = GYM_DECKS.lorelei as DeckList;
-  expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
-  for (const c of deck.cards) expect(isPlayable(registry.defs[c.id]!, registry), c.id).toBe(true);
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lorelei's Chien-Pao Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv02-061': 2,
+    'sv02-057': 4,
+    'sv02-059': 4,
+    'sv02-060': 4,
+    'sv09-155': 4,
+    'sv02-185': 1,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-125': 4,
+    'me01-167': 4,
+    'mee-003': 21,
+    'sv01-166': 1,
+  });
 });
 
 describe('Dewgong', () => {
