@@ -299,6 +299,41 @@ function keepScore(r: Reader, card: CardInstance, hand: CardInstance[]): number 
   }
 }
 
+/**
+ * "Discard any amount of {W} Energy from your Pokémon (60 damage each)": pay for a Knock Out and no more, Energy of the
+ * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay only with what the Active holds beyond
+ * its cheapest attack, so it can attack again, and leave the Bench alone.
+ */
+function payAttachedEnergy(
+  r: Reader,
+  prompt: NonNullable<PlayerView['prompt']>,
+  choosable: PromptOption[],
+  byId: Map<string, Answer>,
+  done: Answer | null,
+): Answer | null {
+  const per = Number(/(\d+) damage each/i.exec(prompt.message)?.[1] ?? 0);
+  const me = r.view.you;
+  const target = r.view.opponent.active;
+  if (!per || !me.active || !target) return byId.get(choosable[0]!.id)!;
+  const attacker = r.top(me.active);
+  const defender = r.top(target);
+  const each = defender.weakness && attacker.types.includes(defender.weakness) ? per * 2 : per;
+  const left = (target.hp ?? defender.hp) - target.damage;
+  const needed = Math.ceil(left / each);
+  const onActive = choosable.filter((o) => me.active!.energy.some((c) => c.uid === o.uid));
+  const taken = prompt.selected.length;
+  if (taken + choosable.length >= needed) {
+    // A Knock Out is in reach: take the missing Energy from the Active first, then from the Bench.
+    if (taken >= needed && done) return done;
+    return byId.get((onActive[0] ?? choosable[0]!).id)!;
+  }
+  const cheapest = Math.min(...attacker.attacks.map((a) => a.cost.length));
+  const spare = me.active.energy.length - cheapest;
+  const spent = onActive.length > 0 ? me.active.energy.length - onActive.length : 0;
+  if (onActive.length > 0 && spent < spare) return byId.get(onActive[0]!.id)!;
+  return done ?? byId.get(choosable[0]!.id)!;
+}
+
 function cardAnswer(r: Reader, prompt: NonNullable<PlayerView['prompt']>, legal: Answer[]): Answer | null {
   const done = legal.find((a) => a.optionId === 'done') ?? null;
   const options = prompt.options.filter((o) => o.uid);
@@ -315,6 +350,7 @@ function cardAnswer(r: Reader, prompt: NonNullable<PlayerView['prompt']>, legal:
     !/damage counter/i.test(prompt.message) &&
     prompt.min < prompt.max
   ) {
+    if (!fromHand) return payAttachedEnergy(r, prompt, choosable, byId, done);
     const hand = r.view.you.hand;
     const cheapest = [...choosable].sort((a, b) =>
       fromHand ? keepScore(r, card(a), hand) - keepScore(r, card(b), hand) : 0,
