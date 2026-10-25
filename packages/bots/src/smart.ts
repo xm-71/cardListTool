@@ -300,6 +300,13 @@ function keepScore(r: Reader, card: CardInstance, hand: CardInstance[]): number 
 }
 
 /**
+ * "As often as you like" Abilities that attach Energy from the hand and cost nothing else: each use spends a card, so
+ * they cannot loop, and using one once a turn wastes most of what they are for. Other repeatable Abilities (moving
+ * Energy around, self-damage) stay once a turn.
+ */
+const REPEAT_FREELY = new Set(['Super Cold', 'Excited Turbo']);
+
+/**
  * "Discard any amount of {W} Energy from your Pokémon (60 damage each)": pay for a Knock Out and no more, Energy of the
  * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay only with what the Active holds beyond
  * its cheapest attack, so it can attack again, and leave the Bench alone.
@@ -541,7 +548,9 @@ export function createSmartBot(
 
     // 5. Abilities, Tools, Stadiums and other Trainers.
     const fresh = of('useAbility').filter(
-      (a) => (r.slotAt(a.slot)?.abilityUses?.[a.ability]?.turn ?? -1) !== view.turn,
+      (a) =>
+        REPEAT_FREELY.has(a.ability) ||
+        (r.slotAt(a.slot)?.abilityUses?.[a.ability]?.turn ?? -1) !== view.turn,
     );
     const abilities = [...fresh, ...of('useStadium')];
     if (abilities.length) return done(pick(abilities));
