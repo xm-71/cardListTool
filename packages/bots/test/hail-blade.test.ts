@@ -69,4 +69,28 @@ describe('Hail Blade (discard any amount of {W} Energy, 60 damage each)', () => 
     expect(s.players[0].bench[0]!.energy).toHaveLength(2); // the Bench is left alone
     expect(s.players[1].active!.damage).toBe(-400 + 120);
   });
+
+  test('counts the Defending Pokémon’s Resistance when working out how many to discard', () => {
+    const resists = Object.values(registry.defs).find(
+      (d) => d.category === 'Pokemon' && d.stage === 'Basic' && d.resistance === 'Water' && d.hp >= 130,
+    )!;
+    const { s: s0 } = setup(5);
+    const opp = s0.players[1].active!;
+    s0.cards[opp.stack[0]!]!.defId = resists.id;
+    opp.damage = (resists as { hp: number }).hp - 120; // 120 left: 2 Energy would do, but Resistance takes 30 off
+    const s = hailBlade(s0);
+    expect(s.players[1].active?.stack.length ?? 0).toBe(0); // knocked out
+    expect(s.players[0].active!.energy).toHaveLength(2); // 3 discarded: 180 - 30 = 150
+  });
+
+  test('does not count Energy the prompt’s maximum will not let it discard', () => {
+    const { s: s0 } = setup(2, 3);
+    s0.players[1].active!.damage = -190; // 300 left: five Energy in total could do it, but only two may be chosen
+    let s = engine.applyAction(s0, 0, { type: 'attack', attackIndex: 0 }).state;
+    const prompt = { ...s.prompt!, max: 2 };
+    const view = { ...engine.viewFor(s, 0), prompt };
+    const answer = bot(view, engine.getLegalActions(s, 0), 5).action;
+    expect(answer).toEqual({ type: 'answer', optionId: 'done' }); // the Active keeps the Energy it attacks with
+    s = engine.applyAction(s, 0, answer).state;
+  });
 });

@@ -325,11 +325,13 @@ function payAttachedEnergy(
   const attacker = r.top(me.active);
   const defender = r.top(target);
   const each = defender.weakness && attacker.types.includes(defender.weakness) ? per * 2 : per;
-  const left = (target.hp ?? defender.hp) - target.damage;
+  // Resistance takes 30 off the total after Weakness, so that much more has to be paid for.
+  const resisted = defender.resistance && attacker.types.includes(defender.resistance) ? 30 : 0;
+  const left = (target.hp ?? defender.hp) - target.damage + resisted;
   const needed = Math.ceil(left / each);
   const onActive = choosable.filter((o) => me.active!.energy.some((c) => c.uid === o.uid));
   const taken = prompt.selected.length;
-  if (taken + choosable.length >= needed) {
+  if (Math.min(prompt.max, taken + choosable.length) >= needed) {
     // A Knock Out is in reach: take the missing Energy from the Active first, then from the Bench.
     if (taken >= needed && done) return done;
     return byId.get((onActive[0] ?? choosable[0]!).id)!;
