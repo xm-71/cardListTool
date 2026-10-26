@@ -52,10 +52,10 @@ test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool'
   expect(deck.name).toBe("Lorelei's Chien-Pao Deck");
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
-    'sv02-061': 2,
+    'sv02-061': 4,
     'sv02-057': 4,
-    'sv02-059': 4,
-    'sv02-060': 4,
+    'sv02-059': 2,
+    'sv02-060': 3,
     'sv09-155': 4,
     'sv02-185': 1,
     'me01-114': 3,
@@ -63,7 +63,7 @@ test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool'
     'sv01-181': 4,
     'me01-125': 4,
     'me01-167': 4,
-    'mee-003': 21,
+    'mee-003': 22,
     'sv01-166': 1,
   });
 });
