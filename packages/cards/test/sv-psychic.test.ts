@@ -25,6 +25,7 @@ const COUNTER_CATCHER = 'sv04-160';
 const CHARM = 'sv02-173';
 const ARTAZON = 'sv02-171';
 const MUNKIDORI = 'sv06-095';
+const FRIGIBAX = 'sv02-057';
 const PSYCHIC = 'mee-005';
 const spec = {
   [RALTS]: 4,
@@ -33,6 +34,7 @@ const spec = {
   [SCREAM_TAIL]: 1,
   [MEW]: 2,
   [MUNKIDORI]: 2,
+  [FRIGIBAX]: 2,
   [COUNTER_CATCHER]: 2,
   [CHARM]: 2,
   [ARTAZON]: 2,
@@ -112,6 +114,25 @@ describe('Gardevoir ex', () => {
     expect(canUse(s, me, 'Psychic Embrace')).toBe(false);
     s.players[me].bench[0]!.damage = 40;
     expect(canUse(s, me, 'Psychic Embrace')).toBe(true);
+  });
+
+  test('Psychic Embrace is allowed with 30 HP left and refused with exactly 20', () => {
+    const { s, me } = game(spec);
+    swapActiveTo(s, me, GARDEVOIR);
+    toDiscard(s, me, PSYCHIC, 1);
+    s.players[me].active!.damage = 290; // 310 HP: 2 damage counters would leave 0
+    expect(canUse(s, me, 'Psychic Embrace')).toBe(false);
+    s.players[me].active!.damage = 280; // 30 left
+    expect(canUse(s, me, 'Psychic Embrace')).toBe(true);
+  });
+
+  test('Psychic Embrace is only for {P} Pokémon', () => {
+    const { s, me } = game(spec);
+    swapActiveTo(s, me, GARDEVOIR);
+    s.players[me].active!.damage = 300; // Gardevoir ex itself may not take it
+    benchFromHand(s, me, giveCard(s, me, FRIGIBAX)); // a {W} Pokémon with plenty of HP
+    toDiscard(s, me, PSYCHIC, 1);
+    expect(canUse(s, me, 'Psychic Embrace')).toBe(false);
   });
 
   test('Miracle Force does 190 and recovers the attacker from all Special Conditions', () => {

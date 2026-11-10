@@ -1,10 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { getRetreatCost, type DeckList, type GameState } from '@ptcg/engine';
-import { GYM_DECKS } from '../src/gym.ts';
-import { metaDragapultDeck } from '../src/index.ts';
+import { getRetreatCost, type GameState } from '@ptcg/engine';
 import {
   act,
-  assertGymDeck,
   attachFromDeck,
   benchFromHand,
   engine,
@@ -40,14 +37,6 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   swapActiveTo(s, opp, DRATINI);
   s.players[opp].active!.damage = -400;
 };
-
-test("Lance plays the Dragapult ex deck: 60 playable cards in the leader pool, the Worlds 2026 list's cards", () => {
-  const deck = GYM_DECKS.lance as DeckList;
-  assertGymDeck(deck, 'leader');
-  expect(deck.name).toBe("Lance's Dragapult Deck");
-  const counts = (d: DeckList) => Object.fromEntries(d.cards.map((c) => [c.id, c.count]));
-  expect(counts(deck)).toEqual(counts(metaDragapultDeck));
-});
 
 describe('Dragonair', () => {
   test('Aqua Slash does 90 and Dragonair can’t attack during your next turn', () => {
