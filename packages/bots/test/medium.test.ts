@@ -178,9 +178,9 @@ describe('medium bot refactor guard', () => {
       const r = runMatch({ engine, decks, seed, bots });
       return [r.actions, r.turns, r.result?.winner];
     });
-    // Re-recorded when Medium moved to the smart policy (smart-bots plan, Task 7) and again after the damage-cache fix; guards later refactors.
+    // Re-recorded when Medium moved to the smart policy (smart-bots plan, Task 7) and again after the damage-cache fix and the Hail Blade payment rule; guards later refactors.
     expect(out).toEqual([
-      [189, 33, 1],
+      [190, 33, 1],
       [153, 35, 0],
       [189, 33, 0],
     ]);
