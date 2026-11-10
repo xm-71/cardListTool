@@ -22,8 +22,9 @@ test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool'
     'sv01-181': 4,
     'me01-125': 4,
     'me01-167': 4,
-    'mee-003': 22,
+    'mee-003': 21,
     'sv01-166': 1,
+    'sv02-173': 1,
   });
 });
 
@@ -84,7 +85,8 @@ test('Agatha plays the Gardevoir ex deck: 60 playable cards in the leader pool',
     'sv01-181': 3,
     'sv02-188': 1,
     'sv06-163': 1,
-    'mee-005': 12,
+    'mee-005': 10,
     'mee-007': 4,
+    'sv02-173': 2,
   });
 });
