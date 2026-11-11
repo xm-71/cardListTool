@@ -129,13 +129,13 @@ test("Blue plays the Teal Mask Ogerpon ex and Meganium deck (Grass): 60 playable
   expect(counts).toEqual({
     'sv06-025': 4,
     'me01-008': 4,
-    'me01-009': 2,
-    'me01-010': 2,
+    'me01-009': 3,
+    'me01-010': 3,
     'sv06.5-038': 1,
     'sv01-166': 4,
-    'sv09-155': 4,
+    'sv09-155': 3,
     'sv02-185': 2,
-    'me01-114': 3,
+    'me01-114': 2,
     'sv01-181': 4,
     'me01-131': 4,
     'me01-125': 3,
@@ -181,9 +181,9 @@ test("Red plays the Miraidon ex deck: 60 playable cards in the leader pool", () 
   expect(deck.name).toBe("Red's Miraidon Deck");
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
-    'sv01-081': 2,
+    'sv01-081': 3,
     'sv04-070': 4,
-    'sv03.5-145': 4,
+    'sv03.5-145': 3,
     'sv06.5-038': 1,
     'sv01-166': 3,
     'me01-114': 2,
