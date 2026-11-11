@@ -41,6 +41,11 @@ describe('deckPlan', () => {
     expect(p.lines['Meganium']).toEqual(['Chikorita', 'Bayleef', 'Meganium']);
     expect(p.attackers.some((n) => n === 'Teal Mask Ogerpon ex' || n === 'Meganium')).toBe(true);
   });
+  test('Blue (Water) plays Mega Greninja ex and the Froakie line', () => {
+    const p = deckPlan(GYM_DECKS['blue-water'], registry);
+    expect(p.lines['Mega Greninja ex']).toEqual(['Froakie', 'Frogadier', 'Mega Greninja ex']);
+    expect(p.attackers).toContain('Mega Greninja ex');
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);

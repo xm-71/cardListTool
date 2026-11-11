@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import type { DeckList, GameState } from '@ptcg/engine';
-import { GYM_DECKS } from '../src/gym.ts';
-import { isPlayable } from '../src/playable.ts';
+import type { GameState } from '@ptcg/engine';
 import {
   ID,
   act,
@@ -11,7 +9,6 @@ import {
   engine,
   game,
   giveCard,
-  registry,
   resolvePrompts,
   sv,
   swapActiveTo,
@@ -55,19 +52,6 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   swapActiveTo(s, opp, ABRA);
   s.players[opp].active!.damage = -400;
 };
-
-describe('Champion Blue lists', () => {
-  test.each(['blue-water'] as const)(
-    '%s: 60 playable cards with the shared Alakazam line',
-    (id) => {
-      const deck = GYM_DECKS[id] as DeckList;
-      expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(60);
-      for (const c of deck.cards) expect(isPlayable(registry.defs[c.id]!, registry), c.id).toBe(true);
-      const count = (card: string) => deck.cards.find((c) => c.id === card)?.count ?? 0;
-      expect([count(ABRA), count(sv('064')), count(sv('065'))]).toEqual([4, 3, 3]);
-    },
-  );
-});
 
 describe('Fire line', () => {
   test('Blazing Destruction discards a Stadium in play (either player’s)', () => {

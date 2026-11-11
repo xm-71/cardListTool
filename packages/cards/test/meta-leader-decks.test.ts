@@ -146,3 +146,31 @@ test("Blue plays the Teal Mask Ogerpon ex and Meganium deck (Grass): 60 playable
     'mee-001': 16,
   });
 });
+
+test("Blue plays the Mega Greninja ex deck (Water): 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['blue-water'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Blue's Mega Greninja Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'me04-020': 4,
+    'me04-021': 3,
+    'me04-022': 3,
+    'me03-020': 2,
+    'me03-021': 2,
+    'sv06.5-038': 1,
+    'sv09-155': 4,
+    'sv02-185': 2,
+    'me01-114': 2,
+    'sv01-166': 2,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-125': 3,
+    'sv04-163': 3,
+    'me01-167': 2,
+    'me01-173': 1,
+    'sv02-188': 1,
+    'me01-130': 1,
+    'mee-003': 16,
+  });
+});
