@@ -46,6 +46,10 @@ describe('deckPlan', () => {
     expect(p.lines['Mega Greninja ex']).toEqual(['Froakie', 'Frogadier', 'Mega Greninja ex']);
     expect(p.attackers).toContain('Mega Greninja ex');
   });
+  test('Red plays Miraidon ex and Iron Hands ex as attackers', () => {
+    const p = deckPlan(GYM_DECKS.red, registry);
+    expect(p.attackers.some((n) => n === 'Miraidon ex' || n === 'Iron Hands ex')).toBe(true);
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);

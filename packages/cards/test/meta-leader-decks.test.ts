@@ -174,3 +174,30 @@ test("Blue plays the Mega Greninja ex deck (Water): 60 playable cards in the lea
     'mee-003': 16,
   });
 });
+
+test("Red plays the Miraidon ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS.red as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Red's Miraidon Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv01-081': 4,
+    'sv04-070': 3,
+    'sv03.5-145': 2,
+    'sv03.5-151': 1,
+    'sv02-169': 1,
+    'sv06.5-038': 1,
+    'sv01-166': 3,
+    'me01-114': 2,
+    'sv02-185': 3,
+    'sv09-155': 3,
+    'sv01-170': 4,
+    'sv01-181': 4,
+    'me01-131': 3,
+    'me01-130': 2,
+    'sv05-157': 1,
+    'me01-173': 2,
+    'me01-166': 1,
+    'mee-004': 20,
+  });
+});
