@@ -15,6 +15,11 @@
     "logo": "https://assets.tcgdex.net/en/me/me03/logo"
   },
   {
+    "id": "me04",
+    "name": "Chaos Rising",
+    "logo": "https://assets.tcgdex.net/en/me/me04/logo"
+  },
+  {
     "id": "me02.5",
     "name": "Ascended Heroes",
     "logo": "https://assets.tcgdex.net/en/me/me02.5/logo"
@@ -48,6 +53,11 @@
     "id": "sv04",
     "name": "Paradox Rift",
     "logo": "https://assets.tcgdex.net/en/sv/sv04/logo"
+  },
+  {
+    "id": "sv03",
+    "name": "Obsidian Flames",
+    "logo": "https://assets.tcgdex.net/en/sv/sv03/logo"
   },
   {
     "id": "sv02",

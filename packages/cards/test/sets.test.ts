@@ -1,12 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import cards from '../src/data/cards.json';
 import setIds from '../src/sets.json';
+import { SETS } from '../src/sets.ts';
 import { registry } from './helpers.ts';
 
 /** Cards per set as TCGdex counts them: the sets imported whole for the leader meta decks. */
 const SIZES: Record<string, number> = {
   sv01: 258,
   sv02: 279,
+  sv03: 230,
   sv04: 266,
   sv05: 218,
   sv06: 226,
@@ -15,6 +17,7 @@ const SIZES: Record<string, number> = {
   sv09: 190,
   'me02.5': 295,
   me03: 124,
+  me04: 122,
 };
 
 const idsOf = (set: string) => Object.keys(cards).filter((id) => id.startsWith(`${set}-`));
@@ -42,5 +45,9 @@ describe('whole-set imports', () => {
   });
   test('the new sets are shop sets', () => {
     for (const set of Object.keys(SIZES)) expect(setIds, set).toContain(set);
+  });
+  test('sv03 is Scarlet & Violet era and me04 is Mega era', () => {
+    expect(SETS.find((x) => x.id === 'sv03')?.era).toBe('sv');
+    expect(SETS.find((x) => x.id === 'me04')?.era).toBe('mega');
   });
 });

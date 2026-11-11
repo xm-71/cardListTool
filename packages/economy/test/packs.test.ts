@@ -420,4 +420,19 @@ describe('packs for the sets imported whole', () => {
     expect(Math.abs((last.get('ACE SPEC Rare') ?? 0) / n - 0.03)).toBeLessThanOrEqual(0.015);
     expect(Math.abs((last.get('Rare') ?? 0) / n - 0.52)).toBeLessThanOrEqual(0.02);
   });
+
+  test('a set with Mega Attack Rare cards opens them in the last slot at 3%, taken from Rare', () => {
+    const cards = setCards('me02.5');
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    const n = 6000;
+    const last = new Map<string, number>();
+    let rng = 7;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('me02.5', cards, rng);
+      rng = pack.rng;
+      const r = rarity.get(pack.cards[9]!)!;
+      last.set(r, (last.get(r) ?? 0) + 1);
+    }
+    expect(Math.abs((last.get('Mega Attack Rare') ?? 0) / n - 0.03)).toBeLessThanOrEqual(0.015);
+  });
 });

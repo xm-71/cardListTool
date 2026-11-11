@@ -82,6 +82,7 @@ export function layoutRarities(era: PackEra): string[] {
       'Uncommon',
       ...Object.keys(rates),
       ACE_SPEC_RARITY,
+      MEGA_ATTACK_RARITY,
     ])
       out.add(r);
   }
@@ -211,6 +212,10 @@ export const SV_SLOT10_RATES: Readonly<Record<string, number>> = {
 export const ACE_SPEC_RATE = 0.03;
 const ACE_SPEC_RARITY = 'ACE SPEC Rare';
 
+/** A set with Mega Attack Rare cards (Ascended Heroes) gives them this share of slot 10, taken from Rare. */
+export const MEGA_ATTACK_RATE = 0.03;
+const MEGA_ATTACK_RARITY = 'Mega Attack Rare';
+
 /** Chance that reverse-holo slot 9 is an Illustration rare. */
 export const SLOT9_ILLUSTRATION_RATE = 0.12;
 
@@ -235,10 +240,13 @@ export function openPack(
     return pool[Math.floor(random() * pool.length)]!.id;
   };
   const baseRates = PACKS.find((p) => p.setId === setId)?.era === 'sv' ? SV_SLOT10_RATES : SLOT10_RATES;
-  const rates: Readonly<Record<string, number>> =
-    byRarity(ACE_SPEC_RARITY).length > 0
-      ? { ...baseRates, Rare: baseRates.Rare! - ACE_SPEC_RATE, [ACE_SPEC_RARITY]: ACE_SPEC_RATE }
-      : baseRates;
+  const withShare = (rates: Readonly<Record<string, number>>, rarity: string, rate: number) =>
+    byRarity(rarity).length > 0 ? { ...rates, Rare: rates.Rare! - rate, [rarity]: rate } : rates;
+  const rates: Readonly<Record<string, number>> = withShare(
+    withShare(baseRates, ACE_SPEC_RARITY, ACE_SPEC_RATE),
+    MEGA_ATTACK_RARITY,
+    MEGA_ATTACK_RATE,
+  );
   const rareOrBetter = (): CardDef[] => {
     let roll = random();
     for (const [rarity, rate] of Object.entries(rates)) {
