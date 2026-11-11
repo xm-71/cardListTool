@@ -278,7 +278,7 @@ export const JOHTO_ELITE: readonly Opponent[] = [
 export const RED: Opponent = {
   id: 'red',
   name: 'Red',
-  type: 'Fire + Lightning',
+  type: 'Lightning',
   deck: 'red',
   difficulty: 'hard',
   intro: '...',

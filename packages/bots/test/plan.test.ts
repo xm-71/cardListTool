@@ -31,6 +31,25 @@ describe('deckPlan', () => {
     expect(p.lines['Gardevoir ex']).toEqual(['Ralts', 'Kirlia', 'Gardevoir ex']);
     expect(p.attackers.some((n) => n === 'Gardevoir ex' || n === 'Munkidori')).toBe(true);
   });
+  test('Blue (Fire) plays Charizard ex with the Pidgeot ex engine', () => {
+    const p = deckPlan(GYM_DECKS['blue-fire'], registry);
+    expect(p.lines['Charizard ex']).toEqual(['Charmander', 'Charmeleon', 'Charizard ex']);
+    expect(p.attackers).toContain('Charizard ex');
+  });
+  test('Blue (Grass) plays the Meganium line and Teal Mask Ogerpon ex', () => {
+    const p = deckPlan(GYM_DECKS['blue-grass'], registry);
+    expect(p.lines['Meganium']).toEqual(['Chikorita', 'Bayleef', 'Meganium']);
+    expect(p.attackers.some((n) => n === 'Teal Mask Ogerpon ex' || n === 'Meganium')).toBe(true);
+  });
+  test('Blue (Water) plays Mega Greninja ex and the Froakie line', () => {
+    const p = deckPlan(GYM_DECKS['blue-water'], registry);
+    expect(p.lines['Mega Greninja ex']).toEqual(['Froakie', 'Frogadier', 'Mega Greninja ex']);
+    expect(p.attackers).toContain('Mega Greninja ex');
+  });
+  test('Red plays Miraidon ex and Iron Hands ex as attackers', () => {
+    const p = deckPlan(GYM_DECKS.red, registry);
+    expect(p.attackers.some((n) => n === 'Miraidon ex' || n === 'Iron Hands ex')).toBe(true);
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);

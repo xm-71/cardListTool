@@ -86,6 +86,7 @@ test('every Mega Evolution set is on sale at the configured price', () => {
     ['me01', 150],
     ['me02', 150],
     ['me03', 150],
+    ['me04', 150],
     ['me02.5', 150],
   ]);
   expect(CREDITS.start).toBe(500);
@@ -369,6 +370,7 @@ describe('packContents', () => {
 
 describe('packs for the sets imported whole', () => {
   const NEW_PACKS = [
+    ['me04', 'Chaos Rising', 'mega'],
     ['me03', 'Perfect Order', 'mega'],
     ['me02.5', 'Ascended Heroes', 'mega'],
     ['sv09', 'Journey Together', 'sv'],
@@ -377,6 +379,7 @@ describe('packs for the sets imported whole', () => {
     ['sv06', 'Twilight Masquerade', 'sv'],
     ['sv05', 'Temporal Forces', 'sv'],
     ['sv04', 'Paradox Rift', 'sv'],
+    ['sv03', 'Obsidian Flames', 'sv'],
     ['sv02', 'Paldea Evolved', 'sv'],
     ['sv01', 'Scarlet & Violet', 'sv'],
   ] as const;
@@ -419,5 +422,20 @@ describe('packs for the sets imported whole', () => {
     }
     expect(Math.abs((last.get('ACE SPEC Rare') ?? 0) / n - 0.03)).toBeLessThanOrEqual(0.015);
     expect(Math.abs((last.get('Rare') ?? 0) / n - 0.52)).toBeLessThanOrEqual(0.02);
+  });
+
+  test('a set with Mega Attack Rare cards opens them in the last slot at 3%, taken from Rare', () => {
+    const cards = setCards('me02.5');
+    const rarity = new Map(cards.map((c) => [c.id, c.rarity]));
+    const n = 6000;
+    const last = new Map<string, number>();
+    let rng = 7;
+    for (let i = 0; i < n; i++) {
+      const pack = openPack('me02.5', cards, rng);
+      rng = pack.rng;
+      const r = rarity.get(pack.cards[9]!)!;
+      last.set(r, (last.get(r) ?? 0) + 1);
+    }
+    expect(Math.abs((last.get('Mega Attack Rare') ?? 0) / n - 0.03)).toBeLessThanOrEqual(0.015);
   });
 });

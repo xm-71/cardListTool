@@ -81,6 +81,10 @@ const PROBE_TARGETS: Record<string, [number, number]> = {
   bruno: [55, 65],
   agatha: [55, 65],
   lance: [55, 65],
+  'blue-fire': [60, 70],
+  'blue-water': [60, 70],
+  'blue-grass': [60, 70],
+  red: [65, 75],
 };
 
 if (probeMode) {
@@ -263,9 +267,6 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   sabrina: [40, 60],
   blaine: [40, 60],
   giovanni: [40, 60],
-  'blue-fire': [45, 65],
-  'blue-water': [45, 65],
-  'blue-grass': [45, 65],
   // Johto's Whitney and Morty use the Hard bot in the game but are measured here with the Medium bot, so their
   // in-game win rate is higher than measured: the bands sit at the lower end.
   whitney: [40, 60],
