@@ -181,21 +181,21 @@ test("Red plays the Miraidon ex deck: 60 playable cards in the leader pool", () 
   expect(deck.name).toBe("Red's Miraidon Deck");
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
-    'sv01-081': 3,
+    'sv01-081': 2,
     'sv04-070': 4,
-    'sv03.5-145': 3,
+    'sv03.5-145': 4,
     'sv06.5-038': 1,
-    'sv01-166': 4,
-    'me01-114': 3,
+    'sv01-166': 3,
+    'me01-114': 2,
     'sv02-185': 3,
-    'sv09-155': 4,
+    'sv09-155': 3,
     'sv01-170': 4,
     'sv01-181': 4,
-    'me01-131': 4,
+    'me01-131': 3,
     'me01-130': 2,
     'sv05-157': 1,
-    'me01-173': 3,
+    'me01-173': 2,
     'me01-166': 1,
-    'mee-004': 16,
+    'mee-004': 21,
   });
 });
