@@ -81,6 +81,26 @@ describe('Chien-Pao ex', () => {
     expect(s.players[me].discard.filter((u) => s.cards[u]!.defId === WATER)).toHaveLength(2);
   });
 
+  test('Hail Blade also discards {W} Energy from Benched Pokémon', () => {
+    const { s: s0, me, opp } = game(spec);
+    swapActiveTo(s0, me, CHIEN_PAO);
+    for (let i = 0; i < 2; i++) attachFromDeck(s0, me, WATER);
+    benchFromHand(s0, me, giveCard(s0, me, FRIGIBAX));
+    for (let i = 0; i < 2; i++) {
+      const uid = s0.players[me].deck.find((u) => s0.cards[u]!.defId === WATER)!;
+      s0.players[me].deck.splice(s0.players[me].deck.indexOf(uid), 1);
+      s0.players[me].bench[0]!.energy.push(uid);
+    }
+    buffer(s0, opp);
+    const offered = act(engine, s0, { type: 'attack', attackIndex: 0 }).prompt!.options.length;
+    expect(offered).toBe(4); // Energy on the Active and on the Bench
+    let s = act(engine, s0, { type: 'attack', attackIndex: 0 });
+    s = act(engine, s, { type: 'answer', optionId: s.prompt!.options.at(-1)!.id });
+    s = act(engine, s, { type: 'answer', optionId: 'done' });
+    expect(s.players[opp].active!.damage).toBe(-400 + 60);
+    expect(s.players[me].bench[0]!.energy.length + s.players[me].active!.energy.length).toBe(3);
+  });
+
   test('Hail Blade may discard nothing, for no damage', () => {
     const { s: s0, me, opp } = game(spec);
     swapActiveTo(s0, me, CHIEN_PAO);
@@ -155,6 +175,29 @@ describe('Superior Energy Retrieval', () => {
     }
     return { s, me };
   };
+
+  test('needs a Basic Energy card in the discard pile to put into the hand', () => {
+    const { s, me } = setup();
+    s.players[me].discard.length = 0;
+    const uid = giveCard(s, me, SER);
+    giveCard(s, me, FIRE);
+    giveCard(s, me, FIRE);
+    expect(engine.getLegalActions(s, me)).not.toContainEqual(playTrainer(uid));
+  });
+
+  test('cannot put back the cards it discarded as its cost', () => {
+    const { s: s0, me } = setup();
+    s0.players[me].discard.length = 1; // one Water Energy already there; the other Water cards come from the cost
+    const uid = giveCard(s0, me, SER);
+    giveCard(s0, me, WATER);
+    giveCard(s0, me, WATER);
+    giveCard(s0, me, FRIGIBAX); // a third choice, so the discard is asked about
+    let s = act(engine, s0, playTrainer(uid));
+    s = answerCards(s, [WATER, WATER]);
+    s = resolvePrompts(s);
+    expect(defIdsOf(s, s.players[me].hand).sort()).toEqual([WATER, FRIGIBAX].sort()); // only the Energy that was already there
+    expect(defIdsOf(s, s.players[me].discard).filter((d) => d === WATER)).toHaveLength(2);
+  });
 
   test('needs 2 other cards to discard', () => {
     const { s, me } = setup();

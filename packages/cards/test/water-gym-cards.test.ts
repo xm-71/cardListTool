@@ -1,8 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { getRetreatCost, type DeckList, type GameState } from '@ptcg/engine';
-import { GYM_DECKS } from '../src/gym.ts';
+import { getRetreatCost, type GameState } from '@ptcg/engine';
 import {
-  assertGymDeck,
   act,
   answer,
   attachFromDeck,
@@ -45,28 +43,6 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   swapActiveTo(s, opp, SEEL);
   s.players[opp].active!.damage = -400;
 };
-
-test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool', () => {
-  const deck = GYM_DECKS.lorelei as DeckList;
-  assertGymDeck(deck, 'leader');
-  expect(deck.name).toBe("Lorelei's Chien-Pao Deck");
-  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
-  expect(counts).toEqual({
-    'sv02-061': 4,
-    'sv02-057': 4,
-    'sv02-059': 2,
-    'sv02-060': 3,
-    'sv09-155': 4,
-    'sv02-185': 1,
-    'me01-114': 3,
-    'me01-131': 4,
-    'sv01-181': 4,
-    'me01-125': 4,
-    'me01-167': 4,
-    'mee-003': 22,
-    'sv01-166': 1,
-  });
-});
 
 describe('Dewgong', () => {
   test('Dual Splash does 50 to each of 2 chosen Pokémon (counters on the Bench)', () => {

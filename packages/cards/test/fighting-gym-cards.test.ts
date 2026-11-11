@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import type { DeckList, GameState } from '@ptcg/engine';
-import { GYM_DECKS } from '../src/gym.ts';
+import type { GameState } from '@ptcg/engine';
 import {
   act,
-  assertGymDeck,
   attachFromDeck,
   benchFromHand,
   engine,
@@ -39,33 +37,6 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   swapActiveTo(s, opp, ONIX);
   s.players[opp].active!.damage = -400;
 };
-
-test("Bruno plays the Mega Lucario ex deck: 60 playable cards in the leader pool", () => {
-  const deck = GYM_DECKS.bruno as DeckList;
-  assertGymDeck(deck, 'leader');
-  expect(deck.name).toBe("Bruno's Mega Lucario Deck");
-  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
-  expect(counts).toEqual({
-    'me01-076': 4,
-    'me01-077': 2,
-    'me01-072': 2,
-    'me01-073': 2,
-    'me01-075': 2,
-    'me01-074': 2,
-    'sv06.5-038': 1,
-    'me01-119': 2,
-    'me01-114': 1,
-    'sv02-185': 1,
-    'me01-131': 3,
-    'me01-167': 2,
-    'me01-116': 3,
-    'me01-124': 1,
-    'me01-173': 1,
-    'me01-130': 3,
-    'me01-166': 1,
-    'mee-006': 27,
-  });
-});
 
 describe('Machop, Machoke, Machamp', () => {
   test.each([

@@ -1,8 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import type { DeckList, GameState } from '@ptcg/engine';
-import { GYM_DECKS } from '../src/gym.ts';
+import type { GameState } from '@ptcg/engine';
 import {
-  assertGymDeck,
   ID,
   act,
   answer,
@@ -43,33 +41,7 @@ const buffer = (s: GameState, opp: 0 | 1) => {
   s.players[opp].active!.damage = -400;
 };
 
-describe('Agatha deck', () => {
-  test('Agatha plays the Gardevoir ex deck: 60 playable cards in the leader pool', () => {
-    const deck = GYM_DECKS.agatha as DeckList;
-    assertGymDeck(deck, 'leader');
-    expect(deck.name).toBe("Agatha's Gardevoir Deck");
-    const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
-    expect(counts).toEqual({
-      'me01-058': 4,
-      'me01-059': 4,
-      'sv01-086': 3,
-      'sv06-095': 4,
-      'sv09-056': 1,
-      'sv06.5-038': 1,
-      'sv09-155': 4,
-      'sv02-185': 4,
-      'sv01-166': 2,
-      'me01-131': 4,
-      'sv04-163': 3,
-      'me01-125': 3,
-      'me01-173': 2,
-      'sv01-181': 3,
-      'sv02-188': 1,
-      'sv06-163': 1,
-      'mee-005': 12,
-      'mee-007': 4,
-    });
-  });
+describe('Mega Gengar evolution', () => {
 
   test('Haunter 093 satisfies Mega Gengar ex’s evolve-from-Haunter rule', () => {
     const { s: s0, me } = game(ALL, ALL, { turn: 3 });

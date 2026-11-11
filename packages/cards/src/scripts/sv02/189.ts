@@ -4,7 +4,9 @@ import { isBasicEnergy, otherCardsInHand } from '../util.ts';
 export const name = 'Superior Energy Retrieval';
 export const script: CardScript = {
   trainer: {
-    canPlay: (ctx) => otherCardsInHand(ctx).length >= 2,
+    canPlay: (ctx) =>
+      otherCardsInHand(ctx).length >= 2 &&
+      ctx.state.players[ctx.me].discard.some((u) => isBasicEnergy(ctx.def(u))),
     play(ctx) {
       const cost = ctx.chooseCards({
         player: ctx.me,

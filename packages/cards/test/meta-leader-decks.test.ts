@@ -1,0 +1,90 @@
+import { expect, test } from 'vitest';
+import type { DeckList } from '@ptcg/engine';
+import { GYM_DECKS, metaDragapultDeck } from '../src/index.ts';
+import { assertGymDeck } from './helpers.ts';
+
+/** Elite Four leaders on meta decks: 60 playable cards from the leader pool (mark D+, 151, Mega) and the exact lists. */
+
+test('Lorelei plays the Chien-Pao ex deck: 60 playable cards in the leader pool', () => {
+  const deck = GYM_DECKS.lorelei as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lorelei's Chien-Pao Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv02-061': 4,
+    'sv02-057': 4,
+    'sv02-059': 2,
+    'sv02-060': 3,
+    'sv09-155': 4,
+    'sv02-185': 1,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-125': 4,
+    'me01-167': 4,
+    'mee-003': 22,
+    'sv01-166': 1,
+  });
+});
+
+test("Bruno plays the Mega Lucario ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS.bruno as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Bruno's Mega Lucario Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'me01-076': 4,
+    'me01-077': 2,
+    'me01-072': 2,
+    'me01-073': 2,
+    'me01-075': 2,
+    'me01-074': 2,
+    'sv06.5-038': 1,
+    'me01-119': 2,
+    'me01-114': 1,
+    'sv02-185': 1,
+    'me01-131': 3,
+    'me01-167': 2,
+    'me01-116': 3,
+    'me01-124': 1,
+    'me01-173': 1,
+    'me01-130': 3,
+    'me01-166': 1,
+    'mee-006': 27,
+  });
+});
+
+test("Lance plays the Dragapult ex deck: 60 playable cards in the leader pool, the Worlds 2026 list's cards", () => {
+  const deck = GYM_DECKS.lance as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lance's Dragapult Deck");
+  const counts = (d: DeckList) => Object.fromEntries(d.cards.map((c) => [c.id, c.count]));
+  expect(counts(deck)).toEqual(counts(metaDragapultDeck));
+});
+
+test('Agatha plays the Gardevoir ex deck: 60 playable cards in the leader pool', () => {
+  const deck = GYM_DECKS.agatha as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Agatha's Gardevoir Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'me01-058': 4,
+    'me01-059': 4,
+    'sv01-086': 3,
+    'sv06-095': 4,
+    'sv09-056': 1,
+    'sv06.5-038': 1,
+    'sv09-155': 4,
+    'sv02-185': 4,
+    'sv01-166': 2,
+    'me01-131': 4,
+    'sv04-163': 3,
+    'me01-125': 3,
+    'me01-173': 2,
+    'sv01-181': 3,
+    'sv02-188': 1,
+    'sv06-163': 1,
+    'mee-005': 12,
+    'mee-007': 4,
+  });
+});
