@@ -2,6 +2,7 @@ import { dealAttackDamage, type CardScript } from '@ptcg/engine';
 import { benchRefs } from '../util.ts';
 
 export const name = 'Mega Starmie ex';
+export const set = 'me03';
 export const script: CardScript = {
   attacks: {
     // Jetting Blow: this attack also does 50 damage to 1 of your opponent's Benched Pokémon (no Weakness or Resistance).

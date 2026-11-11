@@ -5,6 +5,7 @@ const waterInHand = (ctx: EffectCtx) =>
   ctx.state.players[ctx.me].hand.filter((u) => isBasicEnergy(ctx.def(u), 'Water'));
 
 export const name = 'Mega Greninja ex';
+export const set = 'me04';
 export const script: CardScript = {
   abilities: {
     // Mortal Shuriken: once during your turn, if this Pokémon is in the Active Spot, you may discard a Basic {W} Energy

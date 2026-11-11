@@ -3,6 +3,7 @@ import type { CardScript } from '@ptcg/engine';
 const ABILITY = 'Quick Search';
 
 export const name = 'Pidgeot ex';
+export const set = 'sv03';
 export const script: CardScript = {
   abilities: {
     // Quick Search: once during your turn, search your deck for a card and put it into your hand. You can't use more

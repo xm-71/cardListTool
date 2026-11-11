@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { inPlayRefs, isBasicEnergy, searchDeck } from '../util.ts';
 
 export const name = 'Charizard ex';
+export const set = 'sv03';
 export const script: CardScript = {
   // Infernal Reign: when you play this Pokémon from your hand to evolve 1 of your Pokémon during your turn, you may
   // search your deck for up to 3 Basic {R} Energy cards and attach them to your Pokémon in any way you like.

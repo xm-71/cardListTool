@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { searchDeck } from '../util.ts';
 
 export const name = 'Frogadier';
+export const set = 'me04';
 export const script: CardScript = {
   attacks: {
     // Summoning Jutsu: search your deck for up to 3 Pokémon, reveal them, and put them into your hand.

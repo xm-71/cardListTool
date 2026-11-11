@@ -2,6 +2,7 @@ import type { CardScript } from '@ptcg/engine';
 import { benchRefs, wildGrowthCost } from '../util.ts';
 
 export const name = 'Bayleef';
+export const set = 'me01';
 export const script: CardScript = {
   modifyAttackCost: wildGrowthCost,
   attacks: {
