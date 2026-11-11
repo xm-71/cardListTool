@@ -21,7 +21,7 @@ test('the Shop has a Scarlet & Violet section with the 151 pack and the other Sc
   await withProfile();
   render(<Shop />);
   const section = screen.getByRole('region', { name: 'Scarlet & Violet' });
-  expect(within(section).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(9);
+  expect(within(section).getAllByRole('button', { name: 'Buy & open' })).toHaveLength(10);
   expect(within(section).getByRole('group', { name: 'Scarlet & Violet 151' })).toBeInTheDocument();
   for (const name of [
     'Paldea Evolved',
