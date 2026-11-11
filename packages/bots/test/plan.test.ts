@@ -31,6 +31,11 @@ describe('deckPlan', () => {
     expect(p.lines['Gardevoir ex']).toEqual(['Ralts', 'Kirlia', 'Gardevoir ex']);
     expect(p.attackers.some((n) => n === 'Gardevoir ex' || n === 'Munkidori')).toBe(true);
   });
+  test('Blue (Fire) plays Charizard ex with the Pidgeot ex engine', () => {
+    const p = deckPlan(GYM_DECKS['blue-fire'], registry);
+    expect(p.lines['Charizard ex']).toEqual(['Charmander', 'Charmeleon', 'Charizard ex']);
+    expect(p.attackers).toContain('Charizard ex');
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);

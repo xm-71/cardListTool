@@ -88,3 +88,35 @@ test('Agatha plays the Gardevoir ex deck: 60 playable cards in the leader pool',
     'mee-007': 4,
   });
 });
+
+test("Blue plays the Charizard ex deck (Fire): 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['blue-fire'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Blue's Charizard Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv03-026': 3,
+    'sv03-027': 1,
+    'sv03-125': 3,
+    'sv03-162': 2,
+    'sv03-163': 1,
+    'sv03-164': 2,
+    'sv03.5-151': 1,
+    'sv06.5-038': 1,
+    'sv01-166': 4,
+    'me01-114': 2,
+    'sv02-185': 2,
+    'sv09-155': 2,
+    'me01-119': 2,
+    'me01-125': 4,
+    'me01-131': 3,
+    'sv01-181': 4,
+    'me01-167': 2,
+    'sv02-188': 1,
+    'me01-173': 1,
+    'me01-130': 1,
+    'sv05-157': 1,
+    'me01-166': 1,
+    'mee-002': 16,
+  });
+});
