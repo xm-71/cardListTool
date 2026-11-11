@@ -179,3 +179,32 @@ export function discardOwnEnergy(ctx: EffectCtx, n: number): void {
   });
   ctx.discardEnergy(ref, picks);
 }
+
+/**
+ * Meganium's Wild Growth (each Basic {G} Energy attached to your Pokémon provides {G}{G}) as a stand-in the engine can
+ * run: the engine reads an Energy card's symbols from its card data, so the attacker's own `modifyAttackCost` removes one
+ * {G} from its cost for each Basic {G} Energy it has, while the player has a Meganium in play. The result is the same
+ * as doubling for any cost, and a second Meganium changes nothing (the effect doesn't stack).
+ */
+export function wildGrowthCost(q: {
+  state: GameState;
+  holder: SlotRef;
+  cost: EnergyType[];
+  registry: CardRegistry;
+}): EnergyType[] {
+  const meganium = refsOf(q.state, q.holder.player).some((ref) => defAt(q.state, q.registry, ref)?.name === 'Meganium');
+  if (!meganium) return q.cost;
+  const slot = slotAt(q.state, q.holder);
+  const basicGrass = (slot?.energy ?? []).filter((uid) => {
+    const d = q.registry.defs[q.state.cards[uid]!.defId];
+    return d ? isBasicEnergy(d, 'Grass') : false;
+  }).length;
+  let remove = basicGrass;
+  return q.cost.filter((c) => {
+    if (c === 'Grass' && remove > 0) {
+      remove--;
+      return false;
+    }
+    return true;
+  });
+}

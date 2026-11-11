@@ -1,5 +1,5 @@
 import type { CardScript, EffectCtx } from '@ptcg/engine';
-import { abilityHolder, isBasicEnergy } from '../util.ts';
+import { abilityHolder, isBasicEnergy, wildGrowthCost } from '../util.ts';
 
 const grassInHand = (ctx: EffectCtx) =>
   ctx.state.players[ctx.me].hand.filter((u) => isBasicEnergy(ctx.def(u), 'Grass'));
@@ -7,6 +7,7 @@ const grassInHand = (ctx: EffectCtx) =>
 export const name = 'Teal Mask Ogerpon ex';
 export const set = 'sv06';
 export const script: CardScript = {
+  modifyAttackCost: wildGrowthCost,
   abilities: {
     // Teal Dance: attach a Basic {G} Energy from your hand to this Pokémon, then draw a card.
     'Teal Dance': {

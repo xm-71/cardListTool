@@ -57,7 +57,7 @@ const buffer = (s: GameState, opp: 0 | 1) => {
 };
 
 describe('Champion Blue lists', () => {
-  test.each(['blue-water', 'blue-grass'] as const)(
+  test.each(['blue-water'] as const)(
     '%s: 60 playable cards with the shared Alakazam line',
     (id) => {
       const deck = GYM_DECKS[id] as DeckList;

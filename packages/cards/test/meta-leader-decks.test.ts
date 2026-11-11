@@ -120,3 +120,29 @@ test("Blue plays the Charizard ex deck (Fire): 60 playable cards in the leader p
     'mee-002': 16,
   });
 });
+
+test("Blue plays the Teal Mask Ogerpon ex and Meganium deck (Grass): 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['blue-grass'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Blue's Ogerpon Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv06-025': 4,
+    'me01-008': 4,
+    'me01-009': 3,
+    'me01-010': 3,
+    'sv06.5-038': 1,
+    'sv01-166': 4,
+    'sv09-155': 3,
+    'sv02-185': 2,
+    'me01-114': 2,
+    'sv01-181': 4,
+    'me01-131': 4,
+    'me01-125': 3,
+    'me01-167': 3,
+    'me01-173': 2,
+    'sv02-188': 1,
+    'me01-130': 1,
+    'mee-001': 16,
+  });
+});

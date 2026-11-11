@@ -36,6 +36,11 @@ describe('deckPlan', () => {
     expect(p.lines['Charizard ex']).toEqual(['Charmander', 'Charmeleon', 'Charizard ex']);
     expect(p.attackers).toContain('Charizard ex');
   });
+  test('Blue (Grass) plays the Meganium line and Teal Mask Ogerpon ex', () => {
+    const p = deckPlan(GYM_DECKS['blue-grass'], registry);
+    expect(p.lines['Meganium']).toEqual(['Chikorita', 'Bayleef', 'Meganium']);
+    expect(p.attackers.some((n) => n === 'Teal Mask Ogerpon ex' || n === 'Meganium')).toBe(true);
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);

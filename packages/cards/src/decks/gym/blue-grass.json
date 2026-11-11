@@ -1,21 +1,73 @@
 {
-  "name": "Champion Blue (Grass)",
+  "name": "Blue's Ogerpon Deck",
   "cards": [
-    { "id": "me01-119", "count": 4 },
-    { "id": "sv09-149", "count": 2 },
-    { "id": "me01-114", "count": 2 },
-    { "id": "me01-131", "count": 4 },
-    { "id": "me01-167", "count": 3 },
-    { "id": "me01-130", "count": 2 },
-    { "id": "me01-173", "count": 2 },
-    { "id": "me01-125", "count": 3 },
-    { "id": "sv03.5-063", "count": 4 },
-    { "id": "sv03.5-064", "count": 3 },
-    { "id": "sv03.5-065", "count": 3 },
-    { "id": "sv03.5-001", "count": 3 },
-    { "id": "sv03.5-002", "count": 2 },
-    { "id": "sv03.5-003", "count": 3 },
-    { "id": "mee-005", "count": 12 },
-    { "id": "mee-001", "count": 8 }
+    {
+      "id": "sv06-025",
+      "count": 4
+    },
+    {
+      "id": "me01-008",
+      "count": 4
+    },
+    {
+      "id": "me01-009",
+      "count": 3
+    },
+    {
+      "id": "me01-010",
+      "count": 3
+    },
+    {
+      "id": "sv06.5-038",
+      "count": 1
+    },
+    {
+      "id": "sv01-166",
+      "count": 4
+    },
+    {
+      "id": "sv09-155",
+      "count": 3
+    },
+    {
+      "id": "sv02-185",
+      "count": 2
+    },
+    {
+      "id": "me01-114",
+      "count": 2
+    },
+    {
+      "id": "sv01-181",
+      "count": 4
+    },
+    {
+      "id": "me01-131",
+      "count": 4
+    },
+    {
+      "id": "me01-125",
+      "count": 3
+    },
+    {
+      "id": "me01-167",
+      "count": 3
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "me01-130",
+      "count": 1
+    },
+    {
+      "id": "mee-001",
+      "count": 16
+    }
   ]
 }
