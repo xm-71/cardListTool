@@ -32,6 +32,9 @@ function missing(cost: EnergyType[], have: EnergyType[]): number {
   return short + Math.max(0, cost.filter((c) => c === 'Colorless').length - pool.length);
 }
 
+/** Damage that Knocks Out anything, for attacks that Knock Out outright. */
+const LETHAL = 9999;
+
 /** What a bot knows about a position: card lookups and the damage it expects from its own attacks. */
 export interface Reader {
   view: PlayerView;
@@ -90,6 +93,9 @@ export function reader(
         provides(slot),
       );
       let dmg = damage?.get(d.id, index, slot.energy.length, variant) ?? atk.damage;
+      // "Knock Out your opponent's Active Pokémon": the sandbox cannot play it out (the Knock Out asks for a new
+      // Active Pokémon), and its printed damage is 0, so it counts as lethal here.
+      if (/knock out your opponent's active pok/i.test(atk.text)) dmg = Math.max(dmg, LETHAL);
       if (target?.weakness && d.types.includes(target.weakness)) dmg *= 2;
       if (target?.resistance && d.types.includes(target.resistance)) dmg -= 30;
       return Math.max(0, dmg);
