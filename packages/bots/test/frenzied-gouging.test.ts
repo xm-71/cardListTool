@@ -38,4 +38,13 @@ describe('Frenzied Gouging', () => {
     const action = bot(engine.viewFor(s, 0), legal, 5).action;
     expect(action).toEqual({ type: 'attack', attackIndex: 0 });
   });
+
+  test('it prefers Calamity Storm when that Knocks Out too, instead of Knocking Out its own Roaring Moon ex', () => {
+    const s = setup();
+    s.players[0].active!.damage = 30;
+    swapActiveTo(s, 1, BASIC); // 110 HP
+    s.players[1].active!.damage = 60; // 50 left: Calamity Storm's 100 is enough
+    const action = bot(engine.viewFor(s, 0), engine.getLegalActions(s, 0), 5).action;
+    expect(action).toEqual({ type: 'attack', attackIndex: 1 });
+  });
 });

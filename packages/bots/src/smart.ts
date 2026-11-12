@@ -314,8 +314,8 @@ const REPEAT_FREELY = new Set(['Super Cold', 'Excited Turbo']);
 
 /**
  * "Discard any amount of {W} Energy from your Pokémon (60 damage each)": pay for a Knock Out and no more, Energy of the
- * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay only with what the Active holds beyond
- * its cheapest attack, so it can attack again, and leave the Bench alone.
+ * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay with what the Active holds beyond its
+ * strongest attack's cost, so it can attack again, and leave the Bench alone.
  */
 function payAttachedEnergy(
   r: Reader,
@@ -631,7 +631,9 @@ export function createSmartBot(
           : Infinity;
         return { a, dmg, ko: dmg >= left };
       });
-      const ko = scored.find((x) => x.ko);
+      // An attack that only Knocks Out by the "Knock Out outright" estimate may cost its user (Frenzied Gouging): a
+      // clean Knock Out is preferred.
+      const ko = scored.filter((x) => x.ko).sort((x, y) => Number(x.dmg >= LETHAL) - Number(y.dmg >= LETHAL))[0];
       if (ko) return done(ko.a);
       scored.sort((x, y) => y.dmg - x.dmg);
       return done(scored[0]!.a);
