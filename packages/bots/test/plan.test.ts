@@ -62,6 +62,10 @@ describe('deckPlan', () => {
     const p = deckPlan(GYM_DECKS['johto-bruno'], registry);
     expect(p.attackers.some((n) => n === 'Klawf' || n === 'Terapagos ex')).toBe(true);
   });
+  test('Karen plays Mega Absol ex', () => {
+    const p = deckPlan(GYM_DECKS.karen, registry);
+    expect(p.attackers).toContain('Mega Absol ex');
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);
