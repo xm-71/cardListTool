@@ -85,6 +85,11 @@ const PROBE_TARGETS: Record<string, [number, number]> = {
   'blue-water': [60, 70],
   'blue-grass': [60, 70],
   red: [65, 75],
+  will: [60, 70],
+  'johto-koga': [60, 70],
+  'johto-bruno': [60, 70],
+  karen: [60, 70],
+  'johto-lance': [65, 75],
 };
 
 if (probeMode) {
@@ -277,11 +282,6 @@ const GYM_TARGETS: Record<string, [number, number]> = {
   jasmine: [40, 60],
   pryce: [40, 60],
   clair: [40, 60],
-  will: [40, 60],
-  'johto-koga': [40, 60],
-  'johto-bruno': [40, 60],
-  karen: [40, 60],
-  'johto-lance': [45, 65],
   red: [45, 65],
 };
 
