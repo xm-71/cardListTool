@@ -315,3 +315,33 @@ test("Karen plays the Mega Absol ex deck: 60 playable cards in the leader pool",
     'mee-007': 18,
   });
 });
+
+test("Johto Lance plays the Raging Bolt ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['johto-lance'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lance's Raging Bolt Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv05-123': 4,
+    'sv06-025': 3,
+    'sv02-169': 1,
+    'sv06.5-038': 1,
+    'sv03.5-151': 1,
+    'sv01-166': 4,
+    'sv02-185': 2,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-173': 2,
+    'me01-130': 2,
+    'sv02-188': 1,
+    'sv04-163': 3,
+    'sv05-157': 1,
+    'sv04-160': 2,
+    'me01-166': 1,
+    'mee-004': 7,
+    'mee-006': 7,
+    'mee-001': 4,
+  });
+});

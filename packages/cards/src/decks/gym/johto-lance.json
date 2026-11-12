@@ -1,77 +1,89 @@
 {
-  "name": "Lance's Dragon Deck",
+  "name": "Lance's Raging Bolt Deck",
   "cards": [
     {
-      "id": "sv03.5-147",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-148",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-149",
-      "count": 2
-    },
-    {
-      "id": "me02.5-152",
-      "count": 2
-    },
-    {
-      "id": "sv03.5-129",
+      "id": "sv05-123",
       "count": 4
     },
     {
-      "id": "sv03.5-130",
+      "id": "sv06-025",
       "count": 3
     },
     {
-      "id": "sv03.5-004",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-005",
-      "count": 2
-    },
-    {
-      "id": "sv03.5-006",
-      "count": 3
-    },
-    {
-      "id": "me01-119",
-      "count": 4
-    },
-    {
-      "id": "me01-114",
-      "count": 2
-    },
-    {
-      "id": "me01-131",
-      "count": 3
-    },
-    {
-      "id": "me01-167",
-      "count": 3
-    },
-    {
-      "id": "me01-130",
+      "id": "sv02-169",
       "count": 1
     },
     {
-      "id": "me01-125",
+      "id": "sv06.5-038",
+      "count": 1
+    },
+    {
+      "id": "sv03.5-151",
+      "count": 1
+    },
+    {
+      "id": "sv01-166",
+      "count": 4
+    },
+    {
+      "id": "sv02-185",
+      "count": 2
+    },
+    {
+      "id": "sv09-155",
       "count": 3
     },
     {
-      "id": "mee-003",
-      "count": 8
+      "id": "me01-114",
+      "count": 3
+    },
+    {
+      "id": "me01-131",
+      "count": 4
+    },
+    {
+      "id": "sv01-181",
+      "count": 4
+    },
+    {
+      "id": "me01-173",
+      "count": 2
+    },
+    {
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "sv04-163",
+      "count": 3
+    },
+    {
+      "id": "sv05-157",
+      "count": 1
+    },
+    {
+      "id": "sv04-160",
+      "count": 2
+    },
+    {
+      "id": "me01-166",
+      "count": 1
     },
     {
       "id": "mee-004",
-      "count": 5
+      "count": 7
     },
     {
-      "id": "mee-002",
-      "count": 6
+      "id": "mee-006",
+      "count": 7
+    },
+    {
+      "id": "mee-001",
+      "count": 4
     }
   ]
 }

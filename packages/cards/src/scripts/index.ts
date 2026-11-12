@@ -8,6 +8,7 @@ import * as me01_166 from './me01/166.ts';
 import * as me02_092 from './me02/092.ts';
 import * as sv01_166 from './sv01/166.ts';
 import * as sv02_185 from './sv02/185.ts';
+import * as sv05_123 from './sv05/123.ts';
 import * as me01_086 from './me01/086.ts';
 import * as sv07_128 from './sv07/128.ts';
 import * as sv09_090 from './sv09/090.ts';
@@ -378,6 +379,7 @@ export const scriptModules: { id: string; name: string; set?: string; script: Ca
   { id: 'me02-092', ...me02_092 },
   { id: 'sv01-166', ...sv01_166 },
   { id: 'sv02-185', ...sv02_185 },
+  { id: 'sv05-123', ...sv05_123 },
   { id: 'me01-086', ...me01_086 },
   { id: 'sv07-128', ...sv07_128 },
   { id: 'sv09-090', ...sv09_090 },
