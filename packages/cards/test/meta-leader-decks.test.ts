@@ -235,8 +235,9 @@ test("Koga plays the Roaring Moon ex deck: 60 playable cards in the leader pool"
   expect(deck.name).toBe("Koga's Roaring Moon Deck");
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
-    'sv04-124': 4,
-    'sv06.5-039': 4,
+    'sv04-124': 3,
+    'sv06.5-039': 3,
+    'sv06.5-036': 2,
     'sv06-095': 2,
     'sv06.5-038': 1,
     'sv01-166': 4,
@@ -263,6 +264,7 @@ test("Johto Bruno plays the Klawf and Terapagos ex deck: 60 playable cards in th
   const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
   expect(counts).toEqual({
     'sv09-090': 3,
+    'sv07-128': 2,
     'sv06-141': 4,
     'sv06.5-038': 1,
     'sv02-169': 1,
@@ -282,7 +284,6 @@ test("Johto Bruno plays the Klawf and Terapagos ex deck: 60 playable cards in th
     'me01-124': 2,
     'me01-166': 1,
     'mee-006': 14,
-    'sv07-128': 2,
   });
 });
 
@@ -337,9 +338,8 @@ test("Johto Lance plays the Raging Bolt ex deck: 60 playable cards in the leader
     'sv05-157': 1,
     'sv04-160': 2,
     'me01-166': 1,
-    'mee-004': 11,
-    'mee-006': 7,
-    'sv06-141': 1,
-    'sv04-070': 3,
+    'mee-004': 9,
+    'mee-006': 9,
+    'sv06-141': 4,
   });
 });
