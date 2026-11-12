@@ -46,4 +46,13 @@ describe('Bellowing Thunder (discard any amount of Basic Energy, 70 damage each)
     expect(s.players[0].active!.energy).toHaveLength(3);
     expect(s.players[0].prizes).toHaveLength(5);
   });
+
+  test('when no Knock Out is reachable it keeps the Energy Bellowing Thunder costs ({L}{F}), not just one card', () => {
+    const s0 = setup(2); // Lightning + 3 Fighting
+    s0.players[1].active!.damage = -5000; // far too much HP for any number of discards
+    const s = bellowingThunder(s0);
+    const left = s.players[0].active!.energy.map((u) => s.cards[u]!.defId).sort();
+    expect(left).toEqual([LIGHTNING, FIGHTING].sort());
+    expect(s.players[1].active!.damage).toBe(-5000 + 140);
+  });
 });

@@ -336,10 +336,21 @@ function payAttachedEnergy(
     if (taken >= needed && done) return done;
     return byId.get((onActive[0] ?? choosable[0]!).id)!;
   }
-  const cheapest = Math.min(...attacker.attacks.map((a) => a.cost.length));
-  const spare = me.active.energy.length - cheapest;
-  const spent = onActive.length > 0 ? me.active.energy.length - onActive.length : 0;
-  if (onActive.length > 0 && spent < spare) return byId.get(onActive[0]!.id)!;
+  // No Knock Out in reach: pay only with Energy the Active can spare while still paying for its strongest attack
+  // (the one with the highest printed damage; the attack that asked is the one that scales).
+  const keep = attacker.attacks.reduce((best, a) =>
+    a.damage > best.damage || (a.damage === best.damage && a.cost.length < best.cost.length) ? a : best,
+  );
+  const gone = new Set(prompt.selected);
+  const afterDiscarding = (uid: string): EnergyType[] =>
+    me
+      .active!.energy.filter((c) => !gone.has(c.uid) && c.uid !== uid)
+      .flatMap((c) => {
+        const d = r.def(c);
+        return d.category === 'Energy' ? d.provides : [];
+      });
+  const spare = onActive.find((o) => missing(keep.cost, afterDiscarding(o.uid!)) === 0);
+  if (spare) return byId.get(spare.id)!;
   return done ?? byId.get(choosable[0]!.id)!;
 }
 
