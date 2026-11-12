@@ -2,6 +2,12 @@
 
 Ideas and follow-ups agreed with the player but not scheduled yet. Newest at the top.
 
+- **Johto and Blue/Red leaders below their probe bands** (from #50): Karen 52%, Johto Koga 31%, Johto Bruno 43%, Johto
+  Lance 35% (band 60-70, Lance 65-75), Blue Grass 48%, Red 46%. Decks stall (27-40 turn medians); also the Raging Bolt ex
+  Bellowing Thunder case where the bot attacks for 0 with exactly {L}{F} on the Active. (2026-11-12)
+- **Meta deck deferred minors** (from #50): Crown Opal (Terapagos ex) also blocks Basic {C} attackers; the me02.5-179
+  Terapagos reprint is unscripted; Frenzied Gouging scored lethal against `preventEffects`; bots never pick Terminal
+  Period; bots rank the opponent's cards by their own `wantScore` for Pincers and Claw of Darkness. (2026-11-12)
 - **Make every card of the imported sets playable.** Sets imported whole for the leader meta decks (Scarlet & Violet,
   Mega Evolution) are in the collection and the shop, but only the cards those decks use are scripted; the rest show
   "isn't playable yet" in the deck builder. Script the remaining cards set by set. (2026-10-16)
