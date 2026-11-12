@@ -58,6 +58,10 @@ describe('deckPlan', () => {
     const p = deckPlan(GYM_DECKS['johto-koga'], registry);
     expect(p.attackers.some((n) => n === 'Roaring Moon ex' || n === 'Pecharunt ex')).toBe(true);
   });
+  test('Johto Bruno plays Klawf and Terapagos ex', () => {
+    const p = deckPlan(GYM_DECKS['johto-bruno'], registry);
+    expect(p.attackers.some((n) => n === 'Klawf' || n === 'Terapagos ex')).toBe(true);
+  });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.support.length).toBeGreaterThan(0);
