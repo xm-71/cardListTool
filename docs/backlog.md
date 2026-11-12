@@ -2,6 +2,14 @@
 
 Ideas and follow-ups agreed with the player but not scheduled yet. Newest at the top.
 
+- **Code base review follow-ups** (`docs/reviews/2026-11-12-code-base-review.md`), most costly first: split the 7 MB
+  card data out of the app and bot-worker bundles; build the app and run the end-to-end tests in CI, with a phone
+  viewport; fail when two unscoped card scripts share a name or a Pokémon script has no `set`; generate
+  `scripts/index.ts`; one deck catalogue shared by the web app and the bot scripts; machine-readable prompt kinds so
+  the smart bot stops matching English text; React-hooks and accessibility lint rules; shared chip/tab components and
+  named text sizes; move large data tables out of TypeScript; hidden source maps. (2026-11-12)
+- **Design fixes** (`docs/superpowers/plans/2026-11-12-design-fixes.md`): 15 findings from the visual and UX review,
+  ready to hand off. (2026-11-12)
 - **Johto and Blue/Red leaders below their probe bands** (from #50): Karen 52%, Johto Koga 31%, Johto Bruno 43%, Johto
   Lance 35% (band 60-70, Lance 65-75), Blue Grass 48%, Red 46%. Decks stall (27-40 turn medians); also the Raging Bolt ex
   Bellowing Thunder case where the bot attacks for 0 with exactly {L}{F} on the Active. (2026-11-12)
