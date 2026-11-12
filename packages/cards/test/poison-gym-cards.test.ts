@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { GYM_DECKS } from '../src/gym.ts';
-import { act, answerCards, assertGymDeck, attachFromDeck, engine, game, swapActiveTo } from './helpers.ts';
+import { act, answerCards, attachFromDeck, engine, game, swapActiveTo } from './helpers.ts';
 
 const ZUBAT = 'sv06.5-027';
 const GOLBAT = 'sv06.5-028';
@@ -26,15 +25,6 @@ const tank = (s: ReturnType<typeof game>['s'], opp: 0 | 1) => {
   s.players[opp].active!.damage = -500;
 };
 const dealt = (s: ReturnType<typeof game>['s'], opp: 0 | 1) => s.players[opp].active!.damage + 500;
-
-describe("Koga's Johto deck", () => {
-  test('60 playable, Gym-legal cards within the deck rules', () => assertGymDeck(GYM_DECKS['johto-koga']));
-
-  test('is built around the Zubat line with Venomoth and Nidoking', () => {
-    const ids = GYM_DECKS['johto-koga'].cards.map((c) => c.id);
-    for (const id of [ZUBAT, GOLBAT, CROBAT, 'sv03.5-049', 'sv03.5-034']) expect(ids).toContain(id);
-  });
-});
 
 describe('Zubat, Golbat and Crobat', () => {
   test('Lead puts a Supporter from the deck into your hand', () => {

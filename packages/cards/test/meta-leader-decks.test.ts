@@ -228,3 +228,31 @@ test("Will plays the Lillie's Clefairy ex deck: 60 playable cards in the leader 
     'mee-007': 4,
   });
 });
+
+test("Koga plays the Roaring Moon ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['johto-koga'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Koga's Roaring Moon Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv04-124': 3,
+    'sv06.5-039': 3,
+    'sv06.5-036': 2,
+    'sv06-095': 2,
+    'sv06.5-038': 1,
+    'sv01-166': 4,
+    'sv02-185': 2,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 3,
+    'me01-173': 3,
+    'me01-130': 1,
+    'sv05-157': 1,
+    'sv04-160': 2,
+    'sv02-188': 1,
+    'sv04-163': 3,
+    'me01-166': 1,
+    'mee-007': 18,
+  });
+});
