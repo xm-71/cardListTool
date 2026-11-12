@@ -1,49 +1,37 @@
 {
-  "name": "Will's Psychic Deck",
+  "name": "Will's Clefairy Deck",
   "cards": [
     {
-      "id": "sv03.5-079",
+      "id": "sv09-056",
       "count": 4
     },
     {
-      "id": "sv03.5-080",
-      "count": 3
+      "id": "sv06-095",
+      "count": 4
     },
     {
-      "id": "sv07-058",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-102",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-103",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-063",
-      "count": 3
-    },
-    {
-      "id": "sv03.5-064",
-      "count": 2
-    },
-    {
-      "id": "sv03.5-065",
-      "count": 2
-    },
-    {
-      "id": "me02-039",
-      "count": 2
-    },
-    {
-      "id": "sv03.5-122",
+      "id": "sv03.5-151",
       "count": 1
     },
     {
-      "id": "me01-119",
+      "id": "sv06.5-038",
+      "count": 1
+    },
+    {
+      "id": "sv02-169",
+      "count": 1
+    },
+    {
+      "id": "sv01-166",
       "count": 4
+    },
+    {
+      "id": "sv02-185",
+      "count": 3
+    },
+    {
+      "id": "sv09-155",
+      "count": 3
     },
     {
       "id": "me01-114",
@@ -51,31 +39,47 @@
     },
     {
       "id": "me01-131",
-      "count": 3
+      "count": 4
     },
     {
-      "id": "me01-167",
-      "count": 3
-    },
-    {
-      "id": "me01-130",
-      "count": 2
+      "id": "sv01-181",
+      "count": 4
     },
     {
       "id": "me01-173",
       "count": 2
     },
     {
-      "id": "me01-125",
-      "count": 3
+      "id": "me01-130",
+      "count": 2
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "sv04-160",
+      "count": 2
+    },
+    {
+      "id": "sv05-157",
+      "count": 1
+    },
+    {
+      "id": "sv02-173",
+      "count": 2
+    },
+    {
+      "id": "me01-166",
+      "count": 1
     },
     {
       "id": "mee-005",
-      "count": 8
+      "count": 14
     },
     {
-      "id": "mee-001",
-      "count": 7
+      "id": "mee-007",
+      "count": 4
     }
   ]
 }

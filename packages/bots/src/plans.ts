@@ -7,4 +7,7 @@ import type { DeckPlan } from './plan.ts';
 export const DECK_PLANS: Record<
   string,
   Partial<Pick<DeckPlan, 'attackers' | 'support'>> & { first?: string[] }
-> = {};
+> = {
+  // The computed plan picks Munkidori and Squawkabilly ex; Lillie's Clefairy ex is the deck's attacker.
+  "Will's Clefairy Deck": { attackers: ["Lillie's Clefairy ex"] },
+};

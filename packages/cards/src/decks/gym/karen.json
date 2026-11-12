@@ -1,61 +1,85 @@
 {
-  "name": "Karen's Darkness Deck",
+  "name": "Karen's Mega Absol Deck",
   "cards": [
     {
-      "id": "sv08.5-060",
+      "id": "me01-086",
       "count": 3
     },
     {
-      "id": "sv08.5-074",
-      "count": 4
-    },
-    {
-      "id": "sv08.5-062",
-      "count": 4
-    },
-    {
-      "id": "sv08.5-063",
+      "id": "sv06-095",
       "count": 3
     },
     {
-      "id": "me02-057",
-      "count": 3
-    },
-    {
-      "id": "me02-058",
+      "id": "sv06.5-039",
       "count": 2
     },
     {
-      "id": "me02-059",
-      "count": 2
+      "id": "sv06.5-038",
+      "count": 1
     },
     {
-      "id": "me01-119",
-      "count": 4
+      "id": "sv02-169",
+      "count": 1
+    },
+    {
+      "id": "sv03.5-151",
+      "count": 1
+    },
+    {
+      "id": "sv01-166",
+      "count": 3
+    },
+    {
+      "id": "sv02-185",
+      "count": 3
+    },
+    {
+      "id": "sv09-155",
+      "count": 3
     },
     {
       "id": "me01-114",
-      "count": 2
+      "count": 3
     },
     {
       "id": "me01-131",
-      "count": 3
+      "count": 4
     },
     {
-      "id": "me01-167",
-      "count": 3
-    },
-    {
-      "id": "me01-130",
-      "count": 2
+      "id": "sv01-181",
+      "count": 4
     },
     {
       "id": "me01-173",
       "count": 2
     },
     {
+      "id": "me01-130",
+      "count": 1
+    },
+    {
+      "id": "sv02-188",
+      "count": 1
+    },
+    {
+      "id": "sv05-157",
+      "count": 1
+    },
+    {
+      "id": "sv04-160",
+      "count": 2
+    },
+    {
+      "id": "sv04-163",
+      "count": 3
+    },
+    {
+      "id": "me01-166",
+      "count": 1
+    },
+    {
       "id": "mee-007",
-      "count": 23
+      "count": 18
     }
   ]
 }

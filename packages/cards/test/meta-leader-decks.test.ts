@@ -199,3 +199,147 @@ test("Red plays the Miraidon ex deck: 60 playable cards in the leader pool", () 
     'mee-004': 21,
   });
 });
+
+test("Will plays the Lillie's Clefairy ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS.will as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Will's Clefairy Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv09-056': 4,
+    'sv06-095': 4,
+    'sv03.5-151': 1,
+    'sv06.5-038': 1,
+    'sv02-169': 1,
+    'sv01-166': 4,
+    'sv02-185': 3,
+    'sv09-155': 3,
+    'me01-114': 2,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-173': 2,
+    'me01-130': 2,
+    'sv02-188': 1,
+    'sv04-160': 2,
+    'sv05-157': 1,
+    'sv02-173': 2,
+    'me01-166': 1,
+    'mee-005': 14,
+    'mee-007': 4,
+  });
+});
+
+test("Koga plays the Roaring Moon ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['johto-koga'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Koga's Roaring Moon Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv04-124': 3,
+    'sv06.5-039': 3,
+    'sv06.5-036': 2,
+    'sv06-095': 2,
+    'sv06.5-038': 1,
+    'sv01-166': 4,
+    'sv02-185': 2,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 3,
+    'me01-173': 3,
+    'me01-130': 1,
+    'sv05-157': 1,
+    'sv04-160': 2,
+    'sv02-188': 1,
+    'sv04-163': 3,
+    'me01-166': 1,
+    'mee-007': 18,
+  });
+});
+
+test("Johto Bruno plays the Klawf and Terapagos ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['johto-bruno'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Bruno's Klawf Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv09-090': 3,
+    'sv07-128': 2,
+    'sv06-141': 4,
+    'sv06.5-038': 1,
+    'sv02-169': 1,
+    'sv03.5-151': 1,
+    'sv01-166': 3,
+    'sv02-185': 2,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-173': 2,
+    'me01-130': 2,
+    'sv02-188': 1,
+    'sv04-163': 3,
+    'sv05-157': 1,
+    'me01-116': 3,
+    'me01-124': 2,
+    'me01-166': 1,
+    'mee-006': 14,
+  });
+});
+
+test("Karen plays the Mega Absol ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS.karen as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Karen's Mega Absol Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'me01-086': 3,
+    'sv06-095': 3,
+    'sv06.5-039': 2,
+    'sv06.5-038': 1,
+    'sv02-169': 1,
+    'sv03.5-151': 1,
+    'sv01-166': 3,
+    'sv02-185': 3,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-173': 2,
+    'me01-130': 1,
+    'sv02-188': 1,
+    'sv05-157': 1,
+    'sv04-160': 2,
+    'sv04-163': 3,
+    'me01-166': 1,
+    'mee-007': 18,
+  });
+});
+
+test("Johto Lance plays the Raging Bolt ex deck: 60 playable cards in the leader pool", () => {
+  const deck = GYM_DECKS['johto-lance'] as DeckList;
+  assertGymDeck(deck, 'leader');
+  expect(deck.name).toBe("Lance's Raging Bolt Deck");
+  const counts = Object.fromEntries(deck.cards.map((c) => [c.id, c.count]));
+  expect(counts).toEqual({
+    'sv05-123': 4,
+    'sv02-169': 1,
+    'sv03.5-151': 1,
+    'sv01-166': 4,
+    'sv02-185': 2,
+    'sv09-155': 3,
+    'me01-114': 3,
+    'me01-131': 4,
+    'sv01-181': 4,
+    'me01-173': 2,
+    'me01-130': 2,
+    'sv02-188': 1,
+    'sv04-163': 3,
+    'sv05-157': 1,
+    'sv04-160': 2,
+    'me01-166': 1,
+    'mee-004': 9,
+    'mee-006': 9,
+    'sv06-141': 4,
+  });
+});

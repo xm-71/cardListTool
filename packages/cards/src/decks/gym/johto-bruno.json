@@ -1,85 +1,89 @@
 {
-  "name": "Bruno's Fighting Deck",
+  "name": "Bruno's Klawf Deck",
   "cards": [
     {
-      "id": "me02.5-102",
+      "id": "sv09-090",
+      "count": 3
+    },
+    {
+      "id": "sv07-128",
       "count": 2
     },
     {
-      "id": "sv03.5-106",
-      "count": 2
-    },
-    {
-      "id": "sv03.5-107",
-      "count": 2
-    },
-    {
-      "id": "me01-072",
+      "id": "sv06-141",
       "count": 4
     },
     {
-      "id": "me01-073",
-      "count": 2
-    },
-    {
-      "id": "me01-076",
-      "count": 2
-    },
-    {
-      "id": "me01-077",
+      "id": "sv06.5-038",
       "count": 1
     },
     {
-      "id": "sv03.5-066",
+      "id": "sv02-169",
+      "count": 1
+    },
+    {
+      "id": "sv03.5-151",
+      "count": 1
+    },
+    {
+      "id": "sv01-166",
       "count": 3
     },
     {
-      "id": "sv03.5-095",
+      "id": "sv02-185",
       "count": 2
     },
     {
-      "id": "me01-093",
-      "count": 2
-    },
-    {
-      "id": "me01-119",
-      "count": 4
+      "id": "sv09-155",
+      "count": 3
     },
     {
       "id": "me01-114",
-      "count": 2
+      "count": 3
     },
     {
       "id": "me01-131",
-      "count": 3
+      "count": 4
     },
     {
-      "id": "me01-167",
-      "count": 3
-    },
-    {
-      "id": "me01-130",
-      "count": 2
+      "id": "sv01-181",
+      "count": 4
     },
     {
       "id": "me01-173",
       "count": 2
     },
     {
-      "id": "me01-125",
-      "count": 3
-    },
-    {
-      "id": "me01-116",
+      "id": "me01-130",
       "count": 2
     },
     {
-      "id": "mee-006",
-      "count": 12
+      "id": "sv02-188",
+      "count": 1
     },
     {
-      "id": "mee-008",
-      "count": 5
+      "id": "sv04-163",
+      "count": 3
+    },
+    {
+      "id": "sv05-157",
+      "count": 1
+    },
+    {
+      "id": "me01-116",
+      "count": 3
+    },
+    {
+      "id": "me01-124",
+      "count": 2
+    },
+    {
+      "id": "me01-166",
+      "count": 1
+    },
+    {
+      "id": "mee-006",
+      "count": 14
     }
   ]
 }

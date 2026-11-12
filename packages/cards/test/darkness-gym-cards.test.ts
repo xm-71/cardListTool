@@ -1,15 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { GYM_DECKS } from '../src/gym.ts';
-import { act, assertGymDeck, attachFromDeck, engine, game, resolvePrompts, swapActiveTo } from './helpers.ts';
-
-describe("Karen's deck", () => {
-  test('60 playable, Gym-legal cards within the deck rules', () => assertGymDeck(GYM_DECKS.karen));
-
-  test('is built around Umbreon ex, Houndoom and Honchkrow', () => {
-    const ids = GYM_DECKS.karen.cards.map((c) => c.id);
-    for (const id of ['sv08.5-060', 'sv08.5-074', 'sv08.5-063', 'me02-058']) expect(ids).toContain(id);
-  });
-});
+import { act, attachFromDeck, engine, game, resolvePrompts, swapActiveTo } from './helpers.ts';
 
 describe('Karen scripts', () => {
   const UMBREON = 'sv08.5-060';

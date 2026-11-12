@@ -1,8 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { GYM_DECKS } from '../src/gym.ts';
 import {
   act,
-  assertGymDeck,
   attachFromDeck,
   benchFromHand,
   engine,
@@ -11,15 +9,6 @@ import {
   resolvePrompts,
   swapActiveTo,
 } from './helpers.ts';
-
-describe("Champion Lance's Johto deck", () => {
-  test('60 playable, Gym-legal cards within the deck rules', () => assertGymDeck(GYM_DECKS['johto-lance']));
-
-  test('is built around Dragonite, Mega Dragonite ex, Gyarados and Charizard ex', () => {
-    const ids = GYM_DECKS['johto-lance'].cards.map((c) => c.id);
-    for (const id of ['sv03.5-149', 'me02.5-152', 'sv03.5-130', 'sv03.5-006']) expect(ids).toContain(id);
-  });
-});
 
 describe('Mega Dragonite ex', () => {
   const MEGA = 'me02.5-152';

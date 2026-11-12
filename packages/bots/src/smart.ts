@@ -32,6 +32,9 @@ function missing(cost: EnergyType[], have: EnergyType[]): number {
   return short + Math.max(0, cost.filter((c) => c === 'Colorless').length - pool.length);
 }
 
+/** Damage that Knocks Out anything, for attacks that Knock Out outright. */
+const LETHAL = 9999;
+
 /** What a bot knows about a position: card lookups and the damage it expects from its own attacks. */
 export interface Reader {
   view: PlayerView;
@@ -90,6 +93,9 @@ export function reader(
         provides(slot),
       );
       let dmg = damage?.get(d.id, index, slot.energy.length, variant) ?? atk.damage;
+      // "Knock Out your opponent's Active Pokémon": the sandbox cannot play it out (the Knock Out asks for a new
+      // Active Pokémon), and its printed damage is 0, so it counts as lethal here.
+      if (/knock out your opponent's active pok/i.test(atk.text)) dmg = Math.max(dmg, LETHAL);
       if (target?.weakness && d.types.includes(target.weakness)) dmg *= 2;
       if (target?.resistance && d.types.includes(target.resistance)) dmg -= 30;
       return Math.max(0, dmg);
@@ -308,8 +314,8 @@ const REPEAT_FREELY = new Set(['Super Cold', 'Excited Turbo']);
 
 /**
  * "Discard any amount of {W} Energy from your Pokémon (60 damage each)": pay for a Knock Out and no more, Energy of the
- * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay only with what the Active holds beyond
- * its cheapest attack, so it can attack again, and leave the Bench alone.
+ * Active first. When no number of Energy Knocks Out the Defending Pokémon, pay with what the Active holds beyond its
+ * strongest attack's cost, so it can attack again, and leave the Bench alone.
  */
 function payAttachedEnergy(
   r: Reader,
@@ -336,10 +342,21 @@ function payAttachedEnergy(
     if (taken >= needed && done) return done;
     return byId.get((onActive[0] ?? choosable[0]!).id)!;
   }
-  const cheapest = Math.min(...attacker.attacks.map((a) => a.cost.length));
-  const spare = me.active.energy.length - cheapest;
-  const spent = onActive.length > 0 ? me.active.energy.length - onActive.length : 0;
-  if (onActive.length > 0 && spent < spare) return byId.get(onActive[0]!.id)!;
+  // No Knock Out in reach: pay only with Energy the Active can spare while still paying for its strongest attack
+  // (the one with the highest printed damage; the attack that asked is the one that scales).
+  const keep = attacker.attacks.reduce((best, a) =>
+    a.damage > best.damage || (a.damage === best.damage && a.cost.length < best.cost.length) ? a : best,
+  );
+  const gone = new Set(prompt.selected);
+  const afterDiscarding = (uid: string): EnergyType[] =>
+    me
+      .active!.energy.filter((c) => !gone.has(c.uid) && c.uid !== uid)
+      .flatMap((c) => {
+        const d = r.def(c);
+        return d.category === 'Energy' ? d.provides : [];
+      });
+  const spare = onActive.find((o) => missing(keep.cost, afterDiscarding(o.uid!)) === 0);
+  if (spare) return byId.get(spare.id)!;
   return done ?? byId.get(choosable[0]!.id)!;
 }
 
@@ -614,7 +631,9 @@ export function createSmartBot(
           : Infinity;
         return { a, dmg, ko: dmg >= left };
       });
-      const ko = scored.find((x) => x.ko);
+      // An attack that only Knocks Out by the "Knock Out outright" estimate may cost its user (Frenzied Gouging): a
+      // clean Knock Out is preferred.
+      const ko = scored.filter((x) => x.ko).sort((x, y) => Number(x.dmg >= LETHAL) - Number(y.dmg >= LETHAL))[0];
       if (ko) return done(ko.a);
       scored.sort((x, y) => y.dmg - x.dmg);
       return done(scored[0]!.a);

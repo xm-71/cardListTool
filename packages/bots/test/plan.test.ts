@@ -8,13 +8,6 @@ const registry = buildRegistry();
 const mini = miniRegistry([pokemon('t-basic-noatk', { attacks: [] })]);
 
 describe('deckPlan', () => {
-  test('Johto Lance has the Dragonite and Charizard ex lines', () => {
-    const p = deckPlan(GYM_DECKS['johto-lance'], registry);
-    expect(p.lines['Dragonite']).toEqual(['Dratini', 'Dragonair', 'Dragonite']);
-    expect(p.lines['Charizard ex']).toEqual(['Charmander', 'Charmeleon', 'Charizard ex']);
-    expect(p.attackers.length).toBeGreaterThanOrEqual(1);
-    expect(p.attackers.length).toBeLessThanOrEqual(2);
-  });
   test('Dragapult and Crustle', () => {
     const d = deckPlan(metaDragapultDeck, registry);
     expect(d.lines['Dragapult ex']).toEqual(['Dreepy', 'Drakloak', 'Dragapult ex']);
@@ -49,6 +42,26 @@ describe('deckPlan', () => {
   test('Red plays Miraidon ex and Iron Hands ex as attackers', () => {
     const p = deckPlan(GYM_DECKS.red, registry);
     expect(p.attackers.some((n) => n === 'Miraidon ex' || n === 'Iron Hands ex')).toBe(true);
+  });
+  test('Will plays Lillie\'s Clefairy ex', () => {
+    const p = deckPlan(GYM_DECKS.will, registry);
+    expect(p.attackers).toContain("Lillie's Clefairy ex");
+  });
+  test('Johto Koga plays Roaring Moon ex and Pecharunt ex', () => {
+    const p = deckPlan(GYM_DECKS['johto-koga'], registry);
+    expect(p.attackers.some((n) => n === 'Roaring Moon ex' || n === 'Pecharunt ex')).toBe(true);
+  });
+  test('Johto Bruno plays Klawf and Terapagos ex', () => {
+    const p = deckPlan(GYM_DECKS['johto-bruno'], registry);
+    expect(p.attackers.some((n) => n === 'Klawf' || n === 'Terapagos ex')).toBe(true);
+  });
+  test('Karen plays Mega Absol ex', () => {
+    const p = deckPlan(GYM_DECKS.karen, registry);
+    expect(p.attackers).toContain('Mega Absol ex');
+  });
+  test('Johto Lance plays Raging Bolt ex', () => {
+    const p = deckPlan(GYM_DECKS['johto-lance'], registry);
+    expect(p.attackers).toContain('Raging Bolt ex');
   });
   test('priority puts a missing evolution piece of an attacker line before support', () => {
     const d = deckPlan(metaDragapultDeck, registry);
